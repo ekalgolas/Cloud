@@ -1,5 +1,8 @@
 package master;
 
+import java.io.IOException;
+import java.net.ServerSocket;
+
 /**
  * Class to implement the master server
  * Following is the functionality of the master :-
@@ -8,12 +11,27 @@ package master;
  * 	3. Launch a {@link Listener} thread
  * 	4. Serve the client
  *
- * @author Ekal.Golas
- *
  */
 public class Master {
-	public static final String INPUT_DIR_STRUCT = "./data/out.txt";
-	
+	private static final String INPUT_DIR_STRUCT = "./data/out.txt";
+	private static final int LISTENER_PORT = 18000;
+
+	private static ServerSocket listenerSocket = null;
+
+	public static void initializeMaster() {
+		
+		if(listenerSocket != null) {
+			return;
+		}
+
+		try {
+			listenerSocket = new ServerSocket(LISTENER_PORT);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 	/**
 	 * Master`s main method
 	 *
@@ -21,9 +39,23 @@ public class Master {
 	 *            	Command line arguments
 	 */
 	public static void main(final String[] args) {
-		// TODO Auto-generated method stub
-		
+		// Generate metadata for existing directory structure
 		DirectoryParser.parseText(INPUT_DIR_STRUCT);
+		
+		// TODO : Set the generated metadata to the global variable
+		
+		// Launch listener to process input requests
+		Listener listener = new Listener(listenerSocket);
+		Thread listenerThread = new Thread(listener);
+		listenerThread.start();
+		
+		try {
+			listenerThread.join();
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			e.printStackTrace();
+		}
+		
 
 	}
 }

@@ -1,5 +1,7 @@
 package master;
 
+import java.net.Socket;
+
 /**
  * Worker class that serves the client
  * 	1. Given a socket connection, read the client request
@@ -8,6 +10,14 @@ package master;
  * @author Ekal.Golas
  */
 public class Worker implements Runnable {
+	
+	private final Socket workerSocket;
+	
+	public Worker(final Socket socket) {
+		workerSocket = socket;
+	}
+	
+	
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Runnable#run()
@@ -15,5 +25,7 @@ public class Worker implements Runnable {
 	@Override
 	public void run() {
 
+		// Read from input stream and then process the commands.
+		
 	}
 }
