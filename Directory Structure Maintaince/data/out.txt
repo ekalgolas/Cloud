@@ -1,0 +1,82 @@
+Academics/Fall 2015/
+├── AcademicCalendarFall2015.pdf
+├── AOS/
+│   ├── launcher.sh
+│   ├── Lectures/
+│   │   ├── Commit Protocols.pdf
+│   │   ├── foundations-animated.pdf
+│   │   └── foundations-nonanimated.pdf
+│   ├── New Doc 2.pdf
+│   ├── Project1/
+│   │   ├── cleanup.sh
+│   │   ├── config(2).txt
+│   │   ├── config.txt
+│   │   ├── keygen(1).doc
+│   │   ├── launcher.sh
+│   │   ├── NOT-THIS-YEARS-CONFIG.txt
+│   │   ├── project1(8).pdf
+│   │   ├── runScript(3).sh
+│   │   ├── runScript.sh
+│   │   └── sampleoutput.txt
+│   ├── Research Papers/
+│   │   ├── birman-schiper-stephenson.pdf
+│   │   ├── lamport-clocks.pdf
+│   │   └── raynal-schiper-toueg.pdf
+│   ├── Sample Quizzes/
+│   │   ├── quiz1(2).pdf
+│   │   ├── quiz2(1).pdf
+│   │   ├── quiz3(1).pdf
+│   │   ├── quiz4(1).pdf
+│   │   ├── quiz5(1).pdf
+│   │   ├── quiz6.pdf
+│   │   └── quiz7.pdf
+│   └── Syllabus.pdf
+├── BigData/
+│   ├── Assignments/
+│   │   ├── (439767293) HadoopLecture1.pdf
+│   │   └── homeworkrevised-2.docx
+│   ├── Big Data/
+│   │   ├── Assignment_1_ycp140030/
+│   │   │   ├── AgeGroup.java
+│   │   │   ├── Genere.java
+│   │   │   ├── Readme_txt.txt
+│   │   │   └── UserId.java
+│   │   ├── Assignment_1_ycp140030.zip
+│   │   ├── Assignment_2_ycp140030/
+│   │   │   ├── MapSideJoin.java
+│   │   │   ├── Readme_txt.txt
+│   │   │   └── ReduceSideJoin.java
+│   │   ├── Assignment_2_ycp140030.zip
+│   │   ├── Assignment_3_ycp140030.zip
+│   │   ├── Assignment_4_ycp140030.zip
+│   │   ├── Big Data.zip
+│   │   ├── Sandbox_HDP_2.2_VMware.ova
+│   │   └── VMware-player-7.1.0-2496824.exe
+│   └── Lectures/
+│       ├── BigdataIntro#0.pptx
+│       ├── DatabaseMapReduceBigData#4.pptx
+│       ├── HadoopFeb2015.pptx
+│       ├── Lecture_on_HadoopBigData#3New.pptx
+│       ├── Lecture_on_Mapreduce_BigData#1.pptx
+│       └── MapReduceFunnySlideBigData#2.pptx
+└── CloudComputing/
+    ├── Jemish/
+    │   ├── Lec - 1 Introduction.pptx
+    │   ├── Lec - 2 Map-Reduce.pptx
+    │   ├── Lec - 3 Manage Big Data.pptx
+    │   ├── Lec - 4 DHT.ppt
+    │   ├── Lec - 5 Consistancy Model.ppt
+    │   ├── Lec - 6 File System and Big Table.pptx
+    │   ├── Lec - 7 Erasure Code.pptx
+    │   ├── Lec - 8 Cloud Security.pptx
+    │   └── Lec - 9 Vitualization.pptx
+    ├── Lectures/
+    │   ├── 1- introduction.pdf
+    │   ├── 2- bigdata-background(2).pdf
+    │   ├── 3- bigdata(2).pdf
+    │   ├── 3- bigdata.pdf
+    │   ├── 4- virtualization.pdf
+    │   └── map-reduce.pdf
+    └── term-proj.pdf
+
+14 directories, 65 files

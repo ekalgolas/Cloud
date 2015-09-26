@@ -12,6 +12,8 @@ package master;
  *
  */
 public class Master {
+	public static final String INPUT_DIR_STRUCT = "./data/out.txt";
+	
 	/**
 	 * Master`s main method
 	 *
@@ -20,6 +22,8 @@ public class Master {
 	 */
 	public static void main(final String[] args) {
 		// TODO Auto-generated method stub
+		
+		DirectoryParser.parseText(INPUT_DIR_STRUCT);
 
 	}
 }
