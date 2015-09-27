@@ -19,7 +19,9 @@ import org.apache.commons.lang3.StringUtils;
  * @author Ekal.Golas
  */
 public class DirectoryParser {
-
+	/**
+	 * Mapping for directory and level of hierarchy
+	 */
 	private static HashMap<Integer, Directory>	levelDirectoryMap	= new HashMap<>();
 
 	/**
@@ -31,24 +33,24 @@ public class DirectoryParser {
 	 */
 	public static Directory parseText(final String filePath) {
 		// Create the root directory first
-		final Directory directory = new Directory();
-		directory.name = "root";
-		directory.isFile = false;
-		directory.children = new ArrayList<>();
+		final Directory directory = new Directory("root", false, new ArrayList<>());
 		levelDirectoryMap.put(0, directory);
 
 		try (final Scanner scanner = new Scanner(new File(filePath))) {
-			scanner.nextLine(); // Ignore first line
-			while (scanner.hasNext()) {
-				final String line = scanner.nextLine();
+			// Ignore first line
+			scanner.nextLine();
 
+			// Read till EOF
+			while (scanner.hasNext()) {
+				// Read line. If empty, break
+				final String line = scanner.nextLine();
 				if (StringUtils.isBlank(line)) {
 					System.out.println("End");
 					break;
 				}
+
 				// Get current level
 				int currentLevel = StringUtils.countMatches(line, "├") + StringUtils.countMatches(line, "└") + StringUtils.countMatches(line, "│");
-
 				if (line.startsWith(" ")) {
 					currentLevel++;
 				}
@@ -56,6 +58,8 @@ public class DirectoryParser {
 				// Get the directory or file name - ignore the symbols
 				final String[] split = line.split(" ");
 				final String dirName = split[split.length - 1];
+
+				// Figure out if it is a file or a directory
 				String name = dirName;
 				boolean isFile = true;
 				if (dirName.endsWith("/")) {
@@ -65,23 +69,21 @@ public class DirectoryParser {
 				}
 
 				// Create a new directory object
-				final Directory dir = new Directory();
-				dir.isFile = isFile;
-				dir.name = name;
-				dir.children = new ArrayList<Directory>();
+				final Directory dir = new Directory(name, isFile, new ArrayList<>());
 
 				// Put current directory to current level
 				levelDirectoryMap.put(currentLevel, dir);
 
 				// Add the current node into children list of previous level node
 				final Directory parent = levelDirectoryMap.get(currentLevel - 1);
-				parent.children.add(dir);
+				parent.getChildren()
+				.add(dir);
 			}
-			System.out.println(directory);
 		} catch (final FileNotFoundException e) {
 			e.printStackTrace();
 		}
 
+		// Return the directory structure
 		return directory;
 	}
 }
