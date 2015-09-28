@@ -61,8 +61,7 @@ public class Master {
 		try {
 			listenerThread.join();
 		} catch (final InterruptedException e) {
-			Thread.currentThread()
-				.interrupt();
+			Thread.currentThread().interrupt();
 			e.printStackTrace();
 		}
 	}

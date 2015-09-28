@@ -65,8 +65,7 @@ public class DirectoryOperations {
 			// Check if the path corresponds to any child in this directory
 			boolean found = false;
 			for (final Directory child : root.getChildren()) {
-				if (child.getName()
-						.equalsIgnoreCase(path)) {
+				if (child.getName().equalsIgnoreCase(path)) {
 					root = child;
 					found = true;
 					break;
@@ -156,13 +155,11 @@ public class DirectoryOperations {
 		// Add file if isFile is true
 		if (isFile) {
 			final Directory file = new Directory(name, isFile, null);
-			directory.getChildren()
-			.add(file);
+			directory.getChildren().add(file);
 		} else {
 			// Else, add directory here
 			final Directory dir = new Directory(name, isFile, new ArrayList<Directory>());
-			directory.getChildren()
-			.add(dir);
+			directory.getChildren().add(dir);
 		}
 	}
 }
