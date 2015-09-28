@@ -3,6 +3,10 @@ package master;
 import java.io.IOException;
 import java.net.ServerSocket;
 
+import master.gfs.Directory;
+import master.gfs.DirectoryParser;
+import master.gfs.Globals;
+
 /**
  * <pre>
  * Class to implement the master server
@@ -19,16 +23,19 @@ public class Master {
 
 	private static ServerSocket	listenerSocket		= null;
 
+	/**
+	 * Constructor
+	 */
 	public static void initializeMaster() {
-
+		// Do nothing if socket already initialized
 		if (listenerSocket != null) {
 			return;
 		}
 
+		// Else, initialize the socket
 		try {
 			listenerSocket = new ServerSocket(LISTENER_PORT);
 		} catch (final IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -41,9 +48,10 @@ public class Master {
 	 */
 	public static void main(final String[] args) {
 		// Generate metadata for existing directory structure
-		DirectoryParser.parseText(INPUT_DIR_STRUCT);
+		final Directory directory = DirectoryParser.parseText(INPUT_DIR_STRUCT);
 
-		// TODO : Set the generated metadata to the global variable
+		// Set the globals root
+		Globals.metadataRoot = directory;
 
 		// Launch listener to process input requests
 		final Listener listener = new Listener(listenerSocket);
@@ -53,10 +61,8 @@ public class Master {
 		try {
 			listenerThread.join();
 		} catch (final InterruptedException e) {
-			Thread.currentThread()
-				.interrupt();
+			Thread.currentThread().interrupt();
 			e.printStackTrace();
 		}
-
 	}
 }
