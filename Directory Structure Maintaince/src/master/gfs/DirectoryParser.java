@@ -45,7 +45,6 @@ public class DirectoryParser {
 				// Read line. If empty, break
 				final String line = scanner.nextLine();
 				if (StringUtils.isBlank(line)) {
-					System.out.println("End");
 					break;
 				}
 

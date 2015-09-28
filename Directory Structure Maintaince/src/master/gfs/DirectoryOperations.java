@@ -18,18 +18,19 @@ public class DirectoryOperations {
 	 * @param filePath
 	 *            Path of directory whose listing is to be displayed
 	 * @return Directory contents in string representation
+	 * @throws InvalidPropertiesFormatException
 	 */
-	public static String ls(Directory root, final String filePath) {
+	public static String ls(Directory root, final String filePath) throws InvalidPropertiesFormatException {
 		root = search(root, filePath);
 
 		// If search returns null, return
 		if (root == null) {
-			return filePath + " does not exist";
+			throw new InvalidPathException(filePath, "Does not exist");
 		}
 
 		// If path is a file, return
 		if (root.isFile()) {
-			return filePath + " is a file, please provide directory";
+			throw new InvalidPropertiesFormatException(filePath + " is a file. Expecting directory!");
 		}
 
 		// If we reach here, it means valid directory was found

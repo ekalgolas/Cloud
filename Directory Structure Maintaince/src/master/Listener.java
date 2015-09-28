@@ -22,7 +22,7 @@ public class Listener implements Runnable {
 
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param socket
 	 *            Socket to listen on
 	 */

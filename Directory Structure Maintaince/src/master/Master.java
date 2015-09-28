@@ -24,7 +24,7 @@ public class Master {
 	private static ServerSocket	listenerSocket		= null;
 
 	/**
-	 * Constructor
+	 * Setup the listener socket
 	 */
 	public static void initializeMaster() {
 		// Do nothing if socket already initialized
@@ -47,6 +47,9 @@ public class Master {
 	 *            Command line arguments
 	 */
 	public static void main(final String[] args) {
+		// Initialize master
+		initializeMaster();
+
 		// Generate metadata for existing directory structure
 		final Directory directory = DirectoryParser.parseText(INPUT_DIR_STRUCT);
 
