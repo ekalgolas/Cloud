@@ -1,5 +1,6 @@
 package master;
 
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ public class Listener implements Runnable {
 	public volatile boolean isRunning = true;
 	private final ServerSocket listenerSocket;
 	private final ArrayList<Thread> workerThreadPool = new ArrayList<Thread>();
+
 	public Listener(final ServerSocket socket) {
 		listenerSocket = socket;
 	}
@@ -38,6 +40,13 @@ public class Listener implements Runnable {
 
 			} catch (Exception e) {
 
+			} finally {
+				try {
+					listenerSocket.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 		

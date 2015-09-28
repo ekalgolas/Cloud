@@ -79,6 +79,7 @@ public class DirectoryParser {
 				parent.getChildren()
 				.add(dir);
 			}
+			Globals.metadataRoot = directory;
 		} catch (final FileNotFoundException e) {
 			e.printStackTrace();
 		}
