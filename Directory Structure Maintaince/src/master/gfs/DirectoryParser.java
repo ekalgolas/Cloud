@@ -1,4 +1,4 @@
-package master;
+package master.gfs;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -76,10 +76,8 @@ public class DirectoryParser {
 
 				// Add the current node into children list of previous level node
 				final Directory parent = levelDirectoryMap.get(currentLevel - 1);
-				parent.getChildren()
-				.add(dir);
+				parent.getChildren().add(dir);
 			}
-			Globals.metadataRoot = directory;
 		} catch (final FileNotFoundException e) {
 			e.printStackTrace();
 		}

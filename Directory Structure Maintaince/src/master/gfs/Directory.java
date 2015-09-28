@@ -1,4 +1,4 @@
-package master;
+package master.gfs;
 
 import java.util.List;
 
