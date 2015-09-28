@@ -5,8 +5,7 @@ import java.util.List;
 /**
  * Class to represent the directory tree
  *
- * @author Ekal.Golas
- */
+ * */
 public class Directory {
 	/**
 	 * Name of the directory
@@ -22,6 +21,10 @@ public class Directory {
 	 * List of child directories or files in this directory
 	 */
 	private List<Directory>	children;
+
+	//Last Modified Time
+	private Long ModifiedTimeStamp;
+
 
 	/**
 	 * Constructor
@@ -125,5 +128,20 @@ public class Directory {
 	 */
 	public void setChildren(final List<Directory> children) {
 		this.children = children;
+	}
+
+	/**
+	 * @return The time stamp
+	 */
+	public Long getModifiedTimeStamp() {
+		return ModifiedTimeStamp;
+	}
+
+	/**
+	 * @param modifiedTimeStamp
+	 *            The time stamp
+	 */
+	public void setModifiedTimeStamp(final Long modifiedTimeStamp) {
+		ModifiedTimeStamp = modifiedTimeStamp;
 	}
 }

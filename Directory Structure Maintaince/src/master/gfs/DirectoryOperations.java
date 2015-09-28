@@ -48,6 +48,44 @@ public class DirectoryOperations {
 	}
 
 	/**
+	 * @param root
+	 *            - Root of the directory
+	 * @param filePath
+	 *            - path to get
+	 * @param clientCacheTimestamp
+	 *            - the latest timestamp of the client's cache
+	 * @return a directory with no name if the client cache is valid, else if it exists return the directory, null otherwise
+	 */
+	public static Directory lsWithCache(Directory root, final String filePath, final Long clientCacheTimestamp) {
+		// Get list of paths
+		final String[] paths = filePath.split("/");
+
+		// Find the directory in directory tree
+		for (final String path : paths) {
+
+			// Check if the path corresponds to any child in this directory
+			boolean found = false;
+			for (final Directory child : root.getChildren()) {
+				if (child.getName()
+					.equalsIgnoreCase(path)) {
+					root = child;
+					found = true;
+					break;
+				} else if (child.getModifiedTimeStamp() <= clientCacheTimestamp) {
+					return new Directory("", false, null);
+				}
+			}
+
+			// If child was not found, path does not exists
+			if (!found) {
+				return null;
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * Performs a tree search from the {@literal root} on the directory structure corresponding to the {@literal filePath}
 	 *
 	 * @param root
