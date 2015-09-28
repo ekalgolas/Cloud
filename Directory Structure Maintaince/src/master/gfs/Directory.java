@@ -4,8 +4,7 @@ import java.util.List;
 
 /**
  * Class to represent the directory tree
- *
- * */
+ */
 public class Directory {
 	/**
 	 * Name of the directory
@@ -22,7 +21,9 @@ public class Directory {
 	 */
 	private List<Directory>	children;
 
-	//Last Modified Time
+	/**
+	 * Last Modified Time
+	 */
 	private Long ModifiedTimeStamp;
 
 

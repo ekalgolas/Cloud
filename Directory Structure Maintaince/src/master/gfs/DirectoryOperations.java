@@ -54,8 +54,8 @@ public class DirectoryOperations {
 	 * @param filePath
 	 *            - path to get
 	 * @param clientCacheTimestamp
-	 *            - the latest timestamp of the client's cache
-	 * @return a directory with no name if the client cache is valid, else if it exists return the directory, null otherwise
+	 *            - the latest timestamp of the client's client.cache
+	 * @return a directory with no name if the client client.cache is valid, else if it exists return the directory, null otherwise
 	 */
 	public static Directory lsWithCache(Directory root, final String filePath, final Long clientCacheTimestamp) {
 		// Get list of paths
@@ -67,8 +67,7 @@ public class DirectoryOperations {
 			// Check if the path corresponds to any child in this directory
 			boolean found = false;
 			for (final Directory child : root.getChildren()) {
-				if (child.getName()
-					.equalsIgnoreCase(path)) {
+				if (child.getName().equalsIgnoreCase(path)) {
 					root = child;
 					found = true;
 					break;
