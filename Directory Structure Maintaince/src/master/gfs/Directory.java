@@ -24,8 +24,23 @@ public class Directory {
 	/**
 	 * Last Modified Time
 	 */
-	private Long ModifiedTimeStamp;
+	private Long 			modifiedTimeStamp;
 
+	/**
+	 * Readable last modified date and time
+	 */
+	private String 			modifiedDateTime;
+
+	/**
+	 * Access rights in 10 character string format
+	 */
+	private String 			accessRights;
+
+	/**
+	 * Size of a directory which is cumulative size of all the files and directories inside
+	 * or individual size in case of a file
+	 */
+	private Long 			size;
 
 	/**
 	 * Constructor
@@ -41,6 +56,32 @@ public class Directory {
 		this.name = name;
 		this.isFile = isFile;
 		this.children = children;
+	}
+
+	/**
+	 * Constructor
+	 * 
+	 * @param name
+	 *            Name of the file/directory
+	 * @param isFile
+	 *            True if a file, else false
+	 * @param children
+	 *            List of sub-directories
+	 * @param modifiedDateTime
+	 *            Modification date and time in human readable format
+	 * @param accessRights
+	 *            Access string of 10 character format
+	 * @param size
+	 *            Size of the directory (cumulative size for directory) or a file
+	 */
+	public Directory(final String name, final boolean isFile, final List<Directory> children,
+			final String modifiedDateTime, final String accessRights, final Long size) {
+		this.name = name;
+		this.isFile = isFile;
+		this.children = children;
+		this.modifiedDateTime = modifiedDateTime;
+		this.accessRights = accessRights;
+		this.size = size;
 	}
 
 	/*
@@ -76,10 +117,8 @@ public class Directory {
 		stringBuilder.append((root.isFile ? "File: " : "Directory: ") + root.name);
 
 		// Do for all sub-directories
-		for (int j = 0; j < root.children.size(); j++) {
-			if (root.children.get(j) != null) {
-				stringBuilder.append("\n" + print(root.children.get(j), level + 1));
-			}
+		for (Directory directory : root.children) {
+			stringBuilder.append("\n" + print(directory, level + 1));
 		}
 
 		// Return the string representation
@@ -135,7 +174,7 @@ public class Directory {
 	 * @return The time stamp
 	 */
 	public Long getModifiedTimeStamp() {
-		return ModifiedTimeStamp;
+		return modifiedTimeStamp;
 	}
 
 	/**
@@ -143,6 +182,48 @@ public class Directory {
 	 *            The time stamp
 	 */
 	public void setModifiedTimeStamp(final Long modifiedTimeStamp) {
-		ModifiedTimeStamp = modifiedTimeStamp;
+		this.modifiedTimeStamp = modifiedTimeStamp;
+	}
+
+	/**
+	 * @return the modifiedDateTime
+	 */
+	public String getModifiedDateTime() {
+		return modifiedDateTime;
+	}
+
+	/**
+	 * @param modifiedDateTime the modifiedDateTime to set
+	 */
+	public void setModifiedDateTime(final String modifiedDateTime) {
+		this.modifiedDateTime = modifiedDateTime;
+	}
+
+	/**
+	 * @return the accessRights
+	 */
+	public String getAccessRights() {
+		return accessRights;
+	}
+
+	/**
+	 * @param accessRights the accessRights to set
+	 */
+	public void setAccessRights(final String accessRights) {
+		this.accessRights = accessRights;
+	}
+
+	/**
+	 * @return the size
+	 */
+	public Long getSize() {
+		return size;
+	}
+
+	/**
+	 * @param size the size to set
+	 */
+	public void setSize(final Long size) {
+		this.size = size;
 	}
 }

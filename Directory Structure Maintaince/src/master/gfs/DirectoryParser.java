@@ -29,6 +29,7 @@ public class DirectoryParser {
 	 *
 	 * @param filePath
 	 *            Path of the file to read
+	 *            (output of 'tree -F -R -p -D --du --noreport' command)
 	 * @return Directory structure as {@link Directory}
 	 */
 	public static Directory parseText(final String filePath) {
@@ -55,8 +56,8 @@ public class DirectoryParser {
 				}
 
 				// Get the directory or file name - ignore the symbols
-				final String[] split = line.split(" ");
-				final String dirName = split[split.length - 1];
+				final String[] split = line.split("]");
+				final String dirName = split[split.length - 1].trim();
 
 				// Figure out if it is a file or a directory
 				String name = dirName;
@@ -67,8 +68,17 @@ public class DirectoryParser {
 					isFile = false;
 				}
 
+				// Extract other info from first part of the split
+				String details = split[0].substring(StringUtils.lastIndexOf(split[0], "[") + 1);
+				String accessRights = details.substring(0, 9);
+				int timestampLength = 12;
+				int timestampStartIndex = details.length() - timestampLength - 1;
+				String readableTimeStamp = details.substring(timestampStartIndex).trim();
+				String size = details.substring(10, timestampStartIndex - 2).trim();
+
 				// Create a new directory object
-				final Directory dir = new Directory(name, isFile, new ArrayList<>());
+				final Directory dir = new Directory(name, isFile, new ArrayList<>(),
+						accessRights, readableTimeStamp, Long.parseLong(size));
 
 				// Put current directory to current level
 				levelDirectoryMap.put(currentLevel, dir);
