@@ -4,10 +4,13 @@ import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
 import java.util.InvalidPropertiesFormatException;
 
+import org.apache.commons.lang3.NotImplementedException;
+
+
+
+
 /**
  * Class to implement various directory metadata operations
- *
- * @author Ekal.Golas
  */
 public class DirectoryOperations {
 	/**
@@ -199,5 +202,18 @@ public class DirectoryOperations {
 			final Directory dir = new Directory(name, isFile, new ArrayList<Directory>());
 			directory.getChildren().add(dir);
 		}
+	}
+	
+	/**
+	 * Delete directory operation
+	 *
+	 * @param root
+	 *            Root of the directory structure to search the path in
+	 * @param path
+	 *            Absolute path of the directory to be created
+	 */
+	public static void rmdir(final Directory root, final String path) {
+		// TODO : Implement directory removal from metadata
+		throw new NotImplementedException("rmdir functionality not supported yet");
 	}
 }

@@ -16,7 +16,6 @@ import org.apache.commons.lang3.StringUtils;
  * 	3. Create the B-Tree directory structure
  * </pre>
  *
- * @author Ekal.Golas
  */
 public class DirectoryParser {
 	/**
@@ -49,8 +48,10 @@ public class DirectoryParser {
 					break;
 				}
 
-				// Get current level
-				int currentLevel = StringUtils.countMatches(line, "├") + StringUtils.countMatches(line, "└") + StringUtils.countMatches(line, "│");
+				// Calculate current level
+				int currentLevel = StringUtils.countMatches(line, "├") 
+						+ StringUtils.countMatches(line, "└") 
+						+ StringUtils.countMatches(line, "│");
 				if (line.startsWith(" ")) {
 					currentLevel++;
 				}

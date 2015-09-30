@@ -17,7 +17,6 @@ import master.gfs.Globals;
  * 	2. Modify the metadata accordingly
  * </pre>
  *
- * @author Ekal.Golas
  */
 public class Worker implements Runnable {
 	private static final String	LS			= "ls";
@@ -63,15 +62,20 @@ public class Worker implements Runnable {
 
 				// Figure out the command and call the operations
 				if (command.startsWith(LS)) {
+					// Command line parameter (directory name) start from index '3' in the received string
 					reply = DirectoryOperations.ls(Globals.metadataRoot, command.substring(3));
 				} else if (command.startsWith(MKDIR)) {
-					DirectoryOperations.mkdir(Globals.metadataRoot, command.substring(3));
+					// Command line parameter (directory name) start from index '6' in the received string
+					DirectoryOperations.mkdir(Globals.metadataRoot, command.substring(6));
 					reply = "Directory created successfully";
 				} else if (command.startsWith(TOUCH)) {
-					DirectoryOperations.touch(Globals.metadataRoot, command.substring(3));
+					// Command line parameter (directory name) start from index '6' in the received string
+					DirectoryOperations.touch(Globals.metadataRoot, command.substring(6));
 					reply = "File created successfully";
 				} else if (command.startsWith(RMDIR)) {
-					// Code for rmdir
+					// Command line parameter (directory name) start from index '6' in the received string
+					DirectoryOperations.rmdir(Globals.metadataRoot, command.substring(6));
+					reply = "Directory deleted successfully";
 				} else {
 					// Else, invalid command
 					reply = "Invalid command: " + command;
@@ -82,14 +86,6 @@ public class Worker implements Runnable {
 				writer.flush();
 			} catch (final IOException e) {
 				e.printStackTrace();
-			} finally {
-				try {
-					reader.close();
-					writer.close();
-					workerSocket.close();
-				} catch (final IOException e) {
-					e.printStackTrace();
-				}
 			}
 		}
 	}
