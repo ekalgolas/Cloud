@@ -3,10 +3,7 @@ package master.gfs;
 import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
 import java.util.InvalidPropertiesFormatException;
-
-import org.apache.commons.lang3.NotImplementedException;
-
-
+import java.util.List;
 
 
 /**
@@ -211,9 +208,69 @@ public class DirectoryOperations {
 	 *            Root of the directory structure to search the path in
 	 * @param path
 	 *            Absolute path of the directory to be created
+	 * @throws InvalidPropertiesFormatException 
 	 */
-	public static void rmdir(final Directory root, final String path) {
-		// TODO : Implement directory removal from metadata
-		throw new NotImplementedException("rmdir functionality not supported yet");
+	public static void rmdir(final Directory root, final String path) throws InvalidPropertiesFormatException {
+		
+		// Check if path is valid
+		if (path.charAt(path.length() - 1) != '/') {
+			throw new InvalidPropertiesFormatException("Argument invalid: Path should contain a '/' at the end");
+		}
+
+		// Get the parent directory and the name of directory
+		final String[] paths = path.split("/");
+		final String name = paths[paths.length - 2];
+		final String dirPath = path.substring(0, path.length() - name.length() - 1);
+
+		remove(root, dirPath, name, false);
+	}
+
+	/**
+	 *  Delete a resource in the directory tree
+	 *
+	 * @param root
+	 *            Root of the directory structure to search in
+	 * @param path
+	 *            Path of the parent directory where the resource to be deleted resides
+	 * @param name
+	 *            Name of the resource
+	 * @param isFile
+	 *            Resource to be deleted is a file if true, directory otherwise
+	 * @throws InvalidPathException
+	 */
+	private static void remove(final Directory root, final String path, final String name, final boolean isFile) {
+		// Search and get to the directory where we want to remove
+		final Directory directory = search(root, path);
+
+		// If path was not found, throw exception
+		if (directory == null) {
+			throw new InvalidPathException(path, "Path was not found");
+		}
+
+		Directory directoryToRemove = null;
+		List<Directory> subDirectories = directory.getChildren(); 
+		for (Directory childDirectory : subDirectories) {
+			if(childDirectory.getName() == name) {
+				if(childDirectory.isFile() != isFile) {
+					String message = isFile 
+							? "Provided argument is a file, directory expected" 
+							: "Provided argument is a directory, file expected";
+					throw new IllegalArgumentException(message);
+				}
+				else {
+					directoryToRemove = childDirectory;
+					break;
+				}
+			}
+		}
+
+		/**
+		 * TODO : Currently we blindly remove the directory, but in future we may need to
+		 * defer it saying directory is not empty.
+		 * This will come into picture after finalizing the arguments we are supporting for rmdir. 
+		 */
+
+		subDirectories.remove(directoryToRemove);
+
 	}
 }
