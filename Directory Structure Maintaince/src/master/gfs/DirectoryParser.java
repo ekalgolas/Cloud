@@ -19,6 +19,15 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class DirectoryParser {
 	/**
+	 * Constants based on the output format of 
+	 * 'tree -F -R -p -D --du --noreport' command
+	 */
+	private static final int ACCESS_RIGHT_ENDINDEX = 9;
+	private static final int TIMESTAMP_STARTINDEX = 24;
+	private static final int SIZE_STARTINDEX = 10;
+	private static final int SIZE_ENDINDEX = 23;
+
+	/**
 	 * Mapping for directory and level of hierarchy
 	 */
 	private static HashMap<Integer, Directory>	levelDirectoryMap	= new HashMap<>();
@@ -71,11 +80,9 @@ public class DirectoryParser {
 
 				// Extract other info from first part of the split
 				String details = split[0].substring(StringUtils.lastIndexOf(split[0], "[") + 1);
-				String accessRights = details.substring(0, 9);
-				int timestampLength = 12;
-				int timestampStartIndex = details.length() - timestampLength - 1;
-				String readableTimeStamp = details.substring(timestampStartIndex).trim();
-				String size = details.substring(10, timestampStartIndex - 2).trim();
+				String accessRights = details.substring(0, ACCESS_RIGHT_ENDINDEX);
+				String readableTimeStamp = details.substring(TIMESTAMP_STARTINDEX).trim();
+				String size = details.substring(SIZE_STARTINDEX, SIZE_ENDINDEX).trim();
 
 				// Create a new directory object
 				final Directory dir = new Directory(name, isFile, new ArrayList<>(),

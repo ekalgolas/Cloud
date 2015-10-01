@@ -1,11 +1,17 @@
 package master.gfs;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * Class to represent the directory tree
  */
-public class Directory {
+public class Directory implements Serializable {
+	/**
+	 * Default serial version UID
+	 */
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Name of the directory
 	 */

@@ -1,6 +1,11 @@
 package master;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 
 import master.gfs.Directory;
@@ -19,6 +24,7 @@ import master.gfs.Globals;
  */
 public class Master {
 	private static final String	INPUT_DIR_STRUCT	= "./data/out.txt";
+	private static final String	STORED_METADATA		= "./data/stored_metadata.dat";
 	private static final int	LISTENER_PORT		= 18000;
 
 	private static ServerSocket	listenerSocket		= null;
@@ -40,6 +46,47 @@ public class Master {
 		}
 	}
 
+	/** 
+	 * Create in-memory metadata structure
+	 * @throws IOException 
+	 * @throws ClassNotFoundException
+	 */
+	public static Directory generateMetadata() throws  IOException, ClassNotFoundException {
+		File metadataStore = new File(STORED_METADATA);
+		Directory directory = null;
+		if(metadataStore.exists()) {
+			// Read the file into an object
+			try (
+				ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(metadataStore))
+				){
+				directory = (Directory) inputStream.readObject();
+			}
+		}
+		else {
+			// Parse the directory
+			directory = DirectoryParser.parseText(INPUT_DIR_STRUCT);
+			// Serialize and store the metadata
+			storeMetadata(directory);
+		}
+		
+		return directory;
+	}
+
+	/**
+	 * Serialize the metadata and write it into the file
+	 * @param directory - {@link Directory} object to be written
+	 */
+	public static void storeMetadata(Directory directory) {
+		File metadataStore = new File(STORED_METADATA);
+		try (
+			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(metadataStore))
+			){
+			oos.writeObject(directory);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	/**
 	 * Master`s main method
 	 *
@@ -51,10 +98,15 @@ public class Master {
 		initializeMaster();
 
 		// Generate metadata for existing directory structure
-		final Directory directory = DirectoryParser.parseText(INPUT_DIR_STRUCT);
-
-		// Set the globals root
-		Globals.metadataRoot = directory;
+		try {
+			final Directory directory = generateMetadata();
+			// Set the globals root
+			Globals.metadataRoot = directory;
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
 		// Launch listener to process input requests
 		final Listener listener = new Listener(listenerSocket);
