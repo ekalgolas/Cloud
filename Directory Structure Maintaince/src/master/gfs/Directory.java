@@ -125,6 +125,10 @@ public class Directory {
 		return stringBuilder.toString();
 	}
 
+	public boolean isEmptyDirectory() {
+		return !isFile && children.isEmpty();
+	}
+
 	/**
 	 * @return the name
 	 */
