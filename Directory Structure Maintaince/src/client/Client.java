@@ -7,40 +7,46 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Scanner;
 
+import commons.AppConfig;
 import commons.Message;
-
 
 /**
  * Class to implement the client interface
  */
 public class Client {
-	/**
-	 * Can read these both values from a config file
-	 */
-	private static final int 	MASTER_PORT 		= 18000;
-	private static final String MASTER_HOST 		= "localhost";
-	private static final String INPUT_FILE_NAME 	= "./data/sampleInputs.txt";
-
 	private final Socket socket;
 	private final ObjectInputStream inputStream;
 	private final ObjectOutputStream outputStream;
 
+	/**
+	 * Constructor
+	 *
+	 * @throws UnknownHostException
+	 * @throws IOException
+	 */
 	public Client() throws UnknownHostException, IOException {
-		socket = new Socket(MASTER_HOST, MASTER_PORT);
+		// Initialize configuration
+		new AppConfig("conf");
+
+		socket = new Socket(AppConfig.getValue("client.masterIp"), Integer.parseInt(AppConfig.getValue("client.masterPort")));
 		outputStream = new ObjectOutputStream(socket.getOutputStream());
 		inputStream = new ObjectInputStream(socket.getInputStream());
 	}
 
+	/**
+	 * Execute commands listed in a file
+	 * 
+	 * @param inputFileName
+	 *            File that contains the commands
+	 */
 	public void executeCommands(final String inputFileName) {
-
 		/**
 		 * TODO : Change it to line below in future, to read commands from input file:
 		 * Scanner scanner = new Scanner(new File(inputFileName))
 		 */
 		try (Scanner scanner = new Scanner(System.in)){
-			
 			while(scanner.hasNext()) {
-				String command = scanner.nextLine();
+				final String command = scanner.nextLine();
 				// Send command to master
 				outputStream.writeObject(new Message(command));
 				outputStream.flush();
@@ -84,6 +90,6 @@ public class Client {
 			System.exit(0);
 		}
 
-		client.executeCommands(INPUT_FILE_NAME);
+		client.executeCommands(AppConfig.getValue("client.inputFile"));
 	}
 }
