@@ -1,4 +1,4 @@
-package master;
+package master.gfs;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -16,9 +16,17 @@ import org.apache.commons.lang3.StringUtils;
  * 	3. Create the B-Tree directory structure
  * </pre>
  *
- * @author Ekal.Golas
  */
 public class DirectoryParser {
+	/**
+	 * Constants based on the output format of 
+	 * 'tree -F -R -p -D --du --noreport' command
+	 */
+	private static final int ACCESS_RIGHT_ENDINDEX = 9;
+	private static final int TIMESTAMP_STARTINDEX = 24;
+	private static final int SIZE_STARTINDEX = 10;
+	private static final int SIZE_ENDINDEX = 23;
+
 	/**
 	 * Mapping for directory and level of hierarchy
 	 */
@@ -29,6 +37,7 @@ public class DirectoryParser {
 	 *
 	 * @param filePath
 	 *            Path of the file to read
+	 *            (output of 'tree -F -R -p -D --du --noreport' command)
 	 * @return Directory structure as {@link Directory}
 	 */
 	public static Directory parseText(final String filePath) {
@@ -45,19 +54,20 @@ public class DirectoryParser {
 				// Read line. If empty, break
 				final String line = scanner.nextLine();
 				if (StringUtils.isBlank(line)) {
-					System.out.println("End");
 					break;
 				}
 
-				// Get current level
-				int currentLevel = StringUtils.countMatches(line, "├") + StringUtils.countMatches(line, "└") + StringUtils.countMatches(line, "│");
+				// Calculate current level
+				int currentLevel = StringUtils.countMatches(line, "├") 
+						+ StringUtils.countMatches(line, "└") 
+						+ StringUtils.countMatches(line, "│");
 				if (line.startsWith(" ")) {
 					currentLevel++;
 				}
 
 				// Get the directory or file name - ignore the symbols
-				final String[] split = line.split(" ");
-				final String dirName = split[split.length - 1];
+				final String[] split = line.split("]");
+				final String dirName = split[split.length - 1].trim();
 
 				// Figure out if it is a file or a directory
 				String name = dirName;
@@ -68,18 +78,23 @@ public class DirectoryParser {
 					isFile = false;
 				}
 
+				// Extract other info from first part of the split
+				String details = split[0].substring(StringUtils.lastIndexOf(split[0], "[") + 1);
+				String accessRights = details.substring(0, ACCESS_RIGHT_ENDINDEX);
+				String readableTimeStamp = details.substring(TIMESTAMP_STARTINDEX).trim();
+				String size = details.substring(SIZE_STARTINDEX, SIZE_ENDINDEX).trim();
+
 				// Create a new directory object
-				final Directory dir = new Directory(name, isFile, new ArrayList<>());
+				final Directory dir = new Directory(name, isFile, new ArrayList<>(),
+						accessRights, readableTimeStamp, Long.parseLong(size));
 
 				// Put current directory to current level
 				levelDirectoryMap.put(currentLevel, dir);
 
 				// Add the current node into children list of previous level node
 				final Directory parent = levelDirectoryMap.get(currentLevel - 1);
-				parent.getChildren()
-				.add(dir);
+				parent.getChildren().add(dir);
 			}
-			Globals.metadataRoot = directory;
 		} catch (final FileNotFoundException e) {
 			e.printStackTrace();
 		}
