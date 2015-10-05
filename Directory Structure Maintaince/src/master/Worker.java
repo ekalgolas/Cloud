@@ -82,7 +82,7 @@ public class Worker implements Runnable {
 				}
 
 				// Write the output of the command to writer
-				writer.write(reply);
+				writer.write(reply + "\n");
 				writer.flush();
 			} catch (final IOException e) {
 				e.printStackTrace();
