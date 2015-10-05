@@ -1,13 +1,14 @@
 package client;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Scanner;
+
+import commons.Message;
+
 
 /**
  * Class to implement the client interface
@@ -21,26 +22,33 @@ public class Client {
 	private static final String INPUT_FILE_NAME = "./data/sampleInputs.txt";
 
 	private final Socket socket;
-	private final BufferedReader reader;
-	private final BufferedWriter writer;
+	private final ObjectInputStream inputStream;
+	private final ObjectOutputStream outputStream;
 
 	public Client() throws UnknownHostException, IOException {
 		socket = new Socket(MASTER_HOST, MASTER_PORT);
-		reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-		writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+		outputStream = new ObjectOutputStream(socket.getOutputStream());
+		inputStream = new ObjectInputStream(socket.getInputStream());
 	}
 
 	public void executeCommands(final String inputFileName) {
-		try (Scanner scanner = new Scanner(System.in)) {
-			while (scanner.hasNext()) {
-				final String command = scanner.nextLine();
-				writer.write(command + "\n");
-				writer.flush();
 
-				final String reply = reader.readLine();
-				System.out.println("Reply : " + reply);
+		/**
+		 * TODO : Change it to line below in future, to read commands from input file:
+		 * Scanner scanner = new Scanner(new File(inputFileName))
+		 */
+		try (Scanner scanner = new Scanner(System.in)){
+			
+			while(scanner.hasNext()) {
+				String command = scanner.nextLine();
+				outputStream.writeObject(new Message(command));
+				outputStream.flush();
+				System.out.println("Reading reply");
+				final Message message = (Message) inputStream.readObject();
+				final String reply = message.getContent();
+				System.out.println(reply);
 			}
-		} catch (final IOException e) {
+		} catch (final IOException | ClassNotFoundException e) {
 			System.err.println("Error occured while executing commands");
 			e.printStackTrace();
 			System.exit(0);
