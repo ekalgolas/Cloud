@@ -1,82 +1,126 @@
-Academics/Fall 2015/
-├── AcademicCalendarFall2015.pdf
-├── AOS/
-│   ├── launcher.sh
-│   ├── Lectures/
-│   │   ├── Commit Protocols.pdf
-│   │   ├── foundations-animated.pdf
-│   │   └── foundations-nonanimated.pdf
-│   ├── New Doc 2.pdf
-│   ├── Project1/
-│   │   ├── cleanup.sh
-│   │   ├── config(2).txt
-│   │   ├── config.txt
-│   │   ├── keygen(1).doc
-│   │   ├── launcher.sh
-│   │   ├── NOT-THIS-YEARS-CONFIG.txt
-│   │   ├── project1(8).pdf
-│   │   ├── runScript(3).sh
-│   │   ├── runScript.sh
-│   │   └── sampleoutput.txt
-│   ├── Research Papers/
-│   │   ├── birman-schiper-stephenson.pdf
-│   │   ├── lamport-clocks.pdf
-│   │   └── raynal-schiper-toueg.pdf
-│   ├── Sample Quizzes/
-│   │   ├── quiz1(2).pdf
-│   │   ├── quiz2(1).pdf
-│   │   ├── quiz3(1).pdf
-│   │   ├── quiz4(1).pdf
-│   │   ├── quiz5(1).pdf
-│   │   ├── quiz6.pdf
-│   │   └── quiz7.pdf
-│   └── Syllabus.pdf
-├── BigData/
-│   ├── Assignments/
-│   │   ├── (439767293) HadoopLecture1.pdf
-│   │   └── homeworkrevised-2.docx
-│   ├── Big Data/
-│   │   ├── Assignment_1_ycp140030/
-│   │   │   ├── AgeGroup.java
-│   │   │   ├── Genere.java
-│   │   │   ├── Readme_txt.txt
-│   │   │   └── UserId.java
-│   │   ├── Assignment_1_ycp140030.zip
-│   │   ├── Assignment_2_ycp140030/
-│   │   │   ├── MapSideJoin.java
-│   │   │   ├── Readme_txt.txt
-│   │   │   └── ReduceSideJoin.java
-│   │   ├── Assignment_2_ycp140030.zip
-│   │   ├── Assignment_3_ycp140030.zip
-│   │   ├── Assignment_4_ycp140030.zip
-│   │   ├── Big Data.zip
-│   │   ├── Sandbox_HDP_2.2_VMware.ova
-│   │   └── VMware-player-7.1.0-2496824.exe
-│   └── Lectures/
-│       ├── BigdataIntro#0.pptx
-│       ├── DatabaseMapReduceBigData#4.pptx
-│       ├── HadoopFeb2015.pptx
-│       ├── Lecture_on_HadoopBigData#3New.pptx
-│       ├── Lecture_on_Mapreduce_BigData#1.pptx
-│       └── MapReduceFunnySlideBigData#2.pptx
-└── CloudComputing/
-    ├── Jemish/
-    │   ├── Lec - 1 Introduction.pptx
-    │   ├── Lec - 2 Map-Reduce.pptx
-    │   ├── Lec - 3 Manage Big Data.pptx
-    │   ├── Lec - 4 DHT.ppt
-    │   ├── Lec - 5 Consistancy Model.ppt
-    │   ├── Lec - 6 File System and Big Table.pptx
-    │   ├── Lec - 7 Erasure Code.pptx
-    │   ├── Lec - 8 Cloud Security.pptx
-    │   └── Lec - 9 Vitualization.pptx
-    ├── Lectures/
-    │   ├── 1- introduction.pdf
-    │   ├── 2- bigdata-background(2).pdf
-    │   ├── 3- bigdata(2).pdf
-    │   ├── 3- bigdata.pdf
-    │   ├── 4- virtualization.pdf
-    │   └── map-reduce.pdf
-    └── term-proj.pdf
-
-14 directories, 65 files
+Fall 2015
+├── [-rw-rw-r--      198852 Sep 29 16:48]  AcademicCalendarFall2015.pdf
+├── [drwxrwxr-x    17126086 Sep 21 22:01]  AOS/
+│   ├── [-rw-rw-rw-         625 Sep 14 16:16]  launcher.sh
+│   ├── [drwxrwxr-x     4418091 Sep 24 11:15]  Lectures/
+│   │   ├── [-rw-rw-r--     1468140 Aug 31 22:02]  Commit Protocols.pdf
+│   │   ├── [-rw-rw-r--     2712828 Aug 31 22:02]  foundations-animated.pdf
+│   │   └── [-rw-rw-r--      233027 Aug 31 22:02]  foundations-nonanimated.pdf
+│   ├── [-rw-rw-r--     8305617 Sep 21 22:01]  New Doc 2.pdf
+│   ├── [drwxrwxr-x      167887 Sep 28 21:43]  Project1/
+│   │   ├── [-rw-rw-r--         715 Sep 14 16:37]  cleanup.sh
+│   │   ├── [-rw-rw-rw-         618 Sep 28 17:44]  cleanup_utd.sh
+│   │   ├── [-rw-rw-r--         531 Sep  3 23:28]  config(2).txt
+│   │   ├── [-rw-rw-r--        2918 Sep 14 16:38]  config.txt
+│   │   ├── [-rw-rw-rw-        2918 Sep 22 17:46]  config_utd.txt
+│   │   ├── [-rw-rw-r--       28160 Sep  3 23:28]  keygen(1).doc
+│   │   ├── [-rw-rw-r--         628 Sep 14 16:17]  launcher.sh
+│   │   ├── [-rw-rw-rw-         801 Sep 28 17:44]  launcher_utd.sh
+│   │   ├── [-rw-rw-r--        1286 Sep 14 16:18]  NOT-THIS-YEARS-CONFIG.txt
+│   │   ├── [-rw-rw-r--       33202 Sep 10 20:53]  project1(8).pdf
+│   │   ├── [-rw-rw-r--        1628 Sep 28 21:14]  README
+│   │   ├── [-rw-rw-r--        1431 Sep  3 23:28]  runScript(3).sh
+│   │   ├── [-rw-rw-r--        1431 Sep 14 16:17]  runScript.sh
+│   │   ├── [-rw-rw-r--        2233 Sep 20 18:48]  sampleoutput.txt
+│   │   └── [drwxrwxr-x       85291 Sep 28 22:05]  Submit/
+│   │       ├── [-rw-rw-r--        4500 Sep 28 19:13]  AppConfigurations.class
+│   │       ├── [-rw-rw-r--        4823 Sep 28 19:13]  AppConfigurations.java
+│   │       ├── [-rw-rw-rw-         618 Sep 28 17:44]  cleanup_utd.sh
+│   │       ├── [-rw-rw-rw-        2918 Sep 22 17:46]  config_utd.txt
+│   │       ├── [-rw-rw-r--        3185 Sep 28 18:57]  Globals.class
+│   │       ├── [-rw-rw-r--        2129 Sep 28 18:57]  Globals.java
+│   │       ├── [-rw-rw-r--       26770 Sep 28 22:05]  kkj140030.zip
+│   │       ├── [-rw-rw-rw-         801 Sep 28 17:44]  launcher_utd.sh
+│   │       ├── [-rw-rw-r--        7753 Sep 28 18:59]  Node.class
+│   │       ├── [-rw-rw-r--        1469 Sep 28 19:00]  NodeInfo.class
+│   │       ├── [-rw-rw-r--         992 Sep 28 19:00]  NodeInfo.java
+│   │       ├── [-rw-rw-r--        6351 Sep 28 18:59]  Node.java
+│   │       ├── [-rw-rw-r--        1628 Sep 28 21:14]  README
+│   │       ├── [-rw-rw-r--        2437 Sep 28 19:01]  TcpListener.class
+│   │       ├── [-rw-rw-r--        2320 Sep 28 19:01]  TcpListener.java
+│   │       ├── [-rw-rw-r--        1954 Sep 28 19:14]  TcpReceiver.class
+│   │       ├── [-rw-rw-r--        1994 Sep 28 19:14]  TcpReceiver.java
+│   │       ├── [-rw-rw-r--         869 Sep 28 19:14]  TcpSender.class
+│   │       ├── [-rw-rw-r--         820 Sep 28 19:14]  TcpSender.java
+│   │       ├── [-rw-rw-r--        2284 Sep 28 19:04]  Token.class
+│   │       ├── [-rw-rw-r--        2461 Sep 28 19:04]  Token.java
+│   │       ├── [-rw-rw-r--        1336 Sep 28 19:05]  Tokens.class
+│   │       └── [-rw-rw-r--         783 Sep 28 19:05]  Tokens.java
+│   ├── [drwxrwxr-x     3953668 Sep  7 22:34]  Research Papers/
+│   │   ├── [-rw-rw-r--     2915176 Sep  7 22:34]  birman-schiper-stephenson.pdf
+│   │   ├── [-rw-rw-r--      854562 Sep  7 22:33]  lamport-clocks.pdf
+│   │   └── [-rw-rw-r--      179834 Sep  7 22:34]  raynal-schiper-toueg.pdf
+│   ├── [drwxrwxr-x      215999 Sep 21 22:01]  Sample Quizzes/
+│   │   ├── [-rw-rw-r--       30400 Sep  8 11:00]  quiz1(2).pdf
+│   │   ├── [-rw-rw-r--       32933 Sep  8 11:00]  quiz2(1).pdf
+│   │   ├── [-rw-rw-r--       33837 Sep  8 11:00]  quiz3(1).pdf
+│   │   ├── [-rw-rw-r--       38170 Sep  8 11:00]  quiz4(1).pdf
+│   │   ├── [-rw-rw-r--       28072 Sep  8 11:00]  quiz5(1).pdf
+│   │   ├── [-rw-rw-r--       21739 Sep  8 11:00]  quiz6.pdf
+│   │   └── [-rw-rw-r--       26752 Sep  8 11:00]  quiz7.pdf
+│   └── [-rw-rw-r--       60103 Sep 20 20:02]  Syllabus.pdf
+├── [drwxrwxr-x  5138855705 Sep 10 21:59]  BigData/
+│   ├── [drwxrwxr-x     1923075 Sep 26 22:05]  Assignments/
+│   │   ├── [-rw-rw-r--     1413445 Sep 13 20:26]  (439767293) HadoopLecture1.pdf
+│   │   └── [drwxrwxr-x      505534 Sep 27 14:06]  Assignment1/
+│   │       ├── [-rw-rw-r--       14735 Sep  9 16:48]  homeworkrevised-2.docx
+│   │       ├── [drwxrwxr-x       68686 Sep 27 14:05]  JARS/
+│   │       │   ├── [-rw-rw-r--        7978 Sep 26 22:02]  Hw1Q1.jar
+│   │       │   ├── [-rw-rw-r--       14968 Sep 26 22:02]  Hw1Q2.jar
+│   │       │   ├── [-rw-rw-r--       28647 Sep 26 22:03]  Hw1Q3.jar
+│   │       │   └── [-rw-rw-r--       12997 Sep 26 22:03]  Hw1Q4.jar
+│   │       ├── [-rw-rw-r--      158332 Sep 27 14:06]  kkj140030.zip
+│   │       ├── [drwxrwxr-x      235792 Sep 27 14:06]  OutputFiles/
+│   │       │   ├── [-rw-rw-rw-       17480 Sep 27 14:49]  Hw1Q1_out.txt
+│   │       │   ├── [-rw-rw-rw-         230 Sep 27 14:59]  Hw1Q2_out.txt
+│   │       │   ├── [-rw-rw-rw-        1037 Sep 27 14:35]  Hw1Q3_out.txt
+│   │       │   └── [-rw-rw-rw-      212949 Sep 27 15:00]  Hw1Q4_out.txt
+│   │       ├── [-rw-rw-r--        3695 Sep 27 13:44]  README.txt
+│   │       └── [drwxrwxr-x       20198 Sep 27 14:06]  SourceFiles/
+│   │           ├── [-rw-rw-r--        6798 Sep 26 21:53]  BusinessDetails.java
+│   │           ├── [-rw-rw-r--        1961 Sep 26 21:57]  PaloAltoBusiness.java
+│   │           ├── [-rw-rw-r--        3771 Sep 26 23:17]  StanfordBusinessRatings.java
+│   │           └── [-rw-rw-r--        3572 Sep 26 21:53]  TopAvgBusiness.java
+│   ├── [drwx------  5117736448 Sep 24 13:56]  Big Data/
+│   │   ├── [drwxrwxr-x       16162 Sep 24 13:56]  Assignment_1_ycp140030/
+│   │   │   ├── [-rw-rw-r--        4139 Feb 17  2015]  AgeGroup.java
+│   │   │   ├── [-rw-rw-r--        2697 Feb 17  2015]  Genere.java
+│   │   │   ├── [-rw-rw-r--        2998 Feb 17  2015]  Readme_txt.txt
+│   │   │   └── [-rw-rw-r--        2232 Feb 17  2015]  UserId.java
+│   │   ├── [-rw-------       13959 Feb 17  2015]  Assignment_1_ycp140030.zip
+│   │   ├── [drwxrwxr-x       22085 Sep 24 13:55]  Assignment_2_ycp140030/
+│   │   │   ├── [-rw-rw-r--        4216 Mar  8  2015]  MapSideJoin.java
+│   │   │   ├── [-rw-rw-r--        2285 Mar  8  2015]  Readme_txt.txt
+│   │   │   └── [-rw-rw-r--       11488 Mar  8  2015]  ReduceSideJoin.java
+│   │   ├── [-rw-------       19657 Mar  8  2015]  Assignment_2_ycp140030.zip
+│   │   ├── [-rw-------      117656 Mar 31 20:04]  Assignment_3_ycp140030.zip
+│   │   ├── [-rw-------        2219 Apr 24 23:45]  Assignment_4_ycp140030.zip
+│   │   ├── [-rw-rw-r--        9486 Sep 24 13:56]  Big Data.zip
+│   │   ├── [-rw-------  5038375936 Mar  3  2015]  Sandbox_HDP_2.2_VMware.ova
+│   │   └── [-rw-------    79155192 Mar  3  2015]  VMware-player-7.1.0-2496824.exe
+│   └── [drwxrwxr-x    19192086 Sep 19 14:49]  Lectures/
+│       ├── [-rw-rw-r--    12351282 Sep  2 15:08]  BigdataIntro#0.pptx
+│       ├── [-rw-rw-r--      896976 Sep  2 15:08]  DatabaseMapReduceBigData#4.pptx
+│       ├── [-rw-rw-r--     2206470 Sep  2 15:08]  HadoopFeb2015.pptx
+│       ├── [-rw-rw-r--     3120547 Sep  2 15:08]  Lecture_on_HadoopBigData#3New.pptx
+│       ├── [-rw-rw-r--      105755 Sep  2 15:08]  Lecture_on_Mapreduce_BigData#1.pptx
+│       └── [-rw-rw-r--      506960 Sep  2 15:08]  MapReduceFunnySlideBigData#2.pptx
+└── [drwxrwxr-x    22011691 Sep 24 11:27]  CloudComputing/
+    ├── [drwxrwxr-x    10422198 Sep 24 11:27]  Jemish/
+    │   ├── [-rw-rw-r--     4667668 May 13 13:22]  Lec - 1 Introduction.pptx
+    │   ├── [-rw-rw-r--      538566 May 13 13:22]  Lec - 2 Map-Reduce.pptx
+    │   ├── [-rw-rw-r--      404434 Feb 25  2014]  Lec - 3 Manage Big Data.pptx
+    │   ├── [-rw-rw-r--      502784 Mar  1  2014]  Lec - 4 DHT.ppt
+    │   ├── [-rw-rw-r--      384000 May 13 13:25]  Lec - 5 Consistancy Model.ppt
+    │   ├── [-rw-rw-r--     2502117 Jun 22  4:53]  Lec - 6 File System and Big Table.pptx
+    │   ├── [-rw-rw-r--      228118 May 13 13:27]  Lec - 7 Erasure Code.pptx
+    │   ├── [-rw-rw-r--       62943 May 13 13:27]  Lec - 8 Cloud Security.pptx
+    │   └── [-rw-rw-r--     1127472 Apr 19  2014]  Lec - 9 Vitualization.pptx
+    ├── [drwxrwxr-x    11516177 Sep 25 17:36]  Lectures/
+    │   ├── [-rw-rw-r--     4446121 Sep 13 13:47]  1- introduction.pdf
+    │   ├── [-rw-rw-r--      826694 Sep 13 13:47]  2- bigdata-background(2).pdf
+    │   ├── [-rw-rw-r--     1942777 Sep 18 13:29]  3- bigdata(2).pdf
+    │   ├── [-rw-rw-r--     1942287 Sep 14 19:21]  3- bigdata.pdf
+    │   ├── [-rw-rw-r--     1376019 Sep 18 11:52]  4- virtualization.pdf
+    │   └── [-rw-rw-r--      978183 Sep 25 17:36]  map-reduce.pdf
+    └── [-rw-rw-r--       69220 Sep 13 13:48]  term-proj.pdf

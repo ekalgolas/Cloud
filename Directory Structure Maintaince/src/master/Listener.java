@@ -1,6 +1,5 @@
 package master;
 
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -22,7 +21,7 @@ public class Listener implements Runnable {
 
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param socket
 	 *            Socket to listen on
 	 */
@@ -37,7 +36,9 @@ public class Listener implements Runnable {
 	@Override
 	public void run() {
 		while (isRunning) {
-			try (Socket connectionSocket = listenerSocket.accept()) {
+			try {
+				final Socket connectionSocket = listenerSocket.accept();
+
 				// Launch a worker thread
 				final Worker worker = new Worker(connectionSocket);
 				final Thread workerThread = new Thread(worker);
@@ -45,15 +46,10 @@ public class Listener implements Runnable {
 				workerThread.start();
 			} catch (final Exception e) {
 				e.printStackTrace();
-			} finally {
-				try {
-					listenerSocket.close();
-				} catch (final IOException e) {
-					e.printStackTrace();
-				}
 			}
 		}
 
+		// Wait for all worker threads to finish
 		for (final Thread thread : workerThreadPool) {
 			try {
 				thread.join();

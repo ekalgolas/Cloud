@@ -3,11 +3,11 @@ package master.gfs;
 import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
 import java.util.InvalidPropertiesFormatException;
+import java.util.List;
+
 
 /**
  * Class to implement various directory metadata operations
- *
- * @author Ekal.Golas
  */
 public class DirectoryOperations {
 	/**
@@ -18,18 +18,19 @@ public class DirectoryOperations {
 	 * @param filePath
 	 *            Path of directory whose listing is to be displayed
 	 * @return Directory contents in string representation
+	 * @throws InvalidPropertiesFormatException
 	 */
-	public static String ls(Directory root, final String filePath) {
+	public static String ls(Directory root, final String filePath) throws InvalidPropertiesFormatException {
 		root = search(root, filePath);
 
 		// If search returns null, return
 		if (root == null) {
-			return filePath + " does not exist";
+			throw new InvalidPathException(filePath, "Does not exist");
 		}
 
 		// If path is a file, return
 		if (root.isFile()) {
-			return filePath + " is a file, please provide directory";
+			throw new InvalidPropertiesFormatException(filePath + " is a file. Expecting directory!");
 		}
 
 		// If we reach here, it means valid directory was found
@@ -40,11 +41,48 @@ public class DirectoryOperations {
 		// Append children
 		for (final Directory child : root.getChildren()) {
 			final String type = child.isFile() ? "File" : "Directory";
-			builder.append(type + "\t\t\t\t" + child.getName());
+			builder.append(type + "\t\t\t\t" + child.getName() + "\n");
 		}
 
 		// Return the representation
 		return builder.toString();
+	}
+
+	/**
+	 * @param root
+	 *            - Root of the directory
+	 * @param filePath
+	 *            - path to get
+	 * @param clientCacheTimestamp
+	 *            - the latest timestamp of the client's client.cache
+	 * @return a directory with no name if the client client.cache is valid, else if it exists return the directory, null otherwise
+	 */
+	public static Directory lsWithCache(Directory root, final String filePath, final Long clientCacheTimestamp) {
+		// Get list of paths
+		final String[] paths = filePath.split("/");
+
+		// Find the directory in directory tree
+		for (final String path : paths) {
+
+			// Check if the path corresponds to any child in this directory
+			boolean found = false;
+			for (final Directory child : root.getChildren()) {
+				if (child.getName().equalsIgnoreCase(path)) {
+					root = child;
+					found = true;
+					break;
+				} else if (child.getModifiedTimeStamp() <= clientCacheTimestamp) {
+					return new Directory("", false, null);
+				}
+			}
+
+			// If child was not found, path does not exists
+			if (!found) {
+				return null;
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -62,8 +100,13 @@ public class DirectoryOperations {
 
 		// Find the directory in directory tree
 		for (final String path : paths) {
-			// Check if the path corresponds to any child in this directory
+			// Match the root
 			boolean found = false;
+			if (root.getName().equalsIgnoreCase(path)) {
+				found = true;
+			}
+
+			// Check if the path corresponds to any child in this directory
 			for (final Directory child : root.getChildren()) {
 				if (child.getName().equalsIgnoreCase(path)) {
 					root = child;
@@ -161,5 +204,78 @@ public class DirectoryOperations {
 			final Directory dir = new Directory(name, isFile, new ArrayList<Directory>());
 			directory.getChildren().add(dir);
 		}
+	}
+
+	/**
+	 * Delete directory operation
+	 *
+	 * @param root
+	 *            Root of the directory structure to search the path in
+	 * @param path
+	 *            Absolute path of the directory to be created
+	 * @throws InvalidPropertiesFormatException
+	 */
+	public static void rmdir(final Directory root, final String path) throws InvalidPropertiesFormatException {
+
+		// Check if path is valid
+		if (path.charAt(path.length() - 1) != '/') {
+			throw new InvalidPropertiesFormatException("Argument invalid: Path should contain a '/' at the end");
+		}
+
+		// Get the parent directory and the name of directory
+		final String[] paths = path.split("/");
+		final String name = paths[paths.length - 2];
+		final String dirPath = path.substring(0, path.length() - name.length() - 1);
+
+		remove(root, dirPath, name, false);
+	}
+
+	/**
+	 *  Delete a resource in the directory tree
+	 *
+	 * @param root
+	 *            Root of the directory structure to search in
+	 * @param path
+	 *            Path of the parent directory where the resource to be deleted resides
+	 * @param name
+	 *            Name of the resource
+	 * @param isFile
+	 *            Resource to be deleted is a file if true, directory otherwise
+	 * @throws InvalidPathException
+	 */
+	private static void remove(final Directory root, final String path, final String name, final boolean isFile) {
+		// Search and get to the directory where we want to remove
+		final Directory directory = search(root, path);
+
+		// If path was not found, throw exception
+		if (directory == null) {
+			throw new InvalidPathException(path, "Path was not found");
+		}
+
+		Directory directoryToRemove = null;
+		final List<Directory> subDirectories = directory.getChildren();
+		for (final Directory childDirectory : subDirectories) {
+			if(childDirectory.getName() == name) {
+				if(childDirectory.isFile() != isFile) {
+					final String message = isFile
+							? "Provided argument is a file, directory expected"
+									: "Provided argument is a directory, file expected";
+					throw new IllegalArgumentException(message);
+				}
+				else {
+					directoryToRemove = childDirectory;
+					break;
+				}
+			}
+		}
+
+		/**
+		 * TODO : Currently we blindly remove the directory, but in future we may need to
+		 * defer it saying directory is not empty.
+		 * This will come into picture after finalizing the arguments we are supporting for rmdir.
+		 */
+
+		subDirectories.remove(directoryToRemove);
+
 	}
 }
