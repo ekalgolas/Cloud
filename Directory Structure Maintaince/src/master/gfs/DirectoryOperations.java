@@ -41,7 +41,7 @@ public class DirectoryOperations {
 		// Append children
 		for (final Directory child : root.getChildren()) {
 			final String type = child.isFile() ? "File" : "Directory";
-			builder.append(type + "\t\t\t\t" + child.getName());
+			builder.append(type + "\t\t\t\t" + child.getName() + "\n");
 		}
 
 		// Return the representation
@@ -100,8 +100,13 @@ public class DirectoryOperations {
 
 		// Find the directory in directory tree
 		for (final String path : paths) {
-			// Check if the path corresponds to any child in this directory
+			// Match the root
 			boolean found = false;
+			if (root.getName().equalsIgnoreCase(path)) {
+				found = true;
+			}
+
+			// Check if the path corresponds to any child in this directory
 			for (final Directory child : root.getChildren()) {
 				if (child.getName().equalsIgnoreCase(path)) {
 					root = child;
@@ -200,7 +205,7 @@ public class DirectoryOperations {
 			directory.getChildren().add(dir);
 		}
 	}
-	
+
 	/**
 	 * Delete directory operation
 	 *
@@ -208,10 +213,10 @@ public class DirectoryOperations {
 	 *            Root of the directory structure to search the path in
 	 * @param path
 	 *            Absolute path of the directory to be created
-	 * @throws InvalidPropertiesFormatException 
+	 * @throws InvalidPropertiesFormatException
 	 */
 	public static void rmdir(final Directory root, final String path) throws InvalidPropertiesFormatException {
-		
+
 		// Check if path is valid
 		if (path.charAt(path.length() - 1) != '/') {
 			throw new InvalidPropertiesFormatException("Argument invalid: Path should contain a '/' at the end");
@@ -248,13 +253,13 @@ public class DirectoryOperations {
 		}
 
 		Directory directoryToRemove = null;
-		List<Directory> subDirectories = directory.getChildren(); 
-		for (Directory childDirectory : subDirectories) {
+		final List<Directory> subDirectories = directory.getChildren();
+		for (final Directory childDirectory : subDirectories) {
 			if(childDirectory.getName() == name) {
 				if(childDirectory.isFile() != isFile) {
-					String message = isFile 
-							? "Provided argument is a file, directory expected" 
-							: "Provided argument is a directory, file expected";
+					final String message = isFile
+							? "Provided argument is a file, directory expected"
+									: "Provided argument is a directory, file expected";
 					throw new IllegalArgumentException(message);
 				}
 				else {
@@ -267,7 +272,7 @@ public class DirectoryOperations {
 		/**
 		 * TODO : Currently we blindly remove the directory, but in future we may need to
 		 * defer it saying directory is not empty.
-		 * This will come into picture after finalizing the arguments we are supporting for rmdir. 
+		 * This will come into picture after finalizing the arguments we are supporting for rmdir.
 		 */
 
 		subDirectories.remove(directoryToRemove);

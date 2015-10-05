@@ -1,56 +1,66 @@
 package client;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Scanner;
 
-import org.apache.commons.lang3.NotImplementedException;
+import commons.AppConfig;
+import commons.Message;
 
 /**
  * Class to implement the client interface
  */
 public class Client {
+	private final Socket socket;
+	private final ObjectInputStream inputStream;
+	private final ObjectOutputStream outputStream;
+
 	/**
-	 * Can read these both values from a config file
+	 * Constructor
+	 *
+	 * @throws UnknownHostException
+	 * @throws IOException
 	 */
-	private static final int MASTER_PORT = 18000;
-	private static final String MASTER_HOST = "localhost";
-	private static final String INPUT_FILE_NAME = "./data/sampleInputs.txt";
-
-	private Socket socket;
-	private BufferedReader reader;
-	private BufferedWriter writer;
-
 	public Client() throws UnknownHostException, IOException {
-		socket = new Socket(MASTER_HOST, MASTER_PORT);
-		reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-		writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+		// Initialize configuration
+		new AppConfig("conf");
+
+		socket = new Socket(AppConfig.getValue("client.masterIp"), Integer.parseInt(AppConfig.getValue("client.masterPort")));
+		outputStream = new ObjectOutputStream(socket.getOutputStream());
+		inputStream = new ObjectInputStream(socket.getInputStream());
 	}
 
+	/**
+	 * Execute commands listed in a file
+	 * 
+	 * @param inputFileName
+	 *            File that contains the commands
+	 */
 	public void executeCommands(final String inputFileName) {
-		try (
-				Scanner scanner = new Scanner(new File(inputFileName))
-			){
-			
+		/**
+		 * TODO : Change it to line below in future, to read commands from input file:
+		 * Scanner scanner = new Scanner(new File(inputFileName))
+		 */
+		try (Scanner scanner = new Scanner(System.in)){
 			while(scanner.hasNext()) {
-				String command = scanner.nextLine();
-				writer.write(command);
-				String reply = reader.readLine();
+				final String command = scanner.nextLine();
+				// Send command to master
+				outputStream.writeObject(new Message(command));
+				outputStream.flush();
+
+				// Wait and read the reply
+				final Message message = (Message) inputStream.readObject();
+				final String reply = message.getContent();
 				System.out.println(reply);
 			}
-		} catch (IOException e) {
+		} catch (final IOException | ClassNotFoundException e) {
 			System.err.println("Error occured while executing commands");
 			e.printStackTrace();
 			System.exit(0);
 		}
-
-		throw new NotImplementedException("Command execution not fully implemented");
 	}
 
 	/**
@@ -60,18 +70,15 @@ public class Client {
 	 *            Command line arguments
 	 */
 	public static void main(final String[] args) {
-		
 		Client client = null;
 		try {
 			client = new Client();
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
+		} catch (final UnknownHostException e) {
 			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		} catch (final IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		/**
 		 * Client can read a previously generated file which has a thousands of commands
 		 * It then sends the commands one by one to the master,
@@ -83,6 +90,6 @@ public class Client {
 			System.exit(0);
 		}
 
-		client.executeCommands(INPUT_FILE_NAME);
+		client.executeCommands(AppConfig.getValue("client.inputFile"));
 	}
 }

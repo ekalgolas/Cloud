@@ -1,14 +1,14 @@
 package master;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 import master.gfs.DirectoryOperations;
 import master.gfs.Globals;
+
+import commons.Message;
 
 /**
  * <pre>
@@ -26,8 +26,8 @@ public class Worker implements Runnable {
 
 	public volatile boolean		isRunning	= true;
 	private final Socket		workerSocket;
-	private BufferedReader		reader;
-	private BufferedWriter		writer;
+	private ObjectInputStream	inputStream;
+	private ObjectOutputStream	outputStream;
 
 	/**
 	 * Constructor
@@ -38,10 +38,10 @@ public class Worker implements Runnable {
 	public Worker(final Socket socket) {
 		workerSocket = socket;
 
-		// Initialize reader and writer
+		// Initialize input and output streams
 		try {
-			reader = new BufferedReader(new InputStreamReader(workerSocket.getInputStream()));
-			writer = new BufferedWriter(new OutputStreamWriter(workerSocket.getOutputStream()));
+			outputStream = new ObjectOutputStream(workerSocket.getOutputStream());
+			inputStream = new ObjectInputStream(workerSocket.getInputStream());
 		} catch (final IOException e) {
 			e.printStackTrace();
 			isRunning = false;
@@ -57,7 +57,9 @@ public class Worker implements Runnable {
 		// Read from input stream and then process the commands
 		while (isRunning) {
 			try {
-				final String command = reader.readLine();
+				// Read the queried command
+				final Message message = (Message) inputStream.readObject();
+				final String command = message.getContent();
 				String reply = "";
 
 				// Figure out the command and call the operations
@@ -81,10 +83,10 @@ public class Worker implements Runnable {
 					reply = "Invalid command: " + command;
 				}
 
-				// Write the output of the command to writer
-				writer.write(reply);
-				writer.flush();
-			} catch (final IOException e) {
+				// Write reply to the socket output stream
+				outputStream.writeObject(new Message(reply));
+				outputStream.flush();
+			} catch (final IOException | ClassNotFoundException e) {
 				e.printStackTrace();
 			}
 		}

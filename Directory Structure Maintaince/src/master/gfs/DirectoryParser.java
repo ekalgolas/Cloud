@@ -22,10 +22,10 @@ public class DirectoryParser {
 	 * Constants based on the output format of 
 	 * 'tree -F -R -p -D --du --noreport' command
 	 */
-	private static final int ACCESS_RIGHT_ENDINDEX = 9;
-	private static final int TIMESTAMP_STARTINDEX = 24;
-	private static final int SIZE_STARTINDEX = 10;
-	private static final int SIZE_ENDINDEX = 23;
+	private static final int ACCESS_RIGHT_ENDINDEX 	= 9;
+	private static final int TIMESTAMP_STARTINDEX 	= 24;
+	private static final int SIZE_STARTINDEX 		= 10;
+	private static final int SIZE_ENDINDEX 			= 23;
 
 	/**
 	 * Mapping for directory and level of hierarchy
