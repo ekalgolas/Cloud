@@ -17,9 +17,9 @@ public class Client {
 	/**
 	 * Can read these both values from a config file
 	 */
-	private static final int MASTER_PORT = 18000;
-	private static final String MASTER_HOST = "localhost";
-	private static final String INPUT_FILE_NAME = "./data/sampleInputs.txt";
+	private static final int 	MASTER_PORT 		= 18000;
+	private static final String MASTER_HOST 		= "localhost";
+	private static final String INPUT_FILE_NAME 	= "./data/sampleInputs.txt";
 
 	private final Socket socket;
 	private final ObjectInputStream inputStream;
@@ -41,9 +41,11 @@ public class Client {
 			
 			while(scanner.hasNext()) {
 				String command = scanner.nextLine();
+				// Send command to master
 				outputStream.writeObject(new Message(command));
 				outputStream.flush();
-				System.out.println("Reading reply");
+
+				// Wait and read the reply
 				final Message message = (Message) inputStream.readObject();
 				final String reply = message.getContent();
 				System.out.println(reply);

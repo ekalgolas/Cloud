@@ -38,7 +38,7 @@ public class Worker implements Runnable {
 	public Worker(final Socket socket) {
 		workerSocket = socket;
 
-		// Initialize reader and writer
+		// Initialize input and output streams
 		try {
 			outputStream = new ObjectOutputStream(workerSocket.getOutputStream());
 			inputStream = new ObjectInputStream(workerSocket.getInputStream());
@@ -57,6 +57,7 @@ public class Worker implements Runnable {
 		// Read from input stream and then process the commands
 		while (isRunning) {
 			try {
+				// Read the queried command
 				final Message message = (Message) inputStream.readObject();
 				final String command = message.getContent();
 				String reply = "";
@@ -82,7 +83,7 @@ public class Worker implements Runnable {
 					reply = "Invalid command: " + command;
 				}
 
-				// Write the output of the command to writer
+				// Write reply to the socket output stream
 				outputStream.writeObject(new Message(reply));
 				outputStream.flush();
 			} catch (final IOException | ClassNotFoundException e) {

@@ -79,9 +79,9 @@ public class Master {
 	public static void storeMetadata(Directory directory) {
 		File metadataStore = new File(STORED_METADATA);
 		try (
-			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(metadataStore))
+			ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(metadataStore))
 			){
-			oos.writeObject(directory);
+			outputStream.writeObject(directory);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -113,6 +113,7 @@ public class Master {
 		final Thread listenerThread = new Thread(listener);
 		listenerThread.start();
 
+		// Wait for listener thread to finish
 		try {
 			listenerThread.join();
 		} catch (final InterruptedException e) {

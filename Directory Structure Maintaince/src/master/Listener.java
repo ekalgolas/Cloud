@@ -49,6 +49,7 @@ public class Listener implements Runnable {
 			}
 		}
 
+		// Wait for all worker threads to finish
 		for (final Thread thread : workerThreadPool) {
 			try {
 				thread.join();
