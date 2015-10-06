@@ -33,11 +33,6 @@ public class Directory implements Serializable {
 	private Long 			modifiedTimeStamp;
 
 	/**
-	 * Readable last modified date and time
-	 */
-	private String 			modifiedDateTime;
-
-	/**
 	 * Access rights in 10 character string format
 	 */
 	private String 			accessRights;
@@ -81,11 +76,11 @@ public class Directory implements Serializable {
 	 *            Size of the directory (cumulative size for directory) or a file
 	 */
 	public Directory(final String name, final boolean isFile, final List<Directory> children,
-			final String modifiedDateTime, final String accessRights, final Long size) {
+			final long modifiedTimeStamp, final String accessRights, final Long size) {
 		this.name = name;
 		this.isFile = isFile;
 		this.children = children;
-		this.modifiedDateTime = modifiedDateTime;
+		this.modifiedTimeStamp = modifiedTimeStamp;
 		this.accessRights = accessRights;
 		this.size = size;
 	}
@@ -193,20 +188,6 @@ public class Directory implements Serializable {
 	 */
 	public void setModifiedTimeStamp(final Long modifiedTimeStamp) {
 		this.modifiedTimeStamp = modifiedTimeStamp;
-	}
-
-	/**
-	 * @return the modifiedDateTime
-	 */
-	public String getModifiedDateTime() {
-		return modifiedDateTime;
-	}
-
-	/**
-	 * @param modifiedDateTime the modifiedDateTime to set
-	 */
-	public void setModifiedDateTime(final String modifiedDateTime) {
-		this.modifiedDateTime = modifiedDateTime;
 	}
 
 	/**

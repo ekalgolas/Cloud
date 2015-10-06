@@ -20,12 +20,10 @@ import org.apache.commons.lang3.StringUtils;
 public class DirectoryParser {
 	/**
 	 * Constants based on the output format of 
-	 * 'tree -F -R -p -D --du --noreport' command
+	 * 'tree -F -R -p --timefmt "%s" --du --noreport' command
 	 */
-	private static final int ACCESS_RIGHT_ENDINDEX 	= 9;
-	private static final int TIMESTAMP_STARTINDEX 	= 24;
+	private static final int ACCESS_RIGHT_ENDINDEX 	= 10;
 	private static final int SIZE_STARTINDEX 		= 10;
-	private static final int SIZE_ENDINDEX 			= 23;
 
 	/**
 	 * Mapping for directory and level of hierarchy
@@ -37,7 +35,7 @@ public class DirectoryParser {
 	 *
 	 * @param filePath
 	 *            Path of the file to read
-	 *            (output of 'tree -F -R -p -D --du --noreport' command)
+	 *            (output of 'tree -F -R -p --timefmt "%s" --du --noreport' command)
 	 * @return Directory structure as {@link Directory}
 	 */
 	public static Directory parseText(final String filePath) {
@@ -81,12 +79,13 @@ public class DirectoryParser {
 				// Extract other info from first part of the split
 				String details = split[0].substring(StringUtils.lastIndexOf(split[0], "[") + 1);
 				String accessRights = details.substring(0, ACCESS_RIGHT_ENDINDEX);
-				String readableTimeStamp = details.substring(TIMESTAMP_STARTINDEX).trim();
-				String size = details.substring(SIZE_STARTINDEX, SIZE_ENDINDEX).trim();
+				int sizeEndIndex = details.lastIndexOf(" ");
+				String readableTimeStamp = details.substring(sizeEndIndex).trim();
+				String size = details.substring(SIZE_STARTINDEX, sizeEndIndex).trim();
 
 				// Create a new directory object
 				final Directory dir = new Directory(name, isFile, new ArrayList<>(),
-						accessRights, readableTimeStamp, Long.parseLong(size));
+						Long.parseLong(readableTimeStamp), accessRights, Long.parseLong(size));
 
 				// Put current directory to current level
 				levelDirectoryMap.put(currentLevel, dir);
