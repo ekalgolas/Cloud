@@ -2,6 +2,7 @@ package master.gfs;
 
 import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 
@@ -169,8 +170,29 @@ public class DirectoryOperations {
 		final String name = paths[paths.length - 1];
 		final String dirPath = path.substring(0, path.length() - name.length());
 
+		final Directory directory = search(root, dirPath);
+		if(directory == null) {
+			throw new InvalidPathException(dirPath, "Does not exist");
+		}
+
 		// Create the file
-		create(root, dirPath, name, true);
+		final Directory file = new Directory(name, true, null);
+		List<Directory> contents = directory.getChildren();
+		boolean found = false;
+		for (Directory child : contents) {
+			if(child.equals(file)) {
+				// Already present, set modified timestamp to current
+				child.setModifiedTimeStamp(new Date().getTime());
+				found = true;
+				break;
+			}
+		}
+		if(!found) {
+			// Not present, add it in the list
+			file.setModifiedTimeStamp(new Date().getTime());
+			contents.add(file);
+		}
+		directory.setChildren(contents);
 	}
 
 	/**
