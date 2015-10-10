@@ -2,6 +2,7 @@ package master.gfs;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Class to represent the directory tree
@@ -216,5 +217,22 @@ public class Directory implements Serializable {
 	 */
 	public void setSize(final Long size) {
 		this.size = size;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(name, isFile, modifiedTimeStamp);
+	}
+	
+	@Override
+	public boolean equals(Object other) {
+		if(!(other instanceof Directory)) {
+			return false;
+		}
+
+		Directory that = (Directory) other;
+		return this.name == that.name
+			&& this.modifiedTimeStamp == that.modifiedTimeStamp
+			&& this.isFile && that.isFile;
 	}
 }
