@@ -1,11 +1,18 @@
 package metadata;
 
+import java.io.Serializable;
+
 /**
  * Contains MDS information
  * @author jaykay
  *
  */
-public class MetaDataServerInfo {
+public class MetaDataServerInfo implements Serializable{		
+	
+	/**
+	 * Generated serial version UID
+	 */
+	private static final long serialVersionUID = -1966660980300071736L;
 	/**
 	 * MDS Server Name
 	 */

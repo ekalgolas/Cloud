@@ -1,12 +1,19 @@
 package metadata;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  * Contains the inode information of a directory/file.
  * @author jaykay
  */
-public class Inode {
+public class Inode implements Serializable{
+	
+	/**
+	 * Generated serial version UID 
+	 */
+	private static final long serialVersionUID = -7343757662271383355L;
+
 	/**
 	 * Unique ID for directory/file across cluster.
 	 */
