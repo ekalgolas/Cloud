@@ -2,8 +2,8 @@ package client.cache;
 
 import java.util.HashMap;
 
-import master.gfs.Directory;
 import master.gfs.DirectoryOperations;
+import metadata.Directory;
 
 
 public class Cache {

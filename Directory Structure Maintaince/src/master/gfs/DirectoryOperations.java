@@ -6,6 +6,8 @@ import java.util.Date;
 import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 
+import metadata.Directory;
+
 
 /**
  * Class to implement various directory metadata operations

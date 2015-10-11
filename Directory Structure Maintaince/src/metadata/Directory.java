@@ -1,4 +1,4 @@
-package master.gfs;
+package metadata;
 
 import java.io.Serializable;
 import java.util.List;
@@ -43,6 +43,11 @@ public class Directory implements Serializable {
 	 * or individual size in case of a file
 	 */
 	private Long 			size;
+	
+	/**
+	 * Contains the inode informations like inode number, MDS details. 
+	 */
+	private Inode			inode;
 
 	/**
 	 * Constructor
@@ -217,6 +222,22 @@ public class Directory implements Serializable {
 	 */
 	public void setSize(final Long size) {
 		this.size = size;
+	}
+	
+	/**
+	 * Get the associated inode
+	 * @return inode
+	 */
+	public Inode getInode() {
+		return inode;
+	}
+
+	/**
+	 * Set the inode for this directory.
+	 * @param inode
+	 */
+	public void setInode(Inode inode) {
+		this.inode = inode;
 	}
 	
 	@Override

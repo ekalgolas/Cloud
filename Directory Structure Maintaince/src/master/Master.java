@@ -7,12 +7,12 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
+import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
 
-import master.gfs.Directory;
 import master.gfs.DirectoryParser;
 import master.gfs.Globals;
-
+import metadata.Directory;
 import commons.AppConfig;
 
 /**
@@ -27,6 +27,7 @@ import commons.AppConfig;
  */
 public class Master {
 	private static ServerSocket	listenerSocket	= null;
+	private static HashMap<String, Directory> subTreePartitionList = new HashMap<String, Directory>();
 
 	/**
 	 * Setup the listener socket
