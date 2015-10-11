@@ -8,6 +8,8 @@ import java.util.Scanner;
 
 import org.apache.commons.lang3.StringUtils;
 
+import metadata.Directory;
+
 /**
  * <pre>
  * Class to implement parsing of the directory structure from a text file

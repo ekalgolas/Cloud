@@ -1,6 +1,6 @@
 package client.cache;
 
-import master.gfs.Directory;
+import metadata.Directory;
 
 public class CacheEntry {
 	Directory dir;

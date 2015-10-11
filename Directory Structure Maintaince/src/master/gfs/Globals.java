@@ -1,5 +1,7 @@
 package master.gfs;
 
+import metadata.Directory;
+
 /**
  * Class to keep all the globals like metadata structure
  */
