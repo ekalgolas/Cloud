@@ -12,5 +12,9 @@ public class Globals {
 	 * Strictly use "synchronized" writes
 	 * </pre>
 	 */
-	public static Directory	metadataRoot	= null;
+	public static Directory	gfsMetadataRoot	= null;
+	public static Directory mdsMetaDataRoot = null;
+	
+	public static final String GFS_SERVER_PORT = "gfs.server.port";
+	public static final String MDS_SERVER_PORT = "mds.server.port";
 }

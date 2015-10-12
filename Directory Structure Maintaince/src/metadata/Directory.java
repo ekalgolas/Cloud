@@ -48,6 +48,11 @@ public class Directory implements Serializable {
 	 * Contains the inode informations like inode number, MDS details. 
 	 */
 	private Inode			inode;
+	
+	/**
+	 * Counter to keep track of the # of access to this directory.
+	 */
+	private long 			operationCounter;
 
 	/**
 	 * Constructor
@@ -238,6 +243,22 @@ public class Directory implements Serializable {
 	 */
 	public void setInode(Inode inode) {
 		this.inode = inode;
+	}
+	
+	/**
+	 * Get the total operation counter.
+	 * @return counter
+	 */
+	public long getOperationCounter() {
+		return operationCounter;
+	}
+
+	/**
+	 * Set the total operation counter.
+	 * @param operationCounter
+	 */
+	public void setOperationCounter(long operationCounter) {
+		this.operationCounter = operationCounter;
 	}
 	
 	@Override
