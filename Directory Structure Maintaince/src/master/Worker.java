@@ -65,18 +65,18 @@ public class Worker implements Runnable {
 				// Figure out the command and call the operations
 				if (command.startsWith(LS)) {
 					// Command line parameter (directory name) start from index '3' in the received string
-					reply = DirectoryOperations.ls(Globals.metadataRoot, command.substring(3));
+					reply = DirectoryOperations.ls(Globals.gfsMetadataRoot, command.substring(3));
 				} else if (command.startsWith(MKDIR)) {
 					// Command line parameter (directory name) start from index '6' in the received string
-					DirectoryOperations.mkdir(Globals.metadataRoot, command.substring(6));
+					DirectoryOperations.mkdir(Globals.gfsMetadataRoot, command.substring(6));
 					reply = "Directory created successfully";
 				} else if (command.startsWith(TOUCH)) {
 					// Command line parameter (directory name) start from index '6' in the received string
-					DirectoryOperations.touch(Globals.metadataRoot, command.substring(6));
+					DirectoryOperations.touch(Globals.gfsMetadataRoot, command.substring(6));
 					reply = "File created successfully";
 				} else if (command.startsWith(RMDIR)) {
 					// Command line parameter (directory name) start from index '6' in the received string
-					DirectoryOperations.rmdir(Globals.metadataRoot, command.substring(6));
+					DirectoryOperations.rmdir(Globals.gfsMetadataRoot, command.substring(6));
 					reply = "Directory deleted successfully";
 				} else {
 					// Else, invalid command

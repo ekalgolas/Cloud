@@ -26,7 +26,8 @@ import commons.AppConfig;
  * </pre>
  */
 public class Master {
-	private static ServerSocket	listenerSocket	= null;
+	private static ServerSocket	gfsListenerSocket	= null;
+	private static ServerSocket mdsListenerSocket   = null;
 	private static HashMap<String, Directory> subTreePartitionList = new HashMap<String, Directory>();
 
 	/**
@@ -39,13 +40,16 @@ public class Master {
 		new AppConfig("conf");
 
 		// Do nothing if socket already initialized
-		if (listenerSocket != null) {
+		if (gfsListenerSocket != null && mdsListenerSocket != null) {
 			return;
 		}
 
 		// Else, initialize the socket
 		try {
-			listenerSocket = new ServerSocket(Integer.parseInt(AppConfig.getValue("server.port")));
+			if(gfsListenerSocket == null)
+				gfsListenerSocket = new ServerSocket(Integer.parseInt(AppConfig.getValue(Globals.GFS_SERVER_PORT)));
+			if(mdsListenerSocket == null)
+				mdsListenerSocket = new ServerSocket(Integer.parseInt(AppConfig.getValue(Globals.MDS_SERVER_PORT)));
 		} catch (final IOException e) {
 			e.printStackTrace();
 		}
@@ -106,7 +110,7 @@ public class Master {
 		try {
 			final Directory directory = generateMetadata();
 			// Set the globals root
-			Globals.metadataRoot = directory;
+			Globals.gfsMetadataRoot = directory;
 		} catch (final ClassNotFoundException e) {
 			e.printStackTrace();
 		} catch (final IOException e) {
@@ -114,13 +118,18 @@ public class Master {
 		}
 
 		// Launch listener to process input requests
-		final Listener listener = new Listener(listenerSocket);
-		final Thread listenerThread = new Thread(listener);
-		listenerThread.start();
+		final Listener gfsListener = new Listener(gfsListenerSocket);
+		final Thread gfsListenerThread = new Thread(gfsListener);
+		gfsListenerThread.start();
+		
+		final Listener mdsListener = new Listener(mdsListenerSocket);
+		final Thread mdsListenerThread = new Thread(mdsListener);
+		mdsListenerThread.start();
 
 		// Wait for listener thread to finish
 		try {
-			listenerThread.join();
+			gfsListenerThread.join();
+			mdsListenerThread.join();
 		} catch (final InterruptedException e) {
 			Thread.currentThread().interrupt();
 			e.printStackTrace();
