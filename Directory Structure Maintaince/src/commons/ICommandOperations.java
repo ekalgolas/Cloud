@@ -71,4 +71,16 @@ public interface ICommandOperations {
 	 * @throws InvalidPropertiesFormatException
 	 */
 	public void rm(final Directory root, final String path) throws InvalidPropertiesFormatException;
+
+	/**
+	 * Changes the current directory to the given path
+	 * 
+	 * @param root
+	 *            Root of the directory structure
+	 * @param filePath
+	 *            Path of the directory
+	 * @return The current working directory after change
+	 * @throws InvalidPropertiesFormatException
+	 */
+	public String cd(Directory root, final String filePath) throws InvalidPropertiesFormatException;
 }

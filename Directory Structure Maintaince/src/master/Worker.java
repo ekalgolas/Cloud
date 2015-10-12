@@ -23,6 +23,7 @@ public class Worker implements Runnable {
 	private static final String	MKDIR		= "mkdir";
 	private static final String	RMDIR		= "rmdir";
 	private static final String	TOUCH		= "touch";
+	private static final String	EXIT		= "exit";
 
 	public volatile boolean		isRunning	= true;
 	private final Socket		workerSocket;
@@ -80,6 +81,9 @@ public class Worker implements Runnable {
 						// Command line parameter (directory name) start from index '6' in the received string
 						directoryOperations.rmdir(Globals.gfsMetadataRoot, command.substring(6));
 						reply = "Directory deleted successfully";
+					} else if (command.startsWith(EXIT)) {
+						// Close the connection
+						isRunning = false;
 					} else {
 						// Else, invalid command
 						reply = "Invalid command: " + command;

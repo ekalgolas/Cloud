@@ -29,6 +29,8 @@ public class AppConfig {
 			for (final File file : directory.listFiles()) {
 				if (file.isFile()) {
 					loadConfiguration(file);
+				} else {
+					new AppConfig(file.getAbsolutePath());
 				}
 			}
 		} else {

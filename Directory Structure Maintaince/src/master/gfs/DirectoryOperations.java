@@ -297,4 +297,14 @@ public class DirectoryOperations implements ICommandOperations {
 		// TODO Auto-generated method stub
 
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see commons.ICommandOperations#cd(metadata.Directory, java.lang.String)
+	 */
+	@Override
+	public String cd(final Directory root, final String filePath) throws InvalidPropertiesFormatException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
