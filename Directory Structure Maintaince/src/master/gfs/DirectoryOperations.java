@@ -8,22 +8,19 @@ import java.util.List;
 
 import metadata.Directory;
 
+import commons.ICommandOperations;
+import commons.OutputFormatter;
 
 /**
  * Class to implement various directory metadata operations
  */
-public class DirectoryOperations {
-	/**
-	 * List directory operation
-	 *
-	 * @param root
-	 *            Root of the directory to search in
-	 * @param filePath
-	 *            Path of directory whose listing is to be displayed
-	 * @return Directory contents in string representation
-	 * @throws InvalidPropertiesFormatException
+public class DirectoryOperations implements ICommandOperations {
+	/*
+	 * (non-Javadoc)
+	 * @see commons.ICommandOperations#ls(metadata.Directory, java.lang.String, java.lang.String[])
 	 */
-	public static String ls(Directory root, final String filePath) throws InvalidPropertiesFormatException {
+	@Override
+	public String ls(Directory root, final String filePath, final String... arguments) throws InvalidPropertiesFormatException {
 		root = search(root, filePath);
 
 		// If search returns null, return
@@ -38,17 +35,17 @@ public class DirectoryOperations {
 
 		// If we reach here, it means valid directory was found
 		// Compute output
-		final StringBuilder builder = new StringBuilder("Listing for " + root.getName() + "\n");
-		builder.append("TYPE\t\t\t\tNAME\n====\t\t\t\t====\n\n");
+		final OutputFormatter output = new OutputFormatter();
+		output.addRow("TYPE", "NAME");
 
 		// Append children
 		for (final Directory child : root.getChildren()) {
 			final String type = child.isFile() ? "File" : "Directory";
-			builder.append(type + "\t\t\t\t" + child.getName() + "\n");
+			output.addRow(type, child.getName());
 		}
 
 		// Return the representation
-		return builder.toString();
+		return output.toString();
 	}
 
 	/**
@@ -70,7 +67,8 @@ public class DirectoryOperations {
 			// Check if the path corresponds to any child in this directory
 			boolean found = false;
 			for (final Directory child : root.getChildren()) {
-				if (child.getName().equalsIgnoreCase(path)) {
+				if (child.getName()
+						.equalsIgnoreCase(path)) {
 					root = child;
 					found = true;
 					break;
@@ -97,7 +95,7 @@ public class DirectoryOperations {
 	 *            Path to search
 	 * @return Node corresponding to the path, null if not found
 	 */
-	private static Directory search(Directory root, final String filePath) {
+	private Directory search(Directory root, final String filePath) {
 		// Get list of paths
 		final String[] paths = filePath.split("/");
 
@@ -105,13 +103,15 @@ public class DirectoryOperations {
 		for (final String path : paths) {
 			// Match the root
 			boolean found = false;
-			if (root.getName().equalsIgnoreCase(path)) {
+			if (root.getName()
+					.equalsIgnoreCase(path)) {
 				found = true;
 			}
 
 			// Check if the path corresponds to any child in this directory
 			for (final Directory child : root.getChildren()) {
-				if (child.getName().equalsIgnoreCase(path)) {
+				if (child.getName()
+						.equalsIgnoreCase(path)) {
 					root = child;
 					found = true;
 					break;
@@ -128,16 +128,12 @@ public class DirectoryOperations {
 		return root;
 	}
 
-	/**
-	 * Create directory operation
-	 *
-	 * @param root
-	 *            Root of the directory structure to search the path in
-	 * @param path
-	 *            Absolute path of the directory to be created
-	 * @throws InvalidPropertiesFormatException
+	/*
+	 * (non-Javadoc)
+	 * @see commons.ICommandOperations#mkdir(metadata.Directory, java.lang.String)
 	 */
-	public static void mkdir(final Directory root, final String path) throws InvalidPropertiesFormatException {
+	@Override
+	public void mkdir(final Directory root, final String path) throws InvalidPropertiesFormatException {
 		// Check if path is valid
 		if (path.charAt(path.length() - 1) != '/') {
 			throw new InvalidPropertiesFormatException("Argument invalid: Path should contain a '/' at the end");
@@ -152,16 +148,12 @@ public class DirectoryOperations {
 		create(root, dirPath, name, false);
 	}
 
-	/**
-	 * Create file operation
-	 *
-	 * @param root
-	 *            Root of the directory structure to search the path in
-	 * @param path
-	 *            Absolute path of the file to be created
-	 * @throws InvalidPropertiesFormatException
+	/*
+	 * (non-Javadoc)
+	 * @see commons.ICommandOperations#touch(metadata.Directory, java.lang.String)
 	 */
-	public static void touch(final Directory root, final String path) throws InvalidPropertiesFormatException {
+	@Override
+	public void touch(final Directory root, final String path) throws InvalidPropertiesFormatException {
 		// Check if path is valid
 		if (path.charAt(path.length() - 1) == '/') {
 			throw new InvalidPropertiesFormatException("Argument invalid: Path should not contain a '/' at the end");
@@ -173,23 +165,23 @@ public class DirectoryOperations {
 		final String dirPath = path.substring(0, path.length() - name.length());
 
 		final Directory directory = search(root, dirPath);
-		if(directory == null) {
+		if (directory == null) {
 			throw new InvalidPathException(dirPath, "Does not exist");
 		}
 
 		// Create the file
 		final Directory file = new Directory(name, true, null);
-		List<Directory> contents = directory.getChildren();
+		final List<Directory> contents = directory.getChildren();
 		boolean found = false;
-		for (Directory child : contents) {
-			if(child.equals(file)) {
+		for (final Directory child : contents) {
+			if (child.equals(file)) {
 				// Already present, set modified timestamp to current
 				child.setModifiedTimeStamp(new Date().getTime());
 				found = true;
 				break;
 			}
 		}
-		if(!found) {
+		if (!found) {
 			// Not present, add it in the list
 			file.setModifiedTimeStamp(new Date().getTime());
 			contents.add(file);
@@ -210,7 +202,7 @@ public class DirectoryOperations {
 	 *            Will create file if true, directory otherwise
 	 * @throws InvalidPathException
 	 */
-	private static void create(final Directory root, final String path, final String name, final boolean isFile) throws InvalidPathException {
+	private void create(final Directory root, final String path, final String name, final boolean isFile) throws InvalidPathException {
 		// Search and get to the directory where we have to create
 		final Directory directory = search(root, path);
 
@@ -222,24 +214,22 @@ public class DirectoryOperations {
 		// Add file if isFile is true
 		if (isFile) {
 			final Directory file = new Directory(name, isFile, null);
-			directory.getChildren().add(file);
+			directory.getChildren()
+			.add(file);
 		} else {
 			// Else, add directory here
 			final Directory dir = new Directory(name, isFile, new ArrayList<Directory>());
-			directory.getChildren().add(dir);
+			directory.getChildren()
+			.add(dir);
 		}
 	}
 
-	/**
-	 * Delete directory operation
-	 *
-	 * @param root
-	 *            Root of the directory structure to search the path in
-	 * @param path
-	 *            Absolute path of the directory to be created
-	 * @throws InvalidPropertiesFormatException
+	/*
+	 * (non-Javadoc)
+	 * @see commons.ICommandOperations#rmdir(metadata.Directory, java.lang.String, java.lang.String[])
 	 */
-	public static void rmdir(final Directory root, final String path) throws InvalidPropertiesFormatException {
+	@Override
+	public void rmdir(final Directory root, final String path, final String... arguments) throws InvalidPropertiesFormatException {
 
 		// Check if path is valid
 		if (path.charAt(path.length() - 1) != '/') {
@@ -255,7 +245,7 @@ public class DirectoryOperations {
 	}
 
 	/**
-	 *  Delete a resource in the directory tree
+	 * Delete a resource in the directory tree
 	 *
 	 * @param root
 	 *            Root of the directory structure to search in
@@ -267,7 +257,7 @@ public class DirectoryOperations {
 	 *            Resource to be deleted is a file if true, directory otherwise
 	 * @throws InvalidPathException
 	 */
-	private static void remove(final Directory root, final String path, final String name, final boolean isFile) {
+	private void remove(final Directory root, final String path, final String name, final boolean isFile) {
 		// Search and get to the directory where we want to remove
 		final Directory directory = search(root, path);
 
@@ -279,14 +269,11 @@ public class DirectoryOperations {
 		Directory directoryToRemove = null;
 		final List<Directory> subDirectories = directory.getChildren();
 		for (final Directory childDirectory : subDirectories) {
-			if(childDirectory.getName() == name) {
-				if(childDirectory.isFile() != isFile) {
-					final String message = isFile
-							? "Provided argument is a file, directory expected"
-									: "Provided argument is a directory, file expected";
+			if (childDirectory.getName() == name) {
+				if (childDirectory.isFile() != isFile) {
+					final String message = isFile ? "Provided argument is a file, directory expected" : "Provided argument is a directory, file expected";
 					throw new IllegalArgumentException(message);
-				}
-				else {
+				} else {
 					directoryToRemove = childDirectory;
 					break;
 				}
@@ -294,12 +281,20 @@ public class DirectoryOperations {
 		}
 
 		/**
-		 * TODO : Currently we blindly remove the directory, but in future we may need to
-		 * defer it saying directory is not empty.
-		 * This will come into picture after finalizing the arguments we are supporting for rmdir.
+		 * TODO : Currently we blindly remove the directory, but in future we may need to defer it saying directory is not empty. This will come into picture
+		 * after finalizing the arguments we are supporting for rmdir.
 		 */
 
 		subDirectories.remove(directoryToRemove);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see commons.ICommandOperations#rm(metadata.Directory, java.lang.String)
+	 */
+	@Override
+	public void rm(final Directory root, final String path) throws InvalidPropertiesFormatException {
+		// TODO Auto-generated method stub
 
 	}
 }

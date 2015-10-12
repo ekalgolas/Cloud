@@ -27,7 +27,9 @@ public class AppConfig {
 		if (directory.isDirectory()) {
 			// For each file, load its configuration
 			for (final File file : directory.listFiles()) {
-				loadConfiguration(file);
+				if (file.isFile()) {
+					loadConfiguration(file);
+				}
 			}
 		} else {
 			// Else, error out if directory is not parsed
@@ -58,7 +60,7 @@ public class AppConfig {
 
 	/**
 	 * Get the value related with the key
-	 * 
+	 *
 	 * @param key
 	 *            Key name for the property
 	 * @return Value as string, null if key is not found
