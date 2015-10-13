@@ -11,9 +11,9 @@ import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
 
 import master.gfs.DirectoryParser;
-import master.gfs.Globals;
 import metadata.Directory;
 import commons.AppConfig;
+import commons.Globals;
 
 /**
  * <pre>
@@ -28,7 +28,6 @@ import commons.AppConfig;
 public class Master {
 	private static ServerSocket	gfsListenerSocket	= null;
 	private static ServerSocket mdsListenerSocket   = null;
-	private static HashMap<String, Directory> subTreePartitionList = new HashMap<String, Directory>();
 
 	/**
 	 * Setup the listener socket
@@ -118,11 +117,11 @@ public class Master {
 		}
 
 		// Launch listener to process input requests
-		final Listener gfsListener = new Listener(gfsListenerSocket);
+		final Listener gfsListener = new Listener(gfsListenerSocket, Globals.GFS_MODE);
 		final Thread gfsListenerThread = new Thread(gfsListener);
 		gfsListenerThread.start();
 		
-		final Listener mdsListener = new Listener(mdsListenerSocket);
+		final Listener mdsListener = new Listener(mdsListenerSocket, Globals.MDS_MODE);
 		final Thread mdsListenerThread = new Thread(mdsListener);
 		mdsListenerThread.start();
 

@@ -1,4 +1,7 @@
-package master.gfs;
+package commons;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import metadata.Directory;
 
@@ -13,8 +16,11 @@ public class Globals {
 	 * </pre>
 	 */
 	public static Directory	gfsMetadataRoot	= null;
-	public static Directory mdsMetaDataRoot = null;
+	public static HashMap<String, Directory> subTreePartitionList = null;
 	
 	public static final String GFS_SERVER_PORT = "gfs.server.port";
 	public static final String MDS_SERVER_PORT = "mds.server.port";
+	
+	public static final String GFS_MODE = "GFS";
+	public static final String MDS_MODE = "MDS";
 }

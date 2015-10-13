@@ -16,6 +16,7 @@ import java.util.ArrayList;
  */
 public class Listener implements Runnable {
 	public volatile boolean			isRunning			= true;
+	private String 					listenerType;
 	private final ServerSocket		listenerSocket;
 	private final ArrayList<Thread>	workerThreadPool	= new ArrayList<Thread>();
 
@@ -25,8 +26,9 @@ public class Listener implements Runnable {
 	 * @param socket
 	 *            Socket to listen on
 	 */
-	public Listener(final ServerSocket socket) {
+	public Listener(final ServerSocket socket, final String listenerType) {
 		listenerSocket = socket;
+		this.listenerType = listenerType;
 	}
 
 	/*
@@ -40,13 +42,13 @@ public class Listener implements Runnable {
 				final Socket connectionSocket = listenerSocket.accept();
 
 				// Launch a worker thread
-				final Worker worker = new Worker(connectionSocket);
+				final Worker worker = new Worker(connectionSocket, this.listenerType);
 				final Thread workerThread = new Thread(worker);
 				workerThreadPool.add(workerThread);
 				workerThread.start();
 			} catch (final Exception e) {
 				e.printStackTrace();
-			}
+			}			
 		}
 
 		// Wait for all worker threads to finish
