@@ -8,6 +8,7 @@ import java.net.Socket;
 import master.gfs.DirectoryOperations;
 import master.gfs.Globals;
 
+import commons.ICommandOperations;
 import commons.Message;
 
 /**
@@ -16,13 +17,13 @@ import commons.Message;
  * 	1. Given a socket connection, read the client request
  * 	2. Modify the metadata accordingly
  * </pre>
- *
  */
 public class Worker implements Runnable {
 	private static final String	LS			= "ls";
 	private static final String	MKDIR		= "mkdir";
 	private static final String	RMDIR		= "rmdir";
 	private static final String	TOUCH		= "touch";
+	private static final String	EXIT		= "exit";
 
 	public volatile boolean		isRunning	= true;
 	private final Socket		workerSocket;
@@ -62,25 +63,34 @@ public class Worker implements Runnable {
 				final String command = message.getContent();
 				String reply = "";
 
-				// Figure out the command and call the operations
-				if (command.startsWith(LS)) {
-					// Command line parameter (directory name) start from index '3' in the received string
-					reply = DirectoryOperations.ls(Globals.gfsMetadataRoot, command.substring(3));
-				} else if (command.startsWith(MKDIR)) {
-					// Command line parameter (directory name) start from index '6' in the received string
-					DirectoryOperations.mkdir(Globals.gfsMetadataRoot, command.substring(6));
-					reply = "Directory created successfully";
-				} else if (command.startsWith(TOUCH)) {
-					// Command line parameter (directory name) start from index '6' in the received string
-					DirectoryOperations.touch(Globals.gfsMetadataRoot, command.substring(6));
-					reply = "File created successfully";
-				} else if (command.startsWith(RMDIR)) {
-					// Command line parameter (directory name) start from index '6' in the received string
-					DirectoryOperations.rmdir(Globals.gfsMetadataRoot, command.substring(6));
-					reply = "Directory deleted successfully";
-				} else {
-					// Else, invalid command
-					reply = "Invalid command: " + command;
+				try {
+					// Figure out the command and call the operations
+					final ICommandOperations directoryOperations = new DirectoryOperations();
+					if (command.startsWith(LS)) {
+						// Command line parameter (directory name) start from index '3' in the received string
+						reply = directoryOperations.ls(Globals.gfsMetadataRoot, command.substring(3));
+					} else if (command.startsWith(MKDIR)) {
+						// Command line parameter (directory name) start from index '6' in the received string
+						directoryOperations.mkdir(Globals.gfsMetadataRoot, command.substring(6));
+						reply = "Directory created successfully";
+					} else if (command.startsWith(TOUCH)) {
+						// Command line parameter (directory name) start from index '6' in the received string
+						directoryOperations.touch(Globals.gfsMetadataRoot, command.substring(6));
+						reply = "File created successfully";
+					} else if (command.startsWith(RMDIR)) {
+						// Command line parameter (directory name) start from index '6' in the received string
+						directoryOperations.rmdir(Globals.gfsMetadataRoot, command.substring(6));
+						reply = "Directory deleted successfully";
+					} else if (command.startsWith(EXIT)) {
+						// Close the connection
+						isRunning = false;
+					} else {
+						// Else, invalid command
+						reply = "Invalid command: " + command;
+					}
+				} catch (final Exception e) {
+					// If any command threw errors, propagate the error to the client
+					reply = e.getMessage();
 				}
 
 				// Write reply to the socket output stream
