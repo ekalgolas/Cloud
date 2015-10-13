@@ -58,7 +58,7 @@ public class OutputFormatter {
 		for (final String[] row : rows) {
 			for (int colNum = 0; colNum < row.length; colNum++) {
 				buf.append(StringUtils.rightPad(StringUtils.defaultString(row[colNum]), colWidths[colNum]));
-				buf.append(' ');
+				buf.append('\t');
 			}
 
 			buf.append('\n');
