@@ -42,7 +42,7 @@ public class Listener implements Runnable {
 				final Socket connectionSocket = listenerSocket.accept();
 
 				// Launch a worker thread
-				final Worker worker = new Worker(connectionSocket);
+				final Worker worker = new Worker(connectionSocket, this.listenerType);
 				final Thread workerThread = new Thread(worker);
 				workerThreadPool.add(workerThread);
 				workerThread.start();

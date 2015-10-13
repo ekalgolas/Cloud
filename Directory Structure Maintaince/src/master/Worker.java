@@ -5,9 +5,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+import master.ceph.CephDirectoryOperations;
 import master.gfs.DirectoryOperations;
-import master.gfs.Globals;
-
+import commons.Globals;
 import commons.ICommandOperations;
 import commons.Message;
 
@@ -26,6 +26,7 @@ public class Worker implements Runnable {
 	private static final String	EXIT		= "exit";
 
 	public volatile boolean		isRunning	= true;
+	private String 				listenerType;
 	private final Socket		workerSocket;
 	private ObjectInputStream	inputStream;
 	private ObjectOutputStream	outputStream;
@@ -36,8 +37,9 @@ public class Worker implements Runnable {
 	 * @param socket
 	 *            Socket to get streams from
 	 */
-	public Worker(final Socket socket) {
+	public Worker(final Socket socket, String listenerType) {
 		workerSocket = socket;
+		this.listenerType = listenerType;
 
 		// Initialize input and output streams
 		try {
@@ -64,8 +66,15 @@ public class Worker implements Runnable {
 				String reply = "";
 
 				try {
+					final ICommandOperations directoryOperations;
 					// Figure out the command and call the operations
-					final ICommandOperations directoryOperations = new DirectoryOperations();
+					if(Globals.GFS_MODE.equalsIgnoreCase(listenerType))
+						directoryOperations = new DirectoryOperations();
+					else if(Globals.MDS_MODE.equalsIgnoreCase(listenerType))
+						directoryOperations = new CephDirectoryOperations();
+					else
+						directoryOperations = new DirectoryOperations();
+					
 					if (command.startsWith(LS)) {
 						// Command line parameter (directory name) start from index '3' in the received string
 						reply = directoryOperations.ls(Globals.gfsMetadataRoot, command.substring(3));

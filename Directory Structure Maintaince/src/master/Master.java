@@ -11,9 +11,9 @@ import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
 
 import master.gfs.DirectoryParser;
-import master.gfs.Globals;
 import metadata.Directory;
 import commons.AppConfig;
+import commons.Globals;
 
 /**
  * <pre>
