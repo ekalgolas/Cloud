@@ -15,9 +15,10 @@ public class Inode implements Serializable{
 	private static final long serialVersionUID = -7343757662271383355L;
 
 	/**
-	 * Unique ID for directory/file across cluster.
+	 * Unique ID for directory/file across cluster. 
+	 * Note: This should be left empty if the directory resides in another MDS.
 	 */
-	private long inodeNumber;
+	private Long inodeNumber;
 	
 	/**
 	 *  List of MDS containing this directory/file. 
@@ -35,14 +36,14 @@ public class Inode implements Serializable{
 	 * Get the unique inode number.
 	 * @return inodeNumber
 	 */
-	public long getInodeNumber() {
+	public Long getInodeNumber() {
 		return inodeNumber;
 	}
 	/**
 	 * Set the inode number.
 	 * @param inodeNumber
 	 */
-	public void setInodeNumber(long inodeNumber) {
+	public void setInodeNumber(Long inodeNumber) {
 		this.inodeNumber = inodeNumber;
 	}
 	/**
