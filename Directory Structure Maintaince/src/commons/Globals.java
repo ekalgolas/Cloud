@@ -1,6 +1,5 @@
 package commons;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import metadata.Directory;
@@ -23,4 +22,13 @@ public class Globals {
 	
 	public static final String GFS_MODE = "GFS";
 	public static final String MDS_MODE = "MDS";
+	public static final String ALIVE_STATUS = "Alive";
+	public static final String DEAD_STATUS = "Dead";
+	public static final String PRIMARY_MDS = "Primary";
+	public static final String REPLICA_MDS = "Replica";
+	public static final String	LS			= "ls";
+	public static final String	MKDIR		= "mkdir";
+	public static final String	RMDIR		= "rmdir";
+	public static final String	TOUCH		= "touch";
+	public static final String	EXIT		= "exit";
 }
