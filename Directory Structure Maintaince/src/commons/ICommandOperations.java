@@ -22,7 +22,7 @@ public interface ICommandOperations {
 	 * @return Directory contents in string representation
 	 * @throws InvalidPropertiesFormatException
 	 */
-	public String ls(Directory root, final String filePath, String... arguments) throws InvalidPropertiesFormatException;
+	public Message ls(Directory root, final String filePath, String... arguments) throws InvalidPropertiesFormatException;
 
 	/**
 	 * Create directory operation
@@ -82,5 +82,5 @@ public interface ICommandOperations {
 	 * @return The current working directory after change
 	 * @throws InvalidPropertiesFormatException
 	 */
-	public String cd(Directory root, final String filePath) throws InvalidPropertiesFormatException;
+	public Message cd(Directory root, final String filePath) throws InvalidPropertiesFormatException;
 }

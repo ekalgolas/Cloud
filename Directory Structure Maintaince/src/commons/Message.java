@@ -13,6 +13,7 @@ public class Message implements Serializable {
 	private static final long serialVersionUID = 5432433000419345082L;
 
 	private final StringBuilder builder;
+	private final StringBuilder headerBuilder;
 
 	/**
 	 * Constructor
@@ -22,6 +23,17 @@ public class Message implements Serializable {
 	 */
 	public Message(final String content) {
 		builder = new StringBuilder(content);
+		headerBuilder = new StringBuilder();
+	}
+	
+	/**
+	 * Constructor to initialise both header and content. 
+	 * @param content
+	 * @param header
+	 */
+	public Message(final String content, final String header) {
+		builder = new StringBuilder(content);
+		headerBuilder = new StringBuilder(header);
 	}
 
 	/**
@@ -33,6 +45,14 @@ public class Message implements Serializable {
 	public void appendContent(final String content) {
 		builder.append(content);
 	}
+	/**
+	 * Append the given text to the header.
+	 * @param header
+	 */
+	public void appendHeader(final String header)
+	{
+		headerBuilder.append(header);
+	}
 
 	/**
 	 * Get the content of the message
@@ -42,4 +62,13 @@ public class Message implements Serializable {
 	public String getContent() {
 		return builder.toString();
 	}
+
+	/**
+	 * Get the Header of the message.
+	 * @return Header as String
+	 */
+	public String getHeader() {
+		return headerBuilder.toString();
+	}
+		
 }
