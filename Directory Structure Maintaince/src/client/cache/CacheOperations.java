@@ -5,6 +5,7 @@ import java.util.InvalidPropertiesFormatException;
 import metadata.Directory;
 
 import commons.ICommandOperations;
+import commons.Message;
 
 /**
  * Class to provide cache operation before client contacts the master
@@ -17,7 +18,7 @@ public class CacheOperations implements ICommandOperations {
 	 * @see commons.ICommandOperations#ls(metadata.Directory, java.lang.String, java.lang.String[])
 	 */
 	@Override
-	public String ls(final Directory root, final String filePath, final String... arguments) throws InvalidPropertiesFormatException {
+	public Message ls(final Directory root, final String filePath, final String... arguments) throws InvalidPropertiesFormatException {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -67,7 +68,7 @@ public class CacheOperations implements ICommandOperations {
 	 * @see commons.ICommandOperations#cd(metadata.Directory, java.lang.String)
 	 */
 	@Override
-	public String cd(final Directory root, final String filePath) throws InvalidPropertiesFormatException {
+	public Message cd(final Directory root, final String filePath) throws InvalidPropertiesFormatException {
 		// TODO Auto-generated method stub
 		return null;
 	}

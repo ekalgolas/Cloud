@@ -9,6 +9,7 @@ import java.util.List;
 import metadata.Directory;
 
 import commons.ICommandOperations;
+import commons.Message;
 import commons.OutputFormatter;
 
 /**
@@ -20,7 +21,7 @@ public class DirectoryOperations implements ICommandOperations {
 	 * @see commons.ICommandOperations#ls(metadata.Directory, java.lang.String, java.lang.String[])
 	 */
 	@Override
-	public String ls(Directory root, final String filePath, final String... arguments) throws InvalidPropertiesFormatException {
+	public Message ls(Directory root, final String filePath, final String... arguments) throws InvalidPropertiesFormatException {
 		root = search(root, filePath);
 
 		// If search returns null, return
@@ -45,7 +46,7 @@ public class DirectoryOperations implements ICommandOperations {
 		}
 
 		// Return the representation
-		return output.toString();
+		return new Message(output.toString());
 	}
 
 	/**
@@ -303,7 +304,7 @@ public class DirectoryOperations implements ICommandOperations {
 	 * @see commons.ICommandOperations#cd(metadata.Directory, java.lang.String)
 	 */
 	@Override
-	public String cd(final Directory root, final String filePath) throws InvalidPropertiesFormatException {
+	public Message cd(final Directory root, final String filePath) throws InvalidPropertiesFormatException {
 		// TODO Auto-generated method stub
 		return null;
 	}

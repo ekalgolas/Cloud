@@ -63,7 +63,7 @@ public class Worker implements Runnable {
 				// Read the queried command
 				final Message message = (Message) inputStream.readObject();
 				final String command = message.getContent();
-				String reply = "";
+				Message reply = null;
 
 				try {
 					final ICommandOperations directoryOperations;
@@ -81,29 +81,29 @@ public class Worker implements Runnable {
 					} else if (command.startsWith(MKDIR)) {
 						// Command line parameter (directory name) start from index '6' in the received string
 						directoryOperations.mkdir(Globals.gfsMetadataRoot, command.substring(6));
-						reply = "Directory created successfully";
+						reply = new Message("Directory created successfully");
 					} else if (command.startsWith(TOUCH)) {
 						// Command line parameter (directory name) start from index '6' in the received string
 						directoryOperations.touch(Globals.gfsMetadataRoot, command.substring(6));
-						reply = "File created successfully";
+						reply = new Message("File created successfully");
 					} else if (command.startsWith(RMDIR)) {
 						// Command line parameter (directory name) start from index '6' in the received string
 						directoryOperations.rmdir(Globals.gfsMetadataRoot, command.substring(6));
-						reply = "Directory deleted successfully";
+						reply = new Message("Directory deleted successfully");
 					} else if (command.startsWith(EXIT)) {
 						// Close the connection
 						isRunning = false;
 					} else {
 						// Else, invalid command
-						reply = "Invalid command: " + command;
+						reply = new Message("Invalid command: " + command);
 					}
 				} catch (final Exception e) {
 					// If any command threw errors, propagate the error to the client
-					reply = e.getMessage();
+					reply = new Message(e.getMessage());
 				}
 
 				// Write reply to the socket output stream
-				outputStream.writeObject(new Message(reply));
+				outputStream.writeObject(reply);
 				outputStream.flush();
 			} catch (final IOException | ClassNotFoundException e) {
 				e.printStackTrace();

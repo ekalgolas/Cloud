@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.file.InvalidPathException;
 import java.util.InvalidPropertiesFormatException;
 
 import commons.AppConfig;
@@ -60,6 +61,11 @@ public class CephDirectoryOperations implements ICommandOperations {
 		return root;
 	}
 	
+	/**
+	 * Find the closest Directory that matches with the required file path.
+	 * @param filePath
+	 * @return closest directory.
+	 */
 	private Directory findClosestNode(String filePath)
 	{
 		int maxLevel = 0;
@@ -88,6 +94,12 @@ public class CephDirectoryOperations implements ICommandOperations {
 		return Globals.subTreePartitionList.get(maxMatchPath);
 	}
 	
+	/**
+	 * Get the MDS server info to forward the command (read/write) to the respective MDS. 
+	 * @param closestNode
+	 * @param isWrite
+	 * @return MDS information
+	 */
 	private MetaDataServerInfo getRequiredMdsInfo(Directory closestNode,boolean isWrite)
 	{
 		MetaDataServerInfo serverInfo = null;
@@ -104,6 +116,14 @@ public class CephDirectoryOperations implements ICommandOperations {
 		return serverInfo;
 	}
 	
+	/**
+	 * Execute the command in the remote MDS server and fetch the processed message.
+	 * @param command
+	 * @param closestNode
+	 * @param filePath
+	 * @param isWrite
+	 * @return Message containing the result.
+	 */
 	private Message remoteExecCommand(String command,
 									  Directory closestNode, 
 									  String filePath,
@@ -153,7 +173,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 	}
 	
 	@Override
-	public String ls(Directory root, String filePath, String... arguments) throws InvalidPropertiesFormatException {
+	public Message ls(Directory root, String filePath, String... arguments) throws InvalidPropertiesFormatException {
 		Directory node = search(root,filePath);
 			
 		if(node != null)
@@ -161,26 +181,26 @@ public class CephDirectoryOperations implements ICommandOperations {
 			Inode inode = node.getInode();
 			if(inode.getInodeNumber() != null)
 			{
+				final OutputFormatter output = new OutputFormatter();
 				if(!node.isFile())
 				{
 					// If we reach here, it means valid directory was found
-					// Compute output
-					final OutputFormatter output = new OutputFormatter();
+					// Compute output					
 					output.addRow("TYPE", "NAME");
 	
 					// Append children
 					for (final Directory child : node.getChildren()) {
 						final String type = child.isFile() ? "File" : "Directory";
 						output.addRow(type, child.getName());
-					}
-					return output.toString();
+					}					
 				}
 				else
 				{
-					final OutputFormatter output = new OutputFormatter();
 					output.addRow("TYPE", "NAME");					
-					output.addRow("File", node.getName());
+					output.addRow("File", node.getName());					
 				}
+				Message result = new Message(output.toString(), node.getInode().getDataServerInfo().toString());
+				return result;
 			}
 			else
 			{
@@ -189,9 +209,13 @@ public class CephDirectoryOperations implements ICommandOperations {
 					Directory closestNode = findClosestNode(filePath);
 					Message message = remoteExecCommand(Globals.LS,closestNode,filePath,false);
 					if(message != null)
-						return message.getContent();
+						return message;
 				}
 			}
+		}
+		else
+		{
+			new Message(filePath+" Does not exist");
 		}
 		return null;
 	}
@@ -221,7 +245,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 	}
 
 	@Override
-	public String cd(Directory root, String filePath) throws InvalidPropertiesFormatException {
+	public Message cd(Directory root, String filePath) throws InvalidPropertiesFormatException {
 		// TODO Auto-generated method stub
 		return null;
 	}
