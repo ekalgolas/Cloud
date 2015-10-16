@@ -5,11 +5,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-import master.ceph.CephDirectoryOperations;
-import master.gfs.DirectoryOperations;
 import commons.Globals;
 import commons.ICommandOperations;
 import commons.Message;
+import master.ceph.CephDirectoryOperations;
+import master.gfs.DirectoryOperations;
+import metadata.Directory;
 
 /**
  * <pre>
@@ -64,31 +65,42 @@ public class Worker implements Runnable {
 				final Message message = (Message) inputStream.readObject();
 				final String command = message.getContent();
 				Message reply = null;
+				Directory root = null;
+				StringBuffer partialFilePath = new StringBuffer();
 
 				try {
 					final ICommandOperations directoryOperations;
 					// Figure out the command and call the operations
 					if(Globals.GFS_MODE.equalsIgnoreCase(listenerType))
+					{
 						directoryOperations = new DirectoryOperations();
+						root = Globals.gfsMetadataRoot;
+					}
 					else if(Globals.MDS_MODE.equalsIgnoreCase(listenerType))
+					{				
 						directoryOperations = new CephDirectoryOperations();
+						root = Globals.findClosestNode(command.substring(3),partialFilePath);						
+					}
 					else
+					{
 						directoryOperations = new DirectoryOperations();
+						root = Globals.gfsMetadataRoot;
+					}
 					
 					if (command.startsWith(LS)) {
 						// Command line parameter (directory name) start from index '3' in the received string
-						reply = directoryOperations.ls(Globals.gfsMetadataRoot, command.substring(3));
+						reply = directoryOperations.ls(root, command.substring(3),partialFilePath.toString());
 					} else if (command.startsWith(MKDIR)) {
 						// Command line parameter (directory name) start from index '6' in the received string
-						directoryOperations.mkdir(Globals.gfsMetadataRoot, command.substring(6));
+						directoryOperations.mkdir(root, command.substring(6),partialFilePath.toString());
 						reply = new Message("Directory created successfully");
 					} else if (command.startsWith(TOUCH)) {
 						// Command line parameter (directory name) start from index '6' in the received string
-						directoryOperations.touch(Globals.gfsMetadataRoot, command.substring(6));
+						directoryOperations.touch(root, command.substring(6));
 						reply = new Message("File created successfully");
 					} else if (command.startsWith(RMDIR)) {
 						// Command line parameter (directory name) start from index '6' in the received string
-						directoryOperations.rmdir(Globals.gfsMetadataRoot, command.substring(6));
+						directoryOperations.rmdir(root, command.substring(6));
 						reply = new Message("Directory deleted successfully");
 					} else if (command.startsWith(EXIT)) {
 						// Close the connection

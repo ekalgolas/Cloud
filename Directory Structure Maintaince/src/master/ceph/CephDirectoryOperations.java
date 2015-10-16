@@ -6,6 +6,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.file.InvalidPathException;
+import java.util.ArrayList;
 import java.util.InvalidPropertiesFormatException;
 
 import commons.AppConfig;
@@ -28,9 +29,10 @@ public class CephDirectoryOperations implements ICommandOperations {
 	 *            Path to search
 	 * @return Node corresponding to the path, null if not found
 	 */
-	private Directory search(Directory root, final String filePath) {
+	private Directory search(Directory root, final String filePath, StringBuffer resultCode) {
 		// Get list of paths
 		final String[] paths = filePath.split("/");
+		int countLevel = 0;
 
 		// Find the directory in directory tree
 		for (final String path : paths) {
@@ -39,6 +41,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 			if (root.getName()
 					.equalsIgnoreCase(path)) {
 				found = true;
+				countLevel++;
 			}
 
 			// Check if the path corresponds to any child in this directory
@@ -52,58 +55,30 @@ public class CephDirectoryOperations implements ICommandOperations {
 			}
 
 			// If child was not found, path does not exists
-			if (!found) {
-				return null;
+			if (!found) {				
+				if(countLevel > 0)
+					resultCode.append(Globals.PARTIAL_PATH_FOUND);
+				else
+					resultCode.append(Globals.PATH_NOT_FOUND);
+				return root;
 			}
 		}
 
 		// Return the node where the path was found
+		resultCode.append(Globals.PATH_FOUND);
 		return root;
 	}
 	
 	/**
-	 * Find the closest Directory that matches with the required file path.
-	 * @param filePath
-	 * @return closest directory.
-	 */
-	private Directory findClosestNode(String filePath)
-	{
-		int maxLevel = 0;
-		String maxMatchPath = "";
-		for(String node:Globals.subTreePartitionList.keySet())
-		{
-			int currentLevel = 0;
-			int i=0;
-			while(i< node.length() && i < filePath.length())
-			{
-				if(node.charAt(i) == filePath.charAt(i))
-				{
-					if(node.charAt(i) == '/')
-						currentLevel++;
-				}
-				else
-					break;
-				i++;				
-			}
-			if(currentLevel > maxLevel && (i==node.length()))
-			{
-				maxLevel = currentLevel;
-				maxMatchPath = node;
-			}
-		}
-		return Globals.subTreePartitionList.get(maxMatchPath);
-	}
-	
-	/**
 	 * Get the MDS server info to forward the command (read/write) to the respective MDS. 
-	 * @param closestNode
+	 * @param inode
 	 * @param isWrite
 	 * @return MDS information
 	 */
-	private MetaDataServerInfo getRequiredMdsInfo(Directory closestNode,boolean isWrite)
+	private MetaDataServerInfo getRequiredMdsInfo(Inode inode,boolean isWrite)
 	{
 		MetaDataServerInfo serverInfo = null;
-		for(MetaDataServerInfo info:closestNode.getInode().getDataServerInfo())
+		for(MetaDataServerInfo info:inode.getDataServerInfo())
 		{
 			if(Globals.ALIVE_STATUS.equalsIgnoreCase(info.getStatus()) && 
 				((isWrite && Globals.PRIMARY_MDS.equals(info.getServerType())) ||
@@ -119,17 +94,17 @@ public class CephDirectoryOperations implements ICommandOperations {
 	/**
 	 * Execute the command in the remote MDS server and fetch the processed message.
 	 * @param command
-	 * @param closestNode
+	 * @param inode
 	 * @param filePath
 	 * @param isWrite
 	 * @return Message containing the result.
 	 */
 	private Message remoteExecCommand(String command,
-									  Directory closestNode, 
+									  Inode inode, 
 									  String filePath,
 									  boolean isWrite )
 	{
-		MetaDataServerInfo serverInfo = getRequiredMdsInfo(closestNode,isWrite);
+		MetaDataServerInfo serverInfo = getRequiredMdsInfo(inode,isWrite);
 		if(serverInfo == null)
 			return null;
 		while(serverInfo != null)
@@ -146,6 +121,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 				final Message message = (Message) inputStream.readObject();
 				final String reply = message.getContent();
 				System.out.println(reply);
+				socket.close();
 				return message;
 			}
 			catch(UnknownHostException unkhostexp)
@@ -166,7 +142,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 				System.err.println("Error occured while executing commands");
 				cnfexp.printStackTrace();
 			}
-			serverInfo = getRequiredMdsInfo(closestNode,isWrite);
+			serverInfo = getRequiredMdsInfo(inode,isWrite);
 		}
 		
 		return null;
@@ -174,12 +150,22 @@ public class CephDirectoryOperations implements ICommandOperations {
 	
 	@Override
 	public Message ls(Directory root, String filePath, String... arguments) throws InvalidPropertiesFormatException {
-		Directory node = search(root,filePath);
+		final StringBuffer resultCode = new StringBuffer();
+		String searchablePath;
+		if(arguments != null && arguments.length > 0 && !"/".equals(arguments[0]))
+		{
+			searchablePath = filePath.substring(arguments[0].length());
+		}
+		else
+		{
+			searchablePath = filePath;
+		}
+		Directory node = search(root,searchablePath,resultCode);
 			
 		if(node != null)
 		{
 			Inode inode = node.getInode();
-			if(inode.getInodeNumber() != null)
+			if(inode.getInodeNumber() != null && Globals.PATH_FOUND.equals(resultCode))
 			{
 				final OutputFormatter output = new OutputFormatter();
 				if(!node.isFile())
@@ -202,27 +188,113 @@ public class CephDirectoryOperations implements ICommandOperations {
 				Message result = new Message(output.toString(), node.getInode().getDataServerInfo().toString());
 				return result;
 			}
-			else
+			else if(inode.getInodeNumber() == null && Globals.PARTIAL_PATH_FOUND.equals(resultCode))
 			{
 				if(inode.getDataServerInfo() != null && inode.getDataServerInfo().size() > 0)
 				{
-					Directory closestNode = findClosestNode(filePath);
-					Message message = remoteExecCommand(Globals.LS,closestNode,filePath,false);
+					Message message = remoteExecCommand(Globals.LS,inode,filePath,false);
 					if(message != null)
 						return message;
 				}
 			}
+			else if(inode.getInodeNumber() != null)
+			{
+				return new Message(filePath+" is in an instable state");
+			}
+			else
+			{
+				return new Message(filePath+" Does not exist");
+			}
 		}
 		else
 		{
-			new Message(filePath+" Does not exist");
+			return new Message(filePath+" Does not exist");
 		}
 		return null;
 	}
+	
+	/**
+	 * Create a resource in the directory tree
+	 *
+	 * @param root
+	 *            Root of the directory structure to search in
+	 * @param path
+	 *            Path of the parent directory where the resource needs to be created
+	 * @param name
+	 *            Name of the resource
+	 * @param isFile
+	 *            Will create file if true, directory otherwise
+	 * @throws InvalidPathException
+	 */
+	private void create(final Directory root, final String currentPath, final String name, final boolean isFile, final String fullPath) throws InvalidPathException {
+		// Search and get to the directory where we have to create
+		final StringBuffer resultCode = new StringBuffer();
+		final Directory directory = search(root, currentPath, resultCode);
+		
+		if(directory != null)
+		{
+			Inode inode = directory.getInode();
+			if(inode.getInodeNumber() != null && Globals.PATH_FOUND.equals(resultCode))
+			{
+				if(!directory.isFile())
+				{
+					// Add file if isFile is true
+					if (isFile) {
+						final Directory file = new Directory(name, isFile, null);
+						directory.getChildren()
+						.add(file);
+					} else {
+						// Else, add directory here
+						final Directory dir = new Directory(name, isFile, new ArrayList<Directory>());
+						directory.getChildren()
+						.add(dir);
+					}
+				}
+				else
+				{
+					return; //need to add message explaining the path is not a directory. 					
+				}				
+			}
+			else if(inode.getInodeNumber() == null && Globals.PARTIAL_PATH_FOUND.equals(resultCode))
+			{
+				if(inode.getDataServerInfo() != null && inode.getDataServerInfo().size() > 0)
+				{
+					remoteExecCommand(Globals.MKDIR,inode,fullPath,false);					
+				}
+			}
+			else if(inode.getInodeNumber() != null)
+			{
+				return; // need to add message explaining the unstable state of metadata. 
+			}
+			else
+			{
+				return; // need to add message explaining the path not found issue.
+			}
+		}
+		else
+		{
+			return; // need to add message explaining the path not found issue.
+		}
+	}
 
 	@Override
-	public void mkdir(Directory root, String path) throws InvalidPropertiesFormatException {
-		// TODO Auto-generated method stub
+	public void mkdir(Directory root, String path, String... arguments) throws InvalidPropertiesFormatException {
+		// Get the parent directory and the name of directory
+		String searchablePath;
+		if(arguments != null && arguments.length > 0 && !"/".equals(arguments[0]))
+		{
+			searchablePath = path.substring(arguments[0].length());
+		}
+		else
+		{
+			searchablePath = path;
+		}
+		final String[] paths = path.split("/");
+		final String name = paths[paths.length - 2];
+		final String dirPath = path.substring(0, searchablePath.length() - name.length() - 1);
+
+		// Create the directory
+		create(root, dirPath, name, false, path);
 
 	}
 

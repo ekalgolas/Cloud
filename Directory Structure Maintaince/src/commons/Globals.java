@@ -31,4 +31,44 @@ public class Globals {
 	public static final String	RMDIR		= "rmdir";
 	public static final String	TOUCH		= "touch";
 	public static final String	EXIT		= "exit";
+	
+	// File search status codes.
+	public static final String PATH_NOT_FOUND = "PNF";
+	public static final String PARTIAL_PATH_FOUND = "PPF";
+	public static final String PATH_FOUND = "PF";
+	
+	
+	/**
+	 * Find the closest Directory that matches with the required file path.
+	 * @param filePath
+	 * @return closest directory.
+	 */
+	public static Directory findClosestNode(String filePath,StringBuffer matchedPath)
+	{
+		int maxLevel = 0;
+		String maxMatchPath = "";
+		for(String node:Globals.subTreePartitionList.keySet())
+		{
+			int currentLevel = 0;
+			int i=0;
+			while(i< node.length() && i < filePath.length())
+			{
+				if(node.charAt(i) == filePath.charAt(i))
+				{
+					if(node.charAt(i) == '/')
+						currentLevel++;
+				}
+				else
+					break;
+				i++;				
+			}
+			if(currentLevel > maxLevel && (i==node.length()))
+			{
+				maxLevel = currentLevel;
+				maxMatchPath = node;
+			}
+		}
+		matchedPath.append(maxMatchPath);
+		return Globals.subTreePartitionList.get(maxMatchPath);
+	}
 }
