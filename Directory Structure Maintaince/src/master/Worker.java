@@ -92,7 +92,7 @@ public class Worker implements Runnable {
 						reply = directoryOperations.ls(root, command.substring(3),partialFilePath.toString());
 					} else if (command.startsWith(MKDIR)) {
 						// Command line parameter (directory name) start from index '6' in the received string
-						directoryOperations.mkdir(root, command.substring(6));
+						directoryOperations.mkdir(root, command.substring(6),partialFilePath.toString());
 						reply = new Message("Directory created successfully");
 					} else if (command.startsWith(TOUCH)) {
 						// Command line parameter (directory name) start from index '6' in the received string

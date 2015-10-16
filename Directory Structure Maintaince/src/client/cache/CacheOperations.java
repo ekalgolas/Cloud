@@ -28,7 +28,7 @@ public class CacheOperations implements ICommandOperations {
 	 * @see commons.ICommandOperations#mkdir(metadata.Directory, java.lang.String)
 	 */
 	@Override
-	public void mkdir(final Directory root, final String path) throws InvalidPropertiesFormatException {
+	public void mkdir(final Directory root, final String path, String... arguments) throws InvalidPropertiesFormatException {
 		// TODO Auto-generated method stub
 
 	}

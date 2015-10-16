@@ -134,7 +134,7 @@ public class DirectoryOperations implements ICommandOperations {
 	 * @see commons.ICommandOperations#mkdir(metadata.Directory, java.lang.String)
 	 */
 	@Override
-	public void mkdir(final Directory root, final String path) throws InvalidPropertiesFormatException {
+	public void mkdir(final Directory root, final String path, String... arguments) throws InvalidPropertiesFormatException {
 		// Check if path is valid
 		if (path.charAt(path.length() - 1) != '/') {
 			throw new InvalidPropertiesFormatException("Argument invalid: Path should contain a '/' at the end");

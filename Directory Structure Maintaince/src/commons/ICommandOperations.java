@@ -33,7 +33,7 @@ public interface ICommandOperations {
 	 *            Absolute path of the directory to be created
 	 * @throws InvalidPropertiesFormatException
 	 */
-	public void mkdir(final Directory root, final String path) throws InvalidPropertiesFormatException;
+	public void mkdir(final Directory root, final String path, String... arguments) throws InvalidPropertiesFormatException;
 
 	/**
 	 * Create file operation

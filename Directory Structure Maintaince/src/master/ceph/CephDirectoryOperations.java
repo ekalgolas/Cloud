@@ -226,38 +226,75 @@ public class CephDirectoryOperations implements ICommandOperations {
 	 *            Will create file if true, directory otherwise
 	 * @throws InvalidPathException
 	 */
-	private void create(final Directory root, final String path, final String name, final boolean isFile) throws InvalidPathException {
+	private void create(final Directory root, final String currentPath, final String name, final boolean isFile, final String fullPath) throws InvalidPathException {
 		// Search and get to the directory where we have to create
 		final StringBuffer resultCode = new StringBuffer();
-		final Directory directory = search(root, path, resultCode);
-
-		// If path was not found, throw exception
-		if (directory == null) {
-			throw new InvalidPathException(path, "Path was not found");
+		final Directory directory = search(root, currentPath, resultCode);
+		
+		if(directory != null)
+		{
+			Inode inode = directory.getInode();
+			if(inode.getInodeNumber() != null && Globals.PATH_FOUND.equals(resultCode))
+			{
+				if(!directory.isFile())
+				{
+					// Add file if isFile is true
+					if (isFile) {
+						final Directory file = new Directory(name, isFile, null);
+						directory.getChildren()
+						.add(file);
+					} else {
+						// Else, add directory here
+						final Directory dir = new Directory(name, isFile, new ArrayList<Directory>());
+						directory.getChildren()
+						.add(dir);
+					}
+				}
+				else
+				{
+					return; //need to add message explaining the path is not a directory. 					
+				}				
+			}
+			else if(inode.getInodeNumber() == null && Globals.PARTIAL_PATH_FOUND.equals(resultCode))
+			{
+				if(inode.getDataServerInfo() != null && inode.getDataServerInfo().size() > 0)
+				{
+					remoteExecCommand(Globals.MKDIR,inode,fullPath,false);					
+				}
+			}
+			else if(inode.getInodeNumber() != null)
+			{
+				return; // need to add message explaining the unstable state of metadata. 
+			}
+			else
+			{
+				return; // need to add message explaining the path not found issue.
+			}
 		}
-
-		// Add file if isFile is true
-		if (isFile) {
-			final Directory file = new Directory(name, isFile, null);
-			directory.getChildren()
-			.add(file);
-		} else {
-			// Else, add directory here
-			final Directory dir = new Directory(name, isFile, new ArrayList<Directory>());
-			directory.getChildren()
-			.add(dir);
+		else
+		{
+			return; // need to add message explaining the path not found issue.
 		}
 	}
 
 	@Override
-	public void mkdir(Directory root, String path) throws InvalidPropertiesFormatException {
+	public void mkdir(Directory root, String path, String... arguments) throws InvalidPropertiesFormatException {
 		// Get the parent directory and the name of directory
+		String searchablePath;
+		if(arguments != null && arguments.length > 0 && !"/".equals(arguments[0]))
+		{
+			searchablePath = path.substring(arguments[0].length());
+		}
+		else
+		{
+			searchablePath = path;
+		}
 		final String[] paths = path.split("/");
 		final String name = paths[paths.length - 2];
-		final String dirPath = path.substring(0, path.length() - name.length() - 1);
+		final String dirPath = path.substring(0, searchablePath.length() - name.length() - 1);
 
 		// Create the directory
-		create(root, dirPath, name, false);
+		create(root, dirPath, name, false, path);
 
 	}
 
