@@ -16,38 +16,32 @@ public class Globals {
 	 */
 	public static Directory	gfsMetadataRoot	= null;
 	public static HashMap<String, Directory> subTreePartitionList = null;
-	
+
 	public static final String GFS_SERVER_PORT = "gfs.server.port";
 	public static final String MDS_SERVER_PORT = "mds.server.port";
-	
+
 	public static final String GFS_MODE = "GFS";
 	public static final String MDS_MODE = "MDS";
 	public static final String ALIVE_STATUS = "Alive";
 	public static final String DEAD_STATUS = "Dead";
 	public static final String PRIMARY_MDS = "Primary";
 	public static final String REPLICA_MDS = "Replica";
-	public static final String	LS			= "ls";
-	public static final String	MKDIR		= "mkdir";
-	public static final String	RMDIR		= "rmdir";
-	public static final String	TOUCH		= "touch";
-	public static final String	EXIT		= "exit";
-	
+
 	// File search status codes.
 	public static final String PATH_NOT_FOUND = "PNF";
 	public static final String PARTIAL_PATH_FOUND = "PPF";
 	public static final String PATH_FOUND = "PF";
-	
-	
+
 	/**
 	 * Find the closest Directory that matches with the required file path.
 	 * @param filePath
 	 * @return closest directory.
 	 */
-	public static Directory findClosestNode(String filePath,StringBuffer matchedPath)
+	public static Directory findClosestNode(final String filePath,final StringBuffer matchedPath)
 	{
 		int maxLevel = 0;
 		String maxMatchPath = "";
-		for(String node:Globals.subTreePartitionList.keySet())
+		for(final String node:Globals.subTreePartitionList.keySet())
 		{
 			int currentLevel = 0;
 			int i=0;
@@ -55,14 +49,15 @@ public class Globals {
 			{
 				if(node.charAt(i) == filePath.charAt(i))
 				{
-					if(node.charAt(i) == '/')
+					if(node.charAt(i) == '/') {
 						currentLevel++;
-				}
-				else
+					}
+				} else {
 					break;
-				i++;				
+				}
+				i++;
 			}
-			if(currentLevel > maxLevel && (i==node.length()))
+			if(currentLevel > maxLevel && i==node.length())
 			{
 				maxLevel = currentLevel;
 				maxMatchPath = node;

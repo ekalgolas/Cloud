@@ -5,12 +5,14 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-import commons.Globals;
-import commons.ICommandOperations;
-import commons.Message;
 import master.ceph.CephDirectoryOperations;
-import master.gfs.DirectoryOperations;
+import master.gfs.GFSDirectoryOperations;
 import metadata.Directory;
+
+import commons.CommandsSupported;
+import commons.Globals;
+import commons.Message;
+import commons.dir.ICommandOperations;
 
 /**
  * <pre>
@@ -20,14 +22,8 @@ import metadata.Directory;
  * </pre>
  */
 public class Worker implements Runnable {
-	private static final String	LS			= "ls";
-	private static final String	MKDIR		= "mkdir";
-	private static final String	RMDIR		= "rmdir";
-	private static final String	TOUCH		= "touch";
-	private static final String	EXIT		= "exit";
-
 	public volatile boolean		isRunning	= true;
-	private String 				listenerType;
+	private final String		listenerType;
 	private final Socket		workerSocket;
 	private ObjectInputStream	inputStream;
 	private ObjectOutputStream	outputStream;
@@ -38,7 +34,7 @@ public class Worker implements Runnable {
 	 * @param socket
 	 *            Socket to get streams from
 	 */
-	public Worker(final Socket socket, String listenerType) {
+	public Worker(final Socket socket, final String listenerType) {
 		workerSocket = socket;
 		this.listenerType = listenerType;
 
@@ -63,46 +59,42 @@ public class Worker implements Runnable {
 			try {
 				// Read the queried command
 				final Message message = (Message) inputStream.readObject();
-				final String command = message.getContent();
+				final String command = message.getContent().toUpperCase();
 				Message reply = null;
 				Directory root = null;
-				StringBuffer partialFilePath = new StringBuffer();
+				final StringBuffer partialFilePath = new StringBuffer();
 
 				try {
 					final ICommandOperations directoryOperations;
+
 					// Figure out the command and call the operations
-					if(Globals.GFS_MODE.equalsIgnoreCase(listenerType))
-					{
-						directoryOperations = new DirectoryOperations();
+					if (Globals.GFS_MODE.equalsIgnoreCase(listenerType)) {
+						directoryOperations = new GFSDirectoryOperations();
 						root = Globals.gfsMetadataRoot;
-					}
-					else if(Globals.MDS_MODE.equalsIgnoreCase(listenerType))
-					{				
+					} else if (Globals.MDS_MODE.equalsIgnoreCase(listenerType)) {
 						directoryOperations = new CephDirectoryOperations();
-						root = Globals.findClosestNode(command.substring(3),partialFilePath);						
-					}
-					else
-					{
-						directoryOperations = new DirectoryOperations();
+						root = Globals.findClosestNode(command.substring(3), partialFilePath);
+					} else {
+						directoryOperations = new GFSDirectoryOperations();
 						root = Globals.gfsMetadataRoot;
 					}
-					
-					if (command.startsWith(LS)) {
+
+					if (command.startsWith(CommandsSupported.LS.name())) {
 						// Command line parameter (directory name) start from index '3' in the received string
-						reply = directoryOperations.ls(root, command.substring(3),partialFilePath.toString());
-					} else if (command.startsWith(MKDIR)) {
+						reply = directoryOperations.ls(root, command.substring(3), partialFilePath.toString());
+					} else if (command.startsWith(CommandsSupported.MKDIR.name())) {
 						// Command line parameter (directory name) start from index '6' in the received string
-						directoryOperations.mkdir(root, command.substring(6),partialFilePath.toString());
+						directoryOperations.mkdir(root, command.substring(6), partialFilePath.toString());
 						reply = new Message("Directory created successfully");
-					} else if (command.startsWith(TOUCH)) {
+					} else if (command.startsWith(CommandsSupported.TOUCH.name())) {
 						// Command line parameter (directory name) start from index '6' in the received string
 						directoryOperations.touch(root, command.substring(6));
 						reply = new Message("File created successfully");
-					} else if (command.startsWith(RMDIR)) {
+					} else if (command.startsWith(CommandsSupported.RMDIR.name())) {
 						// Command line parameter (directory name) start from index '6' in the received string
 						directoryOperations.rmdir(root, command.substring(6));
 						reply = new Message("Directory deleted successfully");
-					} else if (command.startsWith(EXIT)) {
+					} else if (command.startsWith(CommandsSupported.EXIT.name())) {
 						// Close the connection
 						isRunning = false;
 					} else {
