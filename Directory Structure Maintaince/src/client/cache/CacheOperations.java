@@ -3,9 +3,8 @@ package client.cache;
 import java.util.InvalidPropertiesFormatException;
 
 import metadata.Directory;
-
-import commons.ICommandOperations;
 import commons.Message;
+import commons.dir.ICommandOperations;
 
 /**
  * Class to provide cache operation before client contacts the master

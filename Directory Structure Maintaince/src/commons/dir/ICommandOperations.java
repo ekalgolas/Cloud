@@ -1,6 +1,8 @@
-package commons;
+package commons.dir;
 
 import java.util.InvalidPropertiesFormatException;
+
+import commons.Message;
 
 import metadata.Directory;
 

@@ -7,13 +7,13 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
-import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
 
-import master.gfs.DirectoryParser;
 import metadata.Directory;
+
 import commons.AppConfig;
 import commons.Globals;
+import commons.dir.DirectoryParser;
 
 /**
  * <pre>
@@ -45,10 +45,12 @@ public class Master {
 
 		// Else, initialize the socket
 		try {
-			if(gfsListenerSocket == null)
+			if(gfsListenerSocket == null) {
 				gfsListenerSocket = new ServerSocket(Integer.parseInt(AppConfig.getValue(Globals.GFS_SERVER_PORT)));
-			if(mdsListenerSocket == null)
+			}
+			if(mdsListenerSocket == null) {
 				mdsListenerSocket = new ServerSocket(Integer.parseInt(AppConfig.getValue(Globals.MDS_SERVER_PORT)));
+			}
 		} catch (final IOException e) {
 			e.printStackTrace();
 		}
@@ -108,6 +110,7 @@ public class Master {
 		// Generate metadata for existing directory structure
 		try {
 			final Directory directory = generateMetadata();
+
 			// Set the globals root
 			Globals.gfsMetadataRoot = directory;
 		} catch (final ClassNotFoundException e) {
@@ -120,7 +123,7 @@ public class Master {
 		final Listener gfsListener = new Listener(gfsListenerSocket, Globals.GFS_MODE);
 		final Thread gfsListenerThread = new Thread(gfsListener);
 		gfsListenerThread.start();
-		
+
 		final Listener mdsListener = new Listener(mdsListenerSocket, Globals.MDS_MODE);
 		final Thread mdsListenerThread = new Thread(mdsListener);
 		mdsListenerThread.start();

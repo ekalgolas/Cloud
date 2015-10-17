@@ -11,17 +11,18 @@ import java.util.Date;
 import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 
-import commons.AppConfig;
-import commons.Globals;
-import commons.ICommandOperations;
-import commons.Message;
-import commons.OutputFormatter;
 import metadata.Directory;
 import metadata.Inode;
 import metadata.MetaDataServerInfo;
 
-public class CephDirectoryOperations implements ICommandOperations {
+import commons.AppConfig;
+import commons.CommandsSupported;
+import commons.Globals;
+import commons.Message;
+import commons.OutputFormatter;
+import commons.dir.ICommandOperations;
 
+public class CephDirectoryOperations implements ICommandOperations {
 	/**
 	 * Performs a tree search from the {@literal root} on the directory structure corresponding to the {@literal filePath}
 	 *
@@ -31,7 +32,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 	 *            Path to search
 	 * @return Node corresponding to the path, null if not found
 	 */
-	private Directory search(Directory root, final String filePath, StringBuffer resultCode) {
+	private Directory search(Directory root, final String filePath, final StringBuffer resultCode) {
 		// Get list of paths
 		final String[] paths = filePath.split("/");
 		int countLevel = 0;
@@ -60,11 +61,12 @@ public class CephDirectoryOperations implements ICommandOperations {
 			}
 
 			// If child was not found, path does not exists
-			if (!found) {				
-				if(countLevel > 0)
+			if (!found) {
+				if(countLevel > 0) {
 					resultCode.append(Globals.PARTIAL_PATH_FOUND);
-				else
+				} else {
 					resultCode.append(Globals.PATH_NOT_FOUND);
+				}
 				return root;
 			}
 		}
@@ -73,21 +75,21 @@ public class CephDirectoryOperations implements ICommandOperations {
 		resultCode.append(Globals.PATH_FOUND);
 		return root;
 	}
-	
+
 	/**
-	 * Get the MDS server info to forward the command (read/write) to the respective MDS. 
+	 * Get the MDS server info to forward the command (read/write) to the respective MDS.
 	 * @param inode
 	 * @param isWrite
 	 * @return MDS information
 	 */
-	private MetaDataServerInfo getRequiredMdsInfo(Inode inode,boolean isWrite)
+	private MetaDataServerInfo getRequiredMdsInfo(final Inode inode,final boolean isWrite)
 	{
 		MetaDataServerInfo serverInfo = null;
-		for(MetaDataServerInfo info:inode.getDataServerInfo())
+		for(final MetaDataServerInfo info:inode.getDataServerInfo())
 		{
-			if(Globals.ALIVE_STATUS.equalsIgnoreCase(info.getStatus()) && 
-				((isWrite && Globals.PRIMARY_MDS.equals(info.getServerType())) ||
-				(!isWrite)))
+			if(Globals.ALIVE_STATUS.equalsIgnoreCase(info.getStatus()) &&
+					(isWrite && Globals.PRIMARY_MDS.equals(info.getServerType()) ||
+							!isWrite))
 			{
 				serverInfo = info;
 				return serverInfo;
@@ -104,14 +106,15 @@ public class CephDirectoryOperations implements ICommandOperations {
 	 * @param isWrite
 	 * @return Message containing the result.
 	 */
-	private Message remoteExecCommand(String command,
-									  Inode inode, 
-									  String filePath,
-									  boolean isWrite )
+	private Message remoteExecCommand(final CommandsSupported command,
+			final Inode inode,
+			final String filePath,
+			final boolean isWrite )
 	{
 		MetaDataServerInfo serverInfo = getRequiredMdsInfo(inode,isWrite);
-		if(serverInfo == null)
+		if(serverInfo == null) {
 			return null;
+		}
 		while(serverInfo != null)
 		{
 			try
@@ -121,7 +124,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 				final ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
 				outputStream.writeObject(new Message(command+" "+filePath));
 				outputStream.flush();
-	
+
 				// Wait and read the reply
 				final Message message = (Message) inputStream.readObject();
 				final String reply = message.getContent();
@@ -129,19 +132,19 @@ public class CephDirectoryOperations implements ICommandOperations {
 				socket.close();
 				return message;
 			}
-			catch(UnknownHostException unkhostexp)
+			catch(final UnknownHostException unkhostexp)
 			{
 				serverInfo.setStatus(Globals.DEAD_STATUS);
 				System.err.println("Error occured while executing commands");
 				unkhostexp.printStackTrace();
 			}
-			catch(IOException ioexp)
+			catch(final IOException ioexp)
 			{
 				serverInfo.setStatus(Globals.DEAD_STATUS);
 				System.err.println("Error occured while executing commands");
 				ioexp.printStackTrace();
 			}
-			catch (ClassNotFoundException cnfexp) 
+			catch (final ClassNotFoundException cnfexp)
 			{
 				serverInfo.setStatus(Globals.DEAD_STATUS);
 				System.err.println("Error occured while executing commands");
@@ -149,12 +152,12 @@ public class CephDirectoryOperations implements ICommandOperations {
 			}
 			serverInfo = getRequiredMdsInfo(inode,isWrite);
 		}
-		
+
 		return null;
 	}
 	
 	@Override
-	public Message ls(Directory root, String filePath, String... arguments) throws InvalidPropertiesFormatException {
+	public Message ls(final Directory root, final String filePath, final String... arguments) throws InvalidPropertiesFormatException {
 		final StringBuffer resultCode = new StringBuffer();
 		String searchablePath;
 		if(arguments != null && arguments.length > 0 && !"/".equals(arguments[0]))
@@ -165,11 +168,11 @@ public class CephDirectoryOperations implements ICommandOperations {
 		{
 			searchablePath = filePath;
 		}
-		Directory node = search(root,searchablePath,resultCode);
-			
+		final Directory node = search(root,searchablePath,resultCode);
+
 		if(node != null)
 		{
-			Inode inode = node.getInode();
+			final Inode inode = node.getInode();
 			if(inode.getInodeNumber() != null && Globals.PATH_FOUND.equals(resultCode))
 			{
 				final OutputFormatter output = new OutputFormatter();
@@ -190,16 +193,17 @@ public class CephDirectoryOperations implements ICommandOperations {
 					output.addRow("TYPE", "NAME");					
 					output.addRow("File", node.getName());					
 				}
-				Message result = new Message(output.toString(), node.getInode().getDataServerInfo().toString());
+				final Message result = new Message(output.toString(), node.getInode().getDataServerInfo().toString());
 				return result;
 			}
 			else if(inode.getInodeNumber() == null && Globals.PARTIAL_PATH_FOUND.equals(resultCode))
 			{
 				if(inode.getDataServerInfo() != null && inode.getDataServerInfo().size() > 0)
 				{
-					Message message = remoteExecCommand(Globals.LS,inode,filePath,false);
-					if(message != null)
+					final Message message = remoteExecCommand(CommandsSupported.LS, inode, filePath, false);
+					if(message != null) {
 						return message;
+					}
 				}
 			}
 			else if(inode.getInodeNumber() != null)
@@ -238,7 +242,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 		
 		if(directory != null)
 		{
-			Inode inode = directory.getInode();
+			final Inode inode = directory.getInode();
 			if(inode.getInodeNumber() != null && Globals.PATH_FOUND.equals(resultCode))
 			{
 				if(!directory.isFile())
@@ -290,7 +294,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 			{
 				if(inode.getDataServerInfo() != null && inode.getDataServerInfo().size() > 0)
 				{
-					remoteExecCommand(Globals.MKDIR,inode,fullPath,false);					
+					remoteExecCommand(CommandsSupported.MKDIR, inode, fullPath, false);
 				}
 			}
 			else if(inode.getInodeNumber() != null)
@@ -309,7 +313,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 	}
 
 	@Override
-	public void mkdir(Directory root, String path, String... arguments) throws InvalidPropertiesFormatException {
+	public void mkdir(final Directory root, final String path, final String... arguments) throws InvalidPropertiesFormatException {
 		// Get the parent directory and the name of directory
 		String searchablePath;
 		if(arguments != null && arguments.length > 0 && !"/".equals(arguments[0]))
@@ -330,7 +334,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 	}
 
 	@Override
-	public void touch(Directory root, String path) throws InvalidPropertiesFormatException {
+	public void touch(final Directory root, final String path) throws InvalidPropertiesFormatException {
 		// Get the parent directory and the name of file
 		final String[] paths = path.split("/");
 		final String name = paths[paths.length - 1];
@@ -364,19 +368,19 @@ public class CephDirectoryOperations implements ICommandOperations {
 	}
 
 	@Override
-	public void rmdir(Directory root, String path, String... arguments) throws InvalidPropertiesFormatException {
+	public void rmdir(final Directory root, final String path, final String... arguments) throws InvalidPropertiesFormatException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void rm(Directory root, String path) throws InvalidPropertiesFormatException {
+	public void rm(final Directory root, final String path) throws InvalidPropertiesFormatException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public Message cd(Directory root, String filePath) throws InvalidPropertiesFormatException {
+	public Message cd(final Directory root, final String filePath) throws InvalidPropertiesFormatException {
 		// TODO Auto-generated method stub
 		return null;
 	}
