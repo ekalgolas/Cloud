@@ -1,4 +1,4 @@
-package master.gfs;
+package commons.dir;
 
 import java.io.File;
 import java.io.FileNotFoundException;

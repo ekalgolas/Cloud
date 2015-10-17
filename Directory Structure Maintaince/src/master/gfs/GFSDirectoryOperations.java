@@ -7,15 +7,14 @@ import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 
 import metadata.Directory;
-
-import commons.ICommandOperations;
 import commons.Message;
 import commons.OutputFormatter;
+import commons.dir.ICommandOperations;
 
 /**
  * Class to implement various directory metadata operations
  */
-public class DirectoryOperations implements ICommandOperations {
+public class GFSDirectoryOperations implements ICommandOperations {
 	/*
 	 * (non-Javadoc)
 	 * @see commons.ICommandOperations#ls(metadata.Directory, java.lang.String, java.lang.String[])

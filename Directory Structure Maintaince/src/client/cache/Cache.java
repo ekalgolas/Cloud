@@ -2,7 +2,7 @@ package client.cache;
 
 import java.util.HashMap;
 
-import master.gfs.DirectoryOperations;
+import master.gfs.GFSDirectoryOperations;
 import metadata.Directory;
 
 public class Cache {
@@ -14,7 +14,7 @@ public class Cache {
 			if (entry.getValid()) {
 
 				// TODO: send call to server
-				final Directory dirFromServer = DirectoryOperations.lsWithCache(null, directoryPath, entry.getTimeStamp());
+				final Directory dirFromServer = GFSDirectoryOperations.lsWithCache(null, directoryPath, entry.getTimeStamp());
 				if (dirFromServer.getName()
 						.equals("")) {
 					addToCache(directoryPath, entry);
