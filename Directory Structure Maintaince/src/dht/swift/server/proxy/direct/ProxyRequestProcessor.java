@@ -12,9 +12,7 @@ import dht.dhtfs.core.def.IFileSystem;
 import dht.dhtfs.core.def.ILockManager;
 import dht.dhtfs.core.table.PhysicalNode;
 import dht.dhtfs.core.table.RouteTable;
-import dht.dhtfs.server.datanode.DataRequestProcessor;
 import dht.nio.client.TCPClient;
-import dht.nio.client.TCPConnection;
 import dht.nio.protocol.ProtocolReq;
 import dht.nio.protocol.ProtocolResp;
 import dht.nio.protocol.ReqType;
@@ -44,8 +42,7 @@ public class ProxyRequestProcessor implements IProcessor {
 		conf = config;
 		client = new TCPClient();
 		try {
-			table = (RouteTable) RouteTable.loadMeta(config
-					.getProperty("imgFile"));
+			table = (RouteTable) RouteTable.loadMeta(config.getProperty("imgFile"));
 		} catch (IOException e) {
 			table = new RouteTable();
 			table.initialize(config);
@@ -96,8 +93,7 @@ public class ProxyRequestProcessor implements IProcessor {
 		return resp;
 	}
 
-	public ProtocolResp handleCreateFileReq(ConnectionInfo info,
-			CreateFileReq createReq) {
+	public ProtocolResp handleCreateFileReq(ConnectionInfo info, CreateFileReq createReq) {
 		CreateFileResp createResp = new CreateFileResp(RespType.OK);
 
 		DhtPath path = new DhtPath(createReq.getFileName());
@@ -126,8 +122,7 @@ public class ProxyRequestProcessor implements IProcessor {
 		return createResp;
 	}
 
-	public ProtocolResp handleOpenFileReq(ConnectionInfo info,
-			OpenFileReq openReq) {
+	public ProtocolResp handleOpenFileReq(ConnectionInfo info, OpenFileReq openReq) {
 		OpenFileResp openResp = new OpenFileResp(RespType.OK);
 
 		DhtPath path = new DhtPath(openReq.getFileName());

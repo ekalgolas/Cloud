@@ -16,10 +16,11 @@ import commons.util.FileHelper;
 import commons.util.Log;
 
 public class FileWriteClient {
-	private static final Log	log		= Log.get();
-	static long					timeout	= 60 * 1000;	// 60 seconds
+	private static final Log log = Log.get();
+	static long timeout = 60 * 1000; // 60 seconds
 
-	static boolean upload(final IOControl control, final String path, final ArrayList<Address> addresses, final long position) {
+	static boolean upload(final IOControl control, final String path, final ArrayList<Address> addresses,
+			final long position) {
 		try {
 			final File file = new File(path);
 			final FileInputStream fis = new FileInputStream(file);

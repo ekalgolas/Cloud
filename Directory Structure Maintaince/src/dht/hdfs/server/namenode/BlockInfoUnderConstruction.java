@@ -19,7 +19,6 @@ package dht.hdfs.server.namenode;
  */
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -65,8 +64,7 @@ public class BlockInfoUnderConstruction extends BlockInfo {
 		private ReplicaState state;
 		private boolean chosenAsPrimary;
 
-		ReplicaUnderConstruction(Block block, DatanodeID target,
-				ReplicaState state) {
+		ReplicaUnderConstruction(Block block, DatanodeID target, ReplicaState state) {
 			super(block);
 			this.expectedLocation = target;
 			this.state = state;
@@ -139,8 +137,7 @@ public class BlockInfoUnderConstruction extends BlockInfo {
 
 		@Override
 		public void appendStringTo(StringBuilder sb) {
-			sb.append("ReplicaUnderConstruction[").append(expectedLocation)
-					.append("|").append(state).append("]");
+			sb.append("ReplicaUnderConstruction[").append(expectedLocation).append("|").append(state).append("]");
 		}
 	}
 
@@ -155,8 +152,7 @@ public class BlockInfoUnderConstruction extends BlockInfo {
 	/**
 	 * Create a block that is currently being constructed.
 	 */
-	public BlockInfoUnderConstruction(Block blk, int replication,
-			BlockUCState state, DatanodeID[] targets) {
+	public BlockInfoUnderConstruction(Block blk, int replication, BlockUCState state, DatanodeID[] targets) {
 		super(blk, replication);
 		assert getBlockUCState() != BlockUCState.COMPLETE : "BlockInfoUnderConstruction cannot be in COMPLETE state";
 		this.blockUCState = state;
@@ -183,8 +179,7 @@ public class BlockInfoUnderConstruction extends BlockInfo {
 		int numLocations = targets == null ? 0 : targets.length;
 		this.replicas = new ArrayList<ReplicaUnderConstruction>(numLocations);
 		for (int i = 0; i < numLocations; i++)
-			replicas.add(new ReplicaUnderConstruction(this, targets[i],
-					ReplicaState.RBW));
+			replicas.add(new ReplicaUnderConstruction(this, targets[i], ReplicaState.RBW));
 	}
 
 	/**
@@ -234,8 +229,8 @@ public class BlockInfoUnderConstruction extends BlockInfo {
 	 */
 	void commitBlock(Block block) throws IOException {
 		if (getBlockId() != block.getBlockId())
-			throw new IOException("Trying to commit inconsistent block: id = "
-					+ block.getBlockId() + ", expected id = " + getBlockId());
+			throw new IOException("Trying to commit inconsistent block: id = " + block.getBlockId() + ", expected id = "
+					+ getBlockId());
 		blockUCState = BlockUCState.COMMITTED;
 		this.set(getBlockId(), block.getNumBytes(), block.getGenerationStamp());
 	}
@@ -256,8 +251,7 @@ public class BlockInfoUnderConstruction extends BlockInfo {
 		for (int i = 0; i < replicas.size(); i++) {
 			// Check if all replicas have been tried or not.
 			if (replicas.get(i).isAlive()) {
-				allLiveReplicasTriedAsPrimary = (allLiveReplicasTriedAsPrimary && replicas
-						.get(i).getChosenAsPrimary());
+				allLiveReplicasTriedAsPrimary = (allLiveReplicasTriedAsPrimary && replicas.get(i).getChosenAsPrimary());
 			}
 		}
 		if (allLiveReplicasTriedAsPrimary) {
@@ -272,8 +266,7 @@ public class BlockInfoUnderConstruction extends BlockInfo {
 		primaryNodeIndex = -1;
 		for (int i = 0; i < replicas.size(); i++) {
 			// Skip alive replicas which have been chosen for recovery.
-			if (!(replicas.get(i).isAlive() && !replicas.get(i)
-					.getChosenAsPrimary())) {
+			if (!(replicas.get(i).isAlive() && !replicas.get(i).getChosenAsPrimary())) {
 				continue;
 			}
 			// if (replicas.get(i).getExpectedLocation().getLastUpdate() >
@@ -327,8 +320,7 @@ public class BlockInfoUnderConstruction extends BlockInfo {
 	}
 
 	private void appendUCParts(StringBuilder sb) {
-		sb.append("{blockUCState=").append(blockUCState)
-				.append(", primaryNodeIndex=").append(primaryNodeIndex)
+		sb.append("{blockUCState=").append(blockUCState).append(", primaryNodeIndex=").append(primaryNodeIndex)
 				.append(", replicas=[");
 		Iterator<ReplicaUnderConstruction> iter = replicas.iterator();
 		if (iter.hasNext()) {

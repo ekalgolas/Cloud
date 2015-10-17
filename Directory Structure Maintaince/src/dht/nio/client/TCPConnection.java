@@ -27,8 +27,7 @@ public class TCPConnection implements Closeable {
 		}
 	}
 
-	public static TCPConnection getInstance(String ip, int port)
-			throws IOException {
+	public static TCPConnection getInstance(String ip, int port) throws IOException {
 		TCPConnection connection = new TCPConnection();
 		connection.bind(ip, port);
 		return connection;

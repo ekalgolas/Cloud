@@ -10,14 +10,13 @@ public class MultiPartBufferInputStreamNew extends MultiPartInputStreamNew {
 	final int len;
 	final long filePointer;// file offset
 
-	public MultiPartBufferInputStreamNew(byte[] b, int offset, int len,
-			long filePointer, FileMeta fileMeta) throws IOException {
+	public MultiPartBufferInputStreamNew(byte[] b, int offset, int len, long filePointer, FileMeta fileMeta)
+			throws IOException {
 		if (b == null) {
 			throw new NullPointerException("b is null");
 		}
 		if (offset < 0 || len < 0 || len > b.length - offset) {
-			throw new IndexOutOfBoundsException("b size: " + b.length
-					+ " offset: " + offset + " len: " + len);
+			throw new IndexOutOfBoundsException("b size: " + b.length + " offset: " + offset + " len: " + len);
 		}
 		this.b = b;
 		this.offset = offset;
@@ -28,8 +27,7 @@ public class MultiPartBufferInputStreamNew extends MultiPartInputStreamNew {
 
 		long off = blkAbsSizes.get(0);
 		int i;
-		for (i = 0; i < noOfSegment && off <= filePointer; ++i, off += blkAbsSizes
-				.get(i)) {
+		for (i = 0; i < noOfSegment && off <= filePointer; ++i, off += blkAbsSizes.get(i)) {
 			idx[i] = blkAbsSizes.get(i + 1);
 		}
 		idx[i] = filePointer;
@@ -41,9 +39,8 @@ public class MultiPartBufferInputStreamNew extends MultiPartInputStreamNew {
 			throw new NullPointerException("buf is null");
 		}
 		if (buf.length < 1 || segmentId < 0 || segmentId >= noOfSegment) {
-			throw new IllegalArgumentException("buf length: " + buf.length
-					+ " segmentId: " + segmentId + " (segmentNum: "
-					+ noOfSegment + ")");
+			throw new IllegalArgumentException(
+					"buf length: " + buf.length + " segmentId: " + segmentId + " (segmentNum: " + noOfSegment + ")");
 		}
 		long remain = remaining(segmentId);
 		if (remain == 0)

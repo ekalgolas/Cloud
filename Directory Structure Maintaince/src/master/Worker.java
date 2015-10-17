@@ -5,14 +5,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-import master.ceph.CephDirectoryOperations;
-import master.gfs.GFSDirectoryOperations;
-import metadata.Directory;
-
 import commons.CommandsSupported;
 import commons.Globals;
 import commons.Message;
 import commons.dir.ICommandOperations;
+import master.ceph.CephDirectoryOperations;
+import master.gfs.GFSDirectoryOperations;
+import metadata.Directory;
 
 /**
  * <pre>
@@ -22,11 +21,11 @@ import commons.dir.ICommandOperations;
  * </pre>
  */
 public class Worker implements Runnable {
-	public volatile boolean		isRunning	= true;
-	private final String		listenerType;
-	private final Socket		workerSocket;
-	private ObjectInputStream	inputStream;
-	private ObjectOutputStream	outputStream;
+	public volatile boolean isRunning = true;
+	private final String listenerType;
+	private final Socket workerSocket;
+	private ObjectInputStream inputStream;
+	private ObjectOutputStream outputStream;
 
 	/**
 	 * Constructor
@@ -50,6 +49,7 @@ public class Worker implements Runnable {
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Runnable#run()
 	 */
 	@Override
@@ -80,18 +80,22 @@ public class Worker implements Runnable {
 					}
 
 					if (command.startsWith(CommandsSupported.LS.name())) {
-						// Command line parameter (directory name) start from index '3' in the received string
+						// Command line parameter (directory name) start from
+						// index '3' in the received string
 						reply = directoryOperations.ls(root, command.substring(3), partialFilePath.toString());
 					} else if (command.startsWith(CommandsSupported.MKDIR.name())) {
-						// Command line parameter (directory name) start from index '6' in the received string
+						// Command line parameter (directory name) start from
+						// index '6' in the received string
 						directoryOperations.mkdir(root, command.substring(6), partialFilePath.toString());
 						reply = new Message("Directory created successfully");
 					} else if (command.startsWith(CommandsSupported.TOUCH.name())) {
-						// Command line parameter (directory name) start from index '6' in the received string
+						// Command line parameter (directory name) start from
+						// index '6' in the received string
 						directoryOperations.touch(root, command.substring(6));
 						reply = new Message("File created successfully");
 					} else if (command.startsWith(CommandsSupported.RMDIR.name())) {
-						// Command line parameter (directory name) start from index '6' in the received string
+						// Command line parameter (directory name) start from
+						// index '6' in the received string
 						directoryOperations.rmdir(root, command.substring(6));
 						reply = new Message("Directory deleted successfully");
 					} else if (command.startsWith(CommandsSupported.EXIT.name())) {
@@ -102,7 +106,8 @@ public class Worker implements Runnable {
 						reply = new Message("Invalid command: " + command);
 					}
 				} catch (final Exception e) {
-					// If any command threw errors, propagate the error to the client
+					// If any command threw errors, propagate the error to the
+					// client
 					reply = new Message(e.getMessage());
 				}
 

@@ -12,7 +12,7 @@ import java.util.Properties;
  * @author Ekal.Golas
  */
 public class AppConfig {
-	private static Properties	properties	= new Properties();
+	private static Properties properties = new Properties();
 
 	/**
 	 * Constructor

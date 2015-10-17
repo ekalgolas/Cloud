@@ -19,8 +19,7 @@ public abstract class MultiPartInputStream {
 
 	public void initialize(long size, long segmentSize) {
 		if (size < 0 || segmentSize <= 0) {
-			throw new IllegalArgumentException("size: " + size
-					+ " segmentSize: " + segmentSize);
+			throw new IllegalArgumentException("size: " + size + " segmentSize: " + segmentSize);
 		}
 		this.size = size;
 		this.segmentSize = segmentSize;
@@ -55,8 +54,7 @@ public abstract class MultiPartInputStream {
 
 	public long remaining(int segmentId) {
 		long remain = (segmentId + 1) * segmentSize - idx[segmentId];
-		remain = remain > (size - idx[segmentId]) ? (size - idx[segmentId])
-				: remain;
+		remain = remain > (size - idx[segmentId]) ? (size - idx[segmentId]) : remain;
 		return remain;
 	}
 }

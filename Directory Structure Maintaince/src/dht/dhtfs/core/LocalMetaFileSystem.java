@@ -21,8 +21,7 @@ public class LocalMetaFileSystem extends AbstractFileSystem {
 	public IFile create(DhtPath path) throws IOException {
 		String fileName = path.getAbsolutePath();
 		if (new File(fileName).exists()) {
-			throw new IOException("create failed, file already exists: "
-					+ fileName);
+			throw new IOException("create failed, file already exists: " + fileName);
 		}
 		File dir = new File(path.getParentFile().getAbsolutePath());
 		if (!dir.exists()) {

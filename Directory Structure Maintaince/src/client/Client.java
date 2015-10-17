@@ -28,7 +28,8 @@ public class Client {
 		// Initialize configuration
 		new AppConfig("conf");
 
-		socket = new Socket(AppConfig.getValue("client.masterIp"), Integer.parseInt(AppConfig.getValue("client.masterPort")));
+		socket = new Socket(AppConfig.getValue("client.masterIp"),
+				Integer.parseInt(AppConfig.getValue("client.masterPort")));
 		outputStream = new ObjectOutputStream(socket.getOutputStream());
 		inputStream = new ObjectInputStream(socket.getInputStream());
 	}
@@ -41,11 +42,11 @@ public class Client {
 	 */
 	public void executeCommands(final String inputFileName) {
 		/**
-		 * TODO : Change it to line below in future, to read commands from input file:
-		 * Scanner scanner = new Scanner(new File(inputFileName))
+		 * TODO : Change it to line below in future, to read commands from input
+		 * file: Scanner scanner = new Scanner(new File(inputFileName))
 		 */
-		try (Scanner scanner = new Scanner(System.in)){
-			while(scanner.hasNext()) {
+		try (Scanner scanner = new Scanner(System.in)) {
+			while (scanner.hasNext()) {
 				final String command = scanner.nextLine();
 				// Send command to master
 				outputStream.writeObject(new Message(command));
@@ -80,12 +81,12 @@ public class Client {
 		}
 
 		/**
-		 * Client can read a previously generated file which has a thousands of commands
-		 * It then sends the commands one by one to the master,
-		 * after receiving reply for the previous one
-		 * TODO : We need to generate this file separately with combination of random and fixed commands
+		 * Client can read a previously generated file which has a thousands of
+		 * commands It then sends the commands one by one to the master, after
+		 * receiving reply for the previous one TODO : We need to generate this
+		 * file separately with combination of random and fixed commands
 		 */
-		if(client == null) {
+		if (client == null) {
 			System.err.println("Error occured while initializing the client");
 			System.exit(0);
 		}

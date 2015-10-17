@@ -10,25 +10,26 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 /**
- * Created by Yongtao on 9/17/2015. 
- * This is slim wrap around java.util.logging. 
- * You might want to use log4j, etc instead but they're heavy weight. 
- * Some shorter methods are offered to save typing: severe/s, warning/w, info/i, debug/d. 
- * Also, those methods accepts throwable parameter, so you can log.w(exception e) instead of e.printStacktrace(). 
- * Also the static get() method saves the need to type class name yourself. 
- * A sample on socket logger is offered.
+ * Created by Yongtao on 9/17/2015. This is slim wrap around java.util.logging.
+ * You might want to use log4j, etc instead but they're heavy weight. Some
+ * shorter methods are offered to save typing: severe/s, warning/w, info/i,
+ * debug/d. Also, those methods accepts throwable parameter, so you can
+ * log.w(exception e) instead of e.printStacktrace(). Also the static get()
+ * method saves the need to type class name yourself. A sample on socket logger
+ * is offered.
  */
 public class Log extends Logger {
-	private static Map<String, WeakReference<Log>>	cache		= new HashMap<>();
-	private static final String						className	= Log.class.getName();
+	private static Map<String, WeakReference<Log>> cache = new HashMap<>();
+	private static final String className = Log.class.getName();
 
 	protected Log(final String name, final String resourceBundleName) {
 		super(name, resourceBundleName);
 	}
 
 	/**
-	 * If current class name can be used, it will be passed to generate named logger. If not, an anonymous logger is returned. Loggers with same name will be
-	 * cached.
+	 * If current class name can be used, it will be passed to generate named
+	 * logger. If not, an anonymous logger is returned. Loggers with same name
+	 * will be cached.
 	 *
 	 * @return A Logger instance.
 	 */

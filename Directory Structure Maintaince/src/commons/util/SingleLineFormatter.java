@@ -8,16 +8,15 @@ import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
 /**
- * Created by Yongtao on 9/17/2015. 
- * from http://stackoverflow.com/a/5937929 
- * This class is intended to use on socket logger.
+ * Created by Yongtao on 9/17/2015. from http://stackoverflow.com/a/5937929 This
+ * class is intended to use on socket logger.
  */
 public class SingleLineFormatter extends Formatter {
 
-	private final static String	format	= "{0,date} {0,time}";
-	Date						dat		= new Date();
-	private MessageFormat		formatter;
-	private final Object		args[]	= new Object[1];
+	private final static String format = "{0,date} {0,time}";
+	Date dat = new Date();
+	private MessageFormat formatter;
+	private final Object args[] = new Object[1];
 
 	/**
 	 * Format the given LogRecord.
@@ -61,8 +60,7 @@ public class SingleLineFormatter extends Formatter {
 		final String message = formatMessage(record);
 
 		// Level
-		sb.append(record.getLevel()
-				.getLocalizedName());
+		sb.append(record.getLevel().getLocalizedName());
 		sb.append(": ");
 		sb.append(message);
 		final String lineSeparator = "\n";
@@ -71,8 +69,7 @@ public class SingleLineFormatter extends Formatter {
 			try {
 				final StringWriter sw = new StringWriter();
 				final PrintWriter pw = new PrintWriter(sw);
-				record.getThrown()
-				.printStackTrace(pw);
+				record.getThrown().printStackTrace(pw);
 				pw.close();
 				sb.append(sw.toString());
 			} catch (final Exception ignored) {

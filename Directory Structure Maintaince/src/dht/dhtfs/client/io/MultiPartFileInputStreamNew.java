@@ -7,8 +7,7 @@ import dht.dhtfs.server.datanode.FileMeta;
 public class MultiPartFileInputStreamNew extends MultiPartInputStreamNew {
 	BufferedRandomAccessFile raf;
 
-	public MultiPartFileInputStreamNew(String fileName, FileMeta fileMeta)
-			throws IOException {
+	public MultiPartFileInputStreamNew(String fileName, FileMeta fileMeta) throws IOException {
 		raf = new BufferedRandomAccessFile(fileName, "r");
 		initialize(raf.length(), fileMeta);
 	}
@@ -19,9 +18,8 @@ public class MultiPartFileInputStreamNew extends MultiPartInputStreamNew {
 			throw new NullPointerException("buf is null");
 		}
 		if (buf.length < 1 || segmentId < 0 || segmentId >= noOfSegment) {
-			throw new IllegalArgumentException("buf length: " + buf.length
-					+ " segmentId: " + segmentId + " (segmentNum: "
-					+ noOfSegment + ")");
+			throw new IllegalArgumentException(
+					"buf length: " + buf.length + " segmentId: " + segmentId + " (segmentNum: " + noOfSegment + ")");
 		}
 		long remain = remaining(segmentId);
 		if (remain == 0)
@@ -29,8 +27,7 @@ public class MultiPartFileInputStreamNew extends MultiPartInputStreamNew {
 		int len = -1;
 		synchronized (raf) {
 			raf.seek(idx[segmentId]);
-			len = raf.read(buf, 0, buf.length > remain ? (int) remain
-					: buf.length);
+			len = raf.read(buf, 0, buf.length > remain ? (int) remain : buf.length);
 		}
 		idx[segmentId] += len;
 		byteRead += len;

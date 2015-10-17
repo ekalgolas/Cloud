@@ -10,14 +10,14 @@ import dht.dhtfs.core.def.IIDAssigner;
  */
 public class BlockNameAssigner implements IIDAssigner {
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see dht.dhtfs.core.def.INameAssigner#generateUID()
-     */
-    @Override
-    public String generateUID() {
-        // TODO
-        return UUID.randomUUID().toString();
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see dht.dhtfs.core.def.INameAssigner#generateUID()
+	 */
+	@Override
+	public String generateUID() {
+		// TODO
+		return UUID.randomUUID().toString();
+	}
 }

@@ -16,43 +16,43 @@ public class Directory implements Serializable {
 	/**
 	 * Name of the directory
 	 */
-	private String			name;
+	private String name;
 
 	/**
 	 * Whether the element is a file or not
 	 */
-	private boolean			isFile;
+	private boolean isFile;
 
 	/**
 	 * List of child directories or files in this directory
 	 */
-	private List<Directory>	children;
+	private List<Directory> children;
 
 	/**
 	 * Last Modified Time
 	 */
-	private Long 			modifiedTimeStamp;
+	private Long modifiedTimeStamp;
 
 	/**
 	 * Access rights in 10 character string format
 	 */
-	private String 			accessRights;
+	private String accessRights;
 
 	/**
-	 * Size of a directory which is cumulative size of all the files and directories inside
-	 * or individual size in case of a file
+	 * Size of a directory which is cumulative size of all the files and
+	 * directories inside or individual size in case of a file
 	 */
-	private Long 			size;
-	
+	private Long size;
+
 	/**
-	 * Contains the inode informations like inode number, MDS details. 
+	 * Contains the inode informations like inode number, MDS details.
 	 */
-	private Inode			inode;
-	
+	private Inode inode;
+
 	/**
 	 * Counter to keep track of the # of access to this directory.
 	 */
-	private long 			operationCounter;
+	private long operationCounter;
 
 	/**
 	 * Constructor
@@ -84,7 +84,8 @@ public class Directory implements Serializable {
 	 * @param accessRights
 	 *            Access string of 10 character format
 	 * @param size
-	 *            Size of the directory (cumulative size for directory) or a file
+	 *            Size of the directory (cumulative size for directory) or a
+	 *            file
 	 */
 	public Directory(final String name, final boolean isFile, final List<Directory> children,
 			final long modifiedTimeStamp, final String accessRights, final Long size) {
@@ -98,6 +99,7 @@ public class Directory implements Serializable {
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -209,7 +211,8 @@ public class Directory implements Serializable {
 	}
 
 	/**
-	 * @param accessRights the accessRights to set
+	 * @param accessRights
+	 *            the accessRights to set
 	 */
 	public void setAccessRights(final String accessRights) {
 		this.accessRights = accessRights;
@@ -223,14 +226,16 @@ public class Directory implements Serializable {
 	}
 
 	/**
-	 * @param size the size to set
+	 * @param size
+	 *            the size to set
 	 */
 	public void setSize(final Long size) {
 		this.size = size;
 	}
-	
+
 	/**
 	 * Get the associated inode
+	 * 
 	 * @return inode
 	 */
 	public Inode getInode() {
@@ -239,14 +244,16 @@ public class Directory implements Serializable {
 
 	/**
 	 * Set the inode for this directory.
+	 * 
 	 * @param inode
 	 */
 	public void setInode(Inode inode) {
 		this.inode = inode;
 	}
-	
+
 	/**
 	 * Get the total operation counter.
+	 * 
 	 * @return counter
 	 */
 	public long getOperationCounter() {
@@ -255,26 +262,25 @@ public class Directory implements Serializable {
 
 	/**
 	 * Set the total operation counter.
+	 * 
 	 * @param operationCounter
 	 */
 	public void setOperationCounter(long operationCounter) {
 		this.operationCounter = operationCounter;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(name, isFile, modifiedTimeStamp);
 	}
-	
+
 	@Override
 	public boolean equals(Object other) {
-		if(!(other instanceof Directory)) {
+		if (!(other instanceof Directory)) {
 			return false;
 		}
 
 		Directory that = (Directory) other;
-		return this.name == that.name
-			&& this.modifiedTimeStamp == that.modifiedTimeStamp
-			&& this.isFile && that.isFile;
+		return this.name == that.name && this.modifiedTimeStamp == that.modifiedTimeStamp && this.isFile && that.isFile;
 	}
 }

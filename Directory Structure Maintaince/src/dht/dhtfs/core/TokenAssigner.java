@@ -10,15 +10,15 @@ import dht.dhtfs.core.def.IIDAssigner;
  */
 public class TokenAssigner implements IIDAssigner {
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see dht.dhtfs.core.def.IIDAssigner#generateUID()
-     */
-    @Override
-    public String generateUID() {
-        // TODO Auto-generated method stub
-        return UUID.randomUUID().toString();
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see dht.dhtfs.core.def.IIDAssigner#generateUID()
+	 */
+	@Override
+	public String generateUID() {
+		// TODO Auto-generated method stub
+		return UUID.randomUUID().toString();
+	}
 
 }

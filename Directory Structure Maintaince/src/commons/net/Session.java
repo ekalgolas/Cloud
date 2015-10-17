@@ -17,12 +17,12 @@ import java.util.concurrent.ExecutorService;
  * </pre>
  */
 public class Session implements Serializable {
-	private static final long			serialVersionUID	= 1L;
-	protected transient SocketChannel	socketChannel	= null;
-	protected transient Socket			socket			= null;
-	protected MsgType					type;
-	protected Map<String, Serializable>	headerMap		= new ConcurrentHashMap<>();
-	protected transient ExecutorService	pool;
+	private static final long serialVersionUID = 1L;
+	protected transient SocketChannel socketChannel = null;
+	protected transient Socket socket = null;
+	protected MsgType type;
+	protected Map<String, Serializable> headerMap = new ConcurrentHashMap<>();
+	protected transient ExecutorService pool;
 
 	protected Session(final SocketChannel socketChannel, final ExecutorService pool) {
 		this.socketChannel = socketChannel;
@@ -141,7 +141,6 @@ public class Session implements Serializable {
 	}
 
 	public Address getSender() {
-		return new Address(getSocket().getInetAddress()
-				.getHostAddress(), getSocket().getPort());
+		return new Address(getSocket().getInetAddress().getHostAddress(), getSocket().getPort());
 	}
 }

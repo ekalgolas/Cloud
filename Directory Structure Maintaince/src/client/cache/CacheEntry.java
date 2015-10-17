@@ -3,9 +3,9 @@ package client.cache;
 import metadata.Directory;
 
 public class CacheEntry {
-	private Directory	dir;
-	private boolean		valid;
-	private long		timeStamp;
+	private Directory dir;
+	private boolean valid;
+	private long timeStamp;
 
 	/**
 	 * Constructor

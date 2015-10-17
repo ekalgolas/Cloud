@@ -36,12 +36,10 @@ public class INodeId {
 		currentValue = new AtomicLong(ROOT_INODE_ID);
 	}
 
-	public static void checkId(long requestId, INode inode)
-			throws FileNotFoundException {
+	public static void checkId(long requestId, INode inode) throws FileNotFoundException {
 		if (requestId != GRANDFATHER_INODE_ID && requestId != inode.getId()) {
 			throw new FileNotFoundException(
-					"ID mismatch. Request id and saved id: " + requestId
-							+ " , " + inode.getId());
+					"ID mismatch. Request id and saved id: " + requestId + " , " + inode.getId());
 		}
 	}
 
@@ -62,8 +60,7 @@ public class INodeId {
 			final long c = getCurrentValue();
 			if (newValue < c) {
 				throw new IllegalStateException(
-						"Cannot skip to less than the current value (=" + c
-								+ "), where newValue=" + newValue);
+						"Cannot skip to less than the current value (=" + c + "), where newValue=" + newValue);
 			}
 
 			if (currentValue.compareAndSet(c, newValue)) {

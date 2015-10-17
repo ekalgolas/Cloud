@@ -4,7 +4,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -50,7 +49,9 @@ public class FSNamesystem {
 		}
 	}
 
-	/** @return the last inode ID. */
+	/**
+	 * @return the last inode ID.
+	 */
 	public long getLastInodeId() {
 		return inodeId.getCurrentValue();
 	}
@@ -97,10 +98,9 @@ public class FSNamesystem {
 	 * 
 	 * @see ClientProtocol#getBlockLocations(String, long, long)
 	 */
-	LocatedBlocks getBlockLocations(String clientMachine, String src,
-			long offset, long length) throws Exception, IOException {
-		LocatedBlocks blocks = getBlockLocations(src, offset, length, false,
-				false, false);
+	LocatedBlocks getBlockLocations(String clientMachine, String src, long offset, long length)
+			throws Exception, IOException {
+		LocatedBlocks blocks = getBlockLocations(src, offset, length, false, false, false);
 		// if (blocks != null) {
 		// blockManager.getDatanodeManager().sortLocatedBlocks(clientMachine,
 		// blocks.getLocatedBlocks());
@@ -124,29 +124,23 @@ public class FSNamesystem {
 	 * @throws FileNotFoundException
 	 *             , UnresolvedLinkException, IOException
 	 */
-	LocatedBlocks getBlockLocations(String src, long offset, long length,
-			boolean doAccessTime, boolean needBlockToken, boolean checkSafeMode)
-			throws FileNotFoundException, Exception, IOException {
+	LocatedBlocks getBlockLocations(String src, long offset, long length, boolean doAccessTime, boolean needBlockToken,
+			boolean checkSafeMode) throws FileNotFoundException, Exception, IOException {
 		try {
-			return getBlockLocationsInt(src, offset, length, doAccessTime,
-					needBlockToken, checkSafeMode);
+			return getBlockLocationsInt(src, offset, length, doAccessTime, needBlockToken, checkSafeMode);
 		} catch (Exception e) {
 			// logAuditEvent(false, "open", src);
 			throw e;
 		}
 	}
 
-	private LocatedBlocks getBlockLocationsInt(String src, long offset,
-			long length, boolean doAccessTime, boolean needBlockToken,
-			boolean checkSafeMode) throws FileNotFoundException, Exception,
-			IOException {
+	private LocatedBlocks getBlockLocationsInt(String src, long offset, long length, boolean doAccessTime,
+			boolean needBlockToken, boolean checkSafeMode) throws FileNotFoundException, Exception, IOException {
 		if (offset < 0) {
-			throw new IllegalArgumentException(
-					"Negative offset is not supported. File: " + src);
+			throw new IllegalArgumentException("Negative offset is not supported. File: " + src);
 		}
 		if (length < 0) {
-			throw new IllegalArgumentException(
-					"Negative length is not supported. File: " + src);
+			throw new IllegalArgumentException("Negative length is not supported. File: " + src);
 		}
 		final LocatedBlocks ret = null;// getBlockLocationsUpdateTimes(src,
 										// offset,
@@ -160,9 +154,8 @@ public class FSNamesystem {
 	 * Get block locations within the specified range, updating the access times
 	 * if necessary.
 	 */
-	public long getBlockLocationsUpdateTimes(String src, long offset,
-			long length, boolean doAccessTime, boolean needBlockToken)
-			throws FileNotFoundException, Exception, IOException {
+	public long getBlockLocationsUpdateTimes(String src, long offset, long length, boolean doAccessTime,
+			boolean needBlockToken) throws FileNotFoundException, Exception, IOException {
 		byte[][] pathComponents = null;
 		readLock();
 		try {
@@ -177,30 +170,25 @@ public class FSNamesystem {
 		}
 	}
 
-	public LocatedBlocks createLocatedBlocks(final BlockInfo[] blocks,
-			final long offset, final long length, final boolean needBlockToken)
-			throws IOException {
+	public LocatedBlocks createLocatedBlocks(final BlockInfo[] blocks, final long offset, final long length,
+			final boolean needBlockToken) throws IOException {
 		if (blocks == null) {
 			return null;
 		} else if (blocks.length == 0) {
-			return new LocatedBlocks(0, false,
-					Collections.<LocatedBlock> emptyList(), null, false);
+			return new LocatedBlocks(0, false, Collections.<LocatedBlock> emptyList(), null, false);
 		} else {
-			final List<LocatedBlock> locatedblocks = createLocatedBlockList(
-					blocks, offset, length, Integer.MAX_VALUE);
+			final List<LocatedBlock> locatedblocks = createLocatedBlockList(blocks, offset, length, Integer.MAX_VALUE);
 
 			final LocatedBlock lastlb;
 			final boolean isComplete;
 			lastlb = createLocatedBlock(blocks, 0l);
 			isComplete = true;
-			return new LocatedBlocks(0l, false, locatedblocks, lastlb,
-					isComplete);
+			return new LocatedBlocks(0l, false, locatedblocks, lastlb, isComplete);
 		}
 	}
 
-	private List<LocatedBlock> createLocatedBlockList(final BlockInfo[] blocks,
-			final long offset, final long length, final int nrBlocksToReturn)
-			throws IOException {
+	private List<LocatedBlock> createLocatedBlockList(final BlockInfo[] blocks, final long offset, final long length,
+			final int nrBlocksToReturn) throws IOException {
 		int curBlk = 0;
 		long curPos = 0, blkSize = 0;
 		int nrBlocks = (blocks[0].getNumBytes() == 0) ? 0 : blocks.length;
@@ -222,20 +210,17 @@ public class FSNamesystem {
 			results.add(createLocatedBlock(blocks[curBlk], curPos));
 			curPos += blocks[curBlk].getNumBytes();
 			curBlk++;
-		} while (curPos < endOff && curBlk < blocks.length
-				&& results.size() < nrBlocksToReturn);
+		} while (curPos < endOff && curBlk < blocks.length && results.size() < nrBlocksToReturn);
 		return results;
 	}
 
-	private LocatedBlock createLocatedBlock(final BlockInfo blk, final long pos)
-			throws IOException {
+	private LocatedBlock createLocatedBlock(final BlockInfo blk, final long pos) throws IOException {
 		final LocatedBlock lb = createLocatedBlock(blk, pos);
 
 		return lb;
 	}
 
-	private LocatedBlock createLocatedBlock(final BlockInfo[] blocks,
-			final long endPos) throws IOException {
+	private LocatedBlock createLocatedBlock(final BlockInfo[] blocks, final long endPos) throws IOException {
 		int curBlk = 0;
 		long curPos = 0;
 		int nrBlocks = (blocks[0].getNumBytes() == 0) ? 0 : blocks.length;
@@ -259,15 +244,13 @@ public class FSNamesystem {
 		}
 	}
 
-	private void verifyParentDir(String src) throws FileNotFoundException,
-			Exception {
+	private void verifyParentDir(String src) throws FileNotFoundException, Exception {
 		assert hasReadOrWriteLock();
 		HdfsPath parent = new HdfsPath(src).getDir();
 		if (parent != null) {
 			final INode parentNode = dir.getINode(parent.toString());
 			if (parentNode == null) {
-				throw new FileNotFoundException(
-						"Parent directory doesn't exist: " + parent);
+				throw new FileNotFoundException("Parent directory doesn't exist: " + parent);
 			} else if (!parentNode.isDirectory()) {
 				throw new Exception("Parent path is not a directory: " + parent);
 			}
@@ -285,14 +268,12 @@ public class FSNamesystem {
 	 * {@link #getFileStatus(boolean, CacheEntryWithPayload)}
 	 * 
 	 */
-	HdfsFileStatus startFile(String src, String holder, String clientMachine,
-			boolean createParent, short replication, long blockSize)
-			throws Exception, FileNotFoundException, IOException {
+	HdfsFileStatus startFile(String src, String holder, String clientMachine, boolean createParent, short replication,
+			long blockSize) throws Exception, FileNotFoundException, IOException {
 		HdfsFileStatus status = null;
 
 		try {
-			status = startFileInt(src, holder, clientMachine, createParent,
-					replication, blockSize);
+			status = startFileInt(src, holder, clientMachine, createParent, replication, blockSize);
 		} catch (Exception e) {
 			// logAuditEvent(false, "create", src);
 			throw e;
@@ -300,10 +281,8 @@ public class FSNamesystem {
 		return status;
 	}
 
-	private HdfsFileStatus startFileInt(String src, String holder,
-			String clientMachine, boolean createParent, short replication,
-			long blockSize) throws Exception, FileNotFoundException,
-			IOException {
+	private HdfsFileStatus startFileInt(String src, String holder, String clientMachine, boolean createParent,
+			short replication, long blockSize) throws Exception, FileNotFoundException, IOException {
 
 		boolean skipSync = false;
 		HdfsFileStatus stat = null;
@@ -312,8 +291,7 @@ public class FSNamesystem {
 		boolean overwrite = false;
 		writeLock();
 		try {
-			startFileInternal(src, holder, clientMachine, create, overwrite,
-					createParent, replication, blockSize);
+			startFileInternal(src, holder, clientMachine, create, overwrite, createParent, replication, blockSize);
 			stat = dir.getFileInfo(src, false);
 		} catch (Exception se) {
 			skipSync = true;
@@ -333,18 +311,16 @@ public class FSNamesystem {
 	 * For description of parameters and exceptions thrown see
 	 * {@link ClientProtocol#create()}
 	 */
-	private void startFileInternal(String src, String holder,
-			String clientMachine, boolean create, boolean overwrite,
+	private void startFileInternal(String src, String holder, String clientMachine, boolean create, boolean overwrite,
 			boolean createParent, short replication, long blockSize)
-			throws Exception, FileNotFoundException, IOException {
+					throws Exception, FileNotFoundException, IOException {
 		assert hasWriteLock();
 		// Verify that the destination does not exist as a directory already.
 		final INodesInPath iip = dir.getINodesInPath4Write(src);
 
 		final INode inode = iip.getLastINode();
 		if (inode != null && inode.isDirectory()) {
-			throw new Exception("Cannot create file " + src
-					+ "; already exists as a directory.");
+			throw new Exception("Cannot create file " + src + "; already exists as a directory.");
 		}
 		final INodeFile myFile = INodeFile.valueOf(inode, src, true);
 
@@ -356,8 +332,7 @@ public class FSNamesystem {
 			if (myFile == null) {
 				if (!create) {
 					throw new FileNotFoundException(
-							"failed to overwrite non-existent file " + src
-									+ " on client " + clientMachine);
+							"failed to overwrite non-existent file " + src + " on client " + clientMachine);
 				}
 			} else {
 				if (overwrite) {
@@ -367,20 +342,17 @@ public class FSNamesystem {
 						throw e;
 					}
 				} else {
-					throw new Exception("failed to create file " + src
-							+ " on client " + clientMachine
+					throw new Exception("failed to create file " + src + " on client " + clientMachine
 							+ " because the file exists");
 				}
 			}
 
 			// System.out.println("Add file src: " + src);
-			INodeFile newNode = dir.addFile(src, replication, blockSize,
-					holder, clientMachine);
+			INodeFile newNode = dir.addFile(src, replication, blockSize, holder, clientMachine);
 
 			// dir.dump();
 			if (newNode == null) {
-				throw new IOException("DIR* NameSystem.startFile: "
-						+ "Unable to add file to namespace.");
+				throw new IOException("DIR* NameSystem.startFile: " + "Unable to add file to namespace.");
 			}
 
 		} catch (IOException ie) {
@@ -392,8 +364,7 @@ public class FSNamesystem {
 	/**
 	 * Create all the necessary directories
 	 */
-	boolean mkdirs(String src, boolean createParent) throws IOException,
-			Exception {
+	boolean mkdirs(String src, boolean createParent) throws IOException, Exception {
 		boolean ret = false;
 		try {
 			ret = mkdirsInt(src, createParent);
@@ -403,8 +374,7 @@ public class FSNamesystem {
 		return ret;
 	}
 
-	private boolean mkdirsInt(String src, boolean createParent)
-			throws IOException, Exception {
+	private boolean mkdirsInt(String src, boolean createParent) throws IOException, Exception {
 
 		byte[][] pathComponents = null;
 		HdfsFileStatus resultingStat = null;
@@ -427,8 +397,7 @@ public class FSNamesystem {
 	/**
 	 * Create all the necessary directories
 	 */
-	private boolean mkdirsInternal(String src, boolean createParent)
-			throws IOException, Exception {
+	private boolean mkdirsInternal(String src, boolean createParent) throws IOException, Exception {
 		assert hasWriteLock();
 
 		if (!createParent) {
@@ -442,8 +411,7 @@ public class FSNamesystem {
 	}
 
 	// New Added
-	LocatedBlock appendFile(String src, String holder, String clientMachine)
-			throws IOException {
+	LocatedBlock appendFile(String src, String holder, String clientMachine) throws IOException {
 		LocatedBlock lb = null;
 
 		boolean success = false;
@@ -456,8 +424,7 @@ public class FSNamesystem {
 		}
 	}
 
-	private LocatedBlock appendFileInt(String src, String holder,
-			String clientMachine) throws IOException {
+	private LocatedBlock appendFileInt(String src, String holder, String clientMachine) throws IOException {
 
 		LocatedBlock lb = null;
 		writeLock();
@@ -475,22 +442,19 @@ public class FSNamesystem {
 		return lb;
 	}
 
-	private LocatedBlock appendFileInternal(String src, String holder,
-			String clientMachine) throws Exception {
+	private LocatedBlock appendFileInternal(String src, String holder, String clientMachine) throws Exception {
 		assert hasWriteLock();
 		// Verify that the destination does not exist as a directory already.
 		final INodesInPath iip = dir.getINodesInPath4Write(src);
 		final INode inode = iip.getLastINode();
 		if (inode != null && inode.isDirectory()) {
-			throw new Exception("Cannot append to directory " + src
-					+ "; already exists as a directory.");
+			throw new Exception("Cannot append to directory " + src + "; already exists as a directory.");
 		}
 
 		try {
 			if (inode == null) {
 				throw new FileNotFoundException(
-						"failed to append to non-existent file " + src
-								+ " for client " + clientMachine);
+						"failed to append to non-existent file " + src + " for client " + clientMachine);
 			}
 
 			INodeFile myFile = INodeFile.valueOf(inode, src, true);
@@ -510,11 +474,9 @@ public class FSNamesystem {
 		}
 	}
 
-	LocatedBlock prepareFileForWrite(String src, INodeFile file,
-			String leaseHolder, String clientMachine, DatanodeID clientNode)
-			throws IOException {
-		final INodeFile cons = file.toUnderConstruction(leaseHolder,
-				clientMachine, clientNode);
+	LocatedBlock prepareFileForWrite(String src, INodeFile file, String leaseHolder, String clientMachine,
+			DatanodeID clientNode) throws IOException {
+		final INodeFile cons = file.toUnderConstruction(leaseHolder, clientMachine, clientNode);
 
 		// LocatedBlock ret = blockManager
 		// .convertLastBlockToUnderConstruction(cons);
@@ -534,8 +496,8 @@ public class FSNamesystem {
 	 * @throws QuotaExceededException
 	 *             If addition of block exceeds space quota
 	 */
-	BlockInfo saveAllocatedBlock(String src, INodesInPath inodes,
-			Block newBlock, DatanodeID[] targets) throws IOException {
+	BlockInfo saveAllocatedBlock(String src, INodesInPath inodes, Block newBlock, DatanodeID[] targets)
+			throws IOException {
 		assert hasWriteLock();
 		BlockInfo b = dir.addBlock(src, inodes, newBlock, targets);
 		return b;

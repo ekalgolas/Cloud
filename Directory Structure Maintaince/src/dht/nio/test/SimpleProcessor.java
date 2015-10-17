@@ -26,13 +26,15 @@ public class SimpleProcessor implements IProcessor {
 		return resp;
 	}
 
-    /* (non-Javadoc)
-     * @see dht.nio.server.IProcessor#initialize(dht.dhtfs.core.Configuration)
-     */
-    @Override
-    public void initialize(Configuration config) throws IOException {
-        // TODO Auto-generated method stub
-        
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see dht.nio.server.IProcessor#initialize(dht.dhtfs.core.Configuration)
+	 */
+	@Override
+	public void initialize(Configuration config) throws IOException {
+		// TODO Auto-generated method stub
+
+	}
 
 }

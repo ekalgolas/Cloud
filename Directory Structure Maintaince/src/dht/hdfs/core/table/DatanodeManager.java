@@ -54,40 +54,40 @@ public class DatanodeManager extends Meta {
 
 		save(config.getProperty("imgFile"));
 	}
-	
+
 	public void join(PhysicalNode joinNode) {
-        boolean exist = false;
-        for (PhysicalNode node : registeredServer) {
-            if (node.equals(joinNode)) {
-                node.setLocation(joinNode.getLocation());
-                node.online();
-                exist = true;
-                break;
-            }
-        }
-        if (!exist) {
-            joinNode.online();
-            registeredServer.add(joinNode);
-        }
-    }
-	
+		boolean exist = false;
+		for (PhysicalNode node : registeredServer) {
+			if (node.equals(joinNode)) {
+				node.setLocation(joinNode.getLocation());
+				node.online();
+				exist = true;
+				break;
+			}
+		}
+		if (!exist) {
+			joinNode.online();
+			registeredServer.add(joinNode);
+		}
+	}
+
 	public void dump() {
-        
-        for (PhysicalNode node : registeredServer) {
-            System.out.println("physicalNode: " + node.toString());
-        }
-    }
-	
+
+		for (PhysicalNode node : registeredServer) {
+			System.out.println("physicalNode: " + node.toString());
+		}
+	}
+
 	public PhysicalNode getNearestNode(DhtPath path, GeometryLocation location) {
-        double minDist = Double.MAX_VALUE;
-        PhysicalNode nearest = null;
-        for (PhysicalNode node : registeredServer) {
-            double dist = node.getLocation().distance(location);
-            if (dist < minDist) {
-                minDist = dist;
-                nearest = node;
-            }
-        }
-        return nearest;
-    }
+		double minDist = Double.MAX_VALUE;
+		PhysicalNode nearest = null;
+		for (PhysicalNode node : registeredServer) {
+			double dist = node.getLocation().distance(location);
+			if (dist < minDist) {
+				minDist = dist;
+				nearest = node;
+			}
+		}
+		return nearest;
+	}
 }

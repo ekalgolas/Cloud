@@ -15,21 +15,21 @@ import dht.nio.protocol.table.JoinResp;
 import dht.nio.server.ConnectionInfo;
 import dht.nio.server.IProcessor;
 
-public class DatanodeRequestProcessor implements IProcessor{
+public class DatanodeRequestProcessor implements IProcessor {
 
 	protected Configuration conf;
 	protected PhysicalNode local;
 	protected PhysicalNode master;
-	
+
 	@Override
 	public void initialize(Configuration config) throws IOException {
-		this.conf=config;
+		this.conf = config;
 		String masterIp = conf.getProperty("masterIp");
 		int masterPort = Integer.parseInt(conf.getProperty("masterPort"));
 		master = new PhysicalNode(masterIp, masterPort);
 		join();
 	}
-	
+
 	void join() throws IOException {
 		TCPConnection connection = openConnection(master);
 		JoinReq req = new JoinReq(ReqType.JOIN);
@@ -40,24 +40,23 @@ public class DatanodeRequestProcessor implements IProcessor{
 		req.setPort(Integer.parseInt(conf.getProperty("port")));
 		connection.request(req);
 		JoinResp resp = (JoinResp) connection.response();
-		
-		if(resp.getResponseType()!=RespType.OK){
+
+		if (resp.getResponseType() != RespType.OK) {
 			throw new IOException("Not able to register DataNode to master");
 		}
-		
+
 		local = resp.getLocal();
 		if (local.getLocation() == null) {
 			local.setLocation(location);
 		}
 		connection.close();
 	}
-	
+
 	TCPConnection openConnection(PhysicalNode node) throws IOException {
-		TCPConnection connection = TCPConnection.getInstance(
-				node.getIpAddress(), node.getPort());
+		TCPConnection connection = TCPConnection.getInstance(node.getIpAddress(), node.getPort());
 		return connection;
 	}
-	
+
 	@Override
 	public ProtocolResp process(ConnectionInfo info, ProtocolReq req) {
 		ReqType reqType = req.getRequestType();
@@ -65,29 +64,26 @@ public class DatanodeRequestProcessor implements IProcessor{
 		ProtocolResp resp = null;
 		switch (reqType) {
 		case OPEN_FILE:// read the meta file
-//			resp = handleOpenFileReq(info, (OpenFileReq) req);
+			// resp = handleOpenFileReq(info, (OpenFileReq) req);
 			break;
 		case READ_FILE:// read the block
-//			resp = handleReadBlkReq(info, (ReadFileReq) req);
+			// resp = handleReadBlkReq(info, (ReadFileReq) req);
 			break;
 		case WRITE_FILE:// update the block
-//			resp = handleWriteBlkReq(info, (WriteFileReq) req);
+			// resp = handleWriteBlkReq(info, (WriteFileReq) req);
 			break;
 		case DELETE_FILE:// delete the meta file
-//			resp = handleDeleteFileReq(info, (DeleteFileReq) req);
+			// resp = handleDeleteFileReq(info, (DeleteFileReq) req);
 			break;
 		case COMMIT_FILE:// write the meta file
-//			resp = handleCommitFileReq(info, (CommitFileReq) req);
+			// resp = handleCommitFileReq(info, (CommitFileReq) req);
 			break;
 		default:
 			resp = new ProtocolResp(RespType.UNRECOGNIZE);
-			resp.setMsg("unrecognized request type, type: "
-					+ req.getRequestType());
+			resp.setMsg("unrecognized request type, type: " + req.getRequestType());
 		}
 		resp.setrId(req.getrId());
 		return resp;
 	}
-
-	
 
 }

@@ -35,9 +35,7 @@ public class GeometryLocation implements Serializable {
 	}
 
 	public double distance(GeometryLocation location) {
-		return (locationX - location.getLocationX())
-				* (locationX - location.getLocationX())
-				+ (locationY - location.getLocationY())
-				* (locationY - location.getLocationY());
+		return (locationX - location.getLocationX()) * (locationX - location.getLocationX())
+				+ (locationY - location.getLocationY()) * (locationY - location.getLocationY());
 	}
 }

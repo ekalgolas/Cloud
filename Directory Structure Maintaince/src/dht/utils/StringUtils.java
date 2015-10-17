@@ -23,8 +23,7 @@ public class StringUtils {
 				num *= giga;
 				break;
 			default:
-				throw new NumberFormatException("str cannot be parsed, str: "
-						+ str);
+				throw new NumberFormatException("str cannot be parsed, str: " + str);
 			}
 		}
 		return num;

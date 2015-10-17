@@ -5,8 +5,6 @@ import java.io.IOException;
 import dht.dhtfs.core.Configuration;
 import dht.hdfs.server.namenode.NameNodeRequestProcessor;
 import dht.nio.protocol.ReqType;
-import dht.nio.protocol.block.ReadFileReq;
-import dht.nio.protocol.block.ReadFileResp;
 import dht.nio.protocol.meta.CreateFileReq;
 import dht.nio.protocol.meta.CreateFileResp;
 import dht.nio.protocol.meta.OpenFileReq;
@@ -57,8 +55,7 @@ public class TestNameNodeRequestProcessor {
 
 		OpenFileReq openReq1 = new OpenFileReq(ReqType.OPEN_FILE);
 		openReq1.setFileName("/z/y/x.txt");
-		OpenFileResp openResp1 = (OpenFileResp) processor.process(null,
-				openReq1);
+		OpenFileResp openResp1 = (OpenFileResp) processor.process(null, openReq1);
 
 	}
 

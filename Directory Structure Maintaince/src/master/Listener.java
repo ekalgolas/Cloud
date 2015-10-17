@@ -15,10 +15,10 @@ import java.util.ArrayList;
  * @author Ekal.Golas
  */
 public class Listener implements Runnable {
-	public volatile boolean			isRunning			= true;
-	private String 					listenerType;
-	private final ServerSocket		listenerSocket;
-	private final ArrayList<Thread>	workerThreadPool	= new ArrayList<Thread>();
+	public volatile boolean isRunning = true;
+	private String listenerType;
+	private final ServerSocket listenerSocket;
+	private final ArrayList<Thread> workerThreadPool = new ArrayList<Thread>();
 
 	/**
 	 * Constructor
@@ -33,6 +33,7 @@ public class Listener implements Runnable {
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Runnable#run()
 	 */
 	@Override
@@ -48,7 +49,7 @@ public class Listener implements Runnable {
 				workerThread.start();
 			} catch (final Exception e) {
 				e.printStackTrace();
-			}			
+			}
 		}
 
 		// Wait for all worker threads to finish

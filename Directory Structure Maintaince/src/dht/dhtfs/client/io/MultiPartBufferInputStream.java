@@ -23,14 +23,13 @@ public class MultiPartBufferInputStream extends MultiPartInputStream {
 	 * @param segmentSize
 	 * @throws IOException
 	 */
-	public MultiPartBufferInputStream(byte[] b, int offset, int len,
-			long fileOffset, long segmentSize) throws IOException {
+	public MultiPartBufferInputStream(byte[] b, int offset, int len, long fileOffset, long segmentSize)
+			throws IOException {
 		if (b == null) {
 			throw new NullPointerException("b is null");
 		}
 		if (offset < 0 || len < 0 || len > b.length - offset) {
-			throw new IndexOutOfBoundsException("b size: " + b.length
-					+ " offset: " + offset + " len: " + len);
+			throw new IndexOutOfBoundsException("b size: " + b.length + " offset: " + offset + " len: " + len);
 		}
 		this.b = b;
 		this.offset = offset;
@@ -53,9 +52,8 @@ public class MultiPartBufferInputStream extends MultiPartInputStream {
 			throw new NullPointerException("buf is null");
 		}
 		if (buf.length < 1 || segmentId < 0 || segmentId >= segmentNum) {
-			throw new IllegalArgumentException("buf length: " + buf.length
-					+ " segmentId: " + segmentId + " (segmentNum: "
-					+ segmentNum + ")");
+			throw new IllegalArgumentException(
+					"buf length: " + buf.length + " segmentId: " + segmentId + " (segmentNum: " + segmentNum + ")");
 		}
 		long remain = remaining(segmentId);
 		if (remain == 0)

@@ -6,7 +6,7 @@ import master.gfs.GFSDirectoryOperations;
 import metadata.Directory;
 
 public class Cache {
-	static HashMap<String, CacheEntry>	cache	= new HashMap<>();
+	static HashMap<String, CacheEntry> cache = new HashMap<>();
 
 	public static Directory getFromCache(final String directoryPath) {
 		if (cache.containsKey(directoryPath)) {
@@ -14,9 +14,9 @@ public class Cache {
 			if (entry.getValid()) {
 
 				// TODO: send call to server
-				final Directory dirFromServer = GFSDirectoryOperations.lsWithCache(null, directoryPath, entry.getTimeStamp());
-				if (dirFromServer.getName()
-						.equals("")) {
+				final Directory dirFromServer = GFSDirectoryOperations.lsWithCache(null, directoryPath,
+						entry.getTimeStamp());
+				if (dirFromServer.getName().equals("")) {
 					addToCache(directoryPath, entry);
 					return entry.getDir();
 				} else if (dirFromServer != null) {

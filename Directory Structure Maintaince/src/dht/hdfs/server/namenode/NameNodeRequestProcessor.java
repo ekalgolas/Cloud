@@ -2,8 +2,6 @@ package dht.hdfs.server.namenode;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import dht.dhtfs.core.Configuration;
 import dht.dhtfs.core.GeometryLocation;
@@ -13,8 +11,6 @@ import dht.nio.protocol.ProtocolReq;
 import dht.nio.protocol.ProtocolResp;
 import dht.nio.protocol.ReqType;
 import dht.nio.protocol.RespType;
-import dht.nio.protocol.block.ReadFileReq;
-import dht.nio.protocol.block.ReadFileResp;
 import dht.nio.protocol.meta.CreateFileReq;
 import dht.nio.protocol.meta.CreateFileResp;
 import dht.nio.protocol.meta.OpenFileReq;
@@ -33,8 +29,7 @@ public class NameNodeRequestProcessor implements IProcessor {
 	public void initialize(Configuration config) throws IOException {
 		this.conf = config;
 		try {
-			datanodeManager = (DatanodeManager) DatanodeManager
-					.loadMeta(this.conf.getProperty("imgFile"));
+			datanodeManager = (DatanodeManager) DatanodeManager.loadMeta(this.conf.getProperty("imgFile"));
 		} catch (IOException e) {
 			datanodeManager = new DatanodeManager();
 			datanodeManager.initialize(config);
@@ -85,8 +80,7 @@ public class NameNodeRequestProcessor implements IProcessor {
 		long blockSize = 64 * 1024 * 1024;
 
 		try {
-			namesystem.startFile(path, userName, client, createParent,
-					replication, blockSize);
+			namesystem.startFile(path, userName, client, createParent, replication, blockSize);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -105,8 +99,7 @@ public class NameNodeRequestProcessor implements IProcessor {
 		String path = req.getFileName();
 		String client = "client1";
 		try {
-			long endTime = namesystem.getBlockLocationsUpdateTimes(path, 0,
-					1000, false, false);
+			long endTime = namesystem.getBlockLocationsUpdateTimes(path, 0, 1000, false, false);
 			resp.setFileName(req.getFileName());
 			resp.setFileSize(endTime);
 

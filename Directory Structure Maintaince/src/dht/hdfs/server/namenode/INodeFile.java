@@ -16,22 +16,18 @@ public class INodeFile extends INode {
 		super(null, id, name);
 	}
 
-	INodeFile(long id, byte[] name, BlockInfo[] blklist, short replication,
-			long preferredBlockSize) {
+	INodeFile(long id, byte[] name, BlockInfo[] blklist, short replication, long preferredBlockSize) {
 		super(null, id, name);
 		header = HeaderFormat.combineReplication(header, replication);
-		header = HeaderFormat.combinePreferredBlockSize(header,
-				preferredBlockSize);
+		header = HeaderFormat.combinePreferredBlockSize(header, preferredBlockSize);
 		this.blocks = blklist;
 	}
 
-	public static INodeFile valueOf(INode inode, String path)
-			throws FileNotFoundException {
+	public static INodeFile valueOf(INode inode, String path) throws FileNotFoundException {
 		return valueOf(inode, path, false);
 	}
 
-	public static INodeFile valueOf(INode inode, String path, boolean acceptNull)
-			throws FileNotFoundException {
+	public static INodeFile valueOf(INode inode, String path, boolean acceptNull) throws FileNotFoundException {
 		if (inode == null) {
 			if (acceptNull) {
 				return null;
@@ -59,11 +55,9 @@ public class INodeFile extends INode {
 
 		static long combineReplication(long header, short replication) {
 			if (replication <= 0) {
-				throw new IllegalArgumentException(
-						"Unexpected value for the replication: " + replication);
+				throw new IllegalArgumentException("Unexpected value for the replication: " + replication);
 			}
-			return ((long) replication << BLOCKBITS)
-					| (header & MAX_BLOCK_SIZE);
+			return ((long) replication << BLOCKBITS) | (header & MAX_BLOCK_SIZE);
 		}
 
 		static long getPreferredBlockSize(long header) {
@@ -72,11 +66,10 @@ public class INodeFile extends INode {
 
 		static long combinePreferredBlockSize(long header, long blockSize) {
 			if (blockSize < 0) {
-				throw new IllegalArgumentException("Block size < 0: "
-						+ blockSize);
+				throw new IllegalArgumentException("Block size < 0: " + blockSize);
 			} else if (blockSize > MAX_BLOCK_SIZE) {
-				throw new IllegalArgumentException("Block size = " + blockSize
-						+ " > MAX_BLOCK_SIZE = " + MAX_BLOCK_SIZE);
+				throw new IllegalArgumentException(
+						"Block size = " + blockSize + " > MAX_BLOCK_SIZE = " + MAX_BLOCK_SIZE);
 			}
 			return (header & HEADERMASK) | (blockSize & MAX_BLOCK_SIZE);
 		}
@@ -141,8 +134,7 @@ public class INodeFile extends INode {
 	}
 
 	public BlockInfo getLastBlock() throws IOException {
-		return blocks == null || blocks.length == 0 ? null
-				: blocks[blocks.length - 1];
+		return blocks == null || blocks.length == 0 ? null : blocks[blocks.length - 1];
 	}
 
 	boolean removeLastBlock(Block oldblock) throws IOException {
@@ -180,11 +172,9 @@ public class INodeFile extends INode {
 		}
 	}
 
-	public INodeFileUnderConstruction toUnderConstruction(String clientName,
-			String clientMachine, DatanodeID clientNode) {
-		Preconditions.checkState(!isUnderConstruction(),
-				"file is already an INodeFileUnderConstruction");
-		return new INodeFileUnderConstruction(this, clientName, clientMachine,
-				clientNode);
+	public INodeFileUnderConstruction toUnderConstruction(String clientName, String clientMachine,
+			DatanodeID clientNode) {
+		Preconditions.checkState(!isUnderConstruction(), "file is already an INodeFileUnderConstruction");
+		return new INodeFileUnderConstruction(this, clientName, clientMachine, clientNode);
 	}
 }

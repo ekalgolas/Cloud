@@ -17,170 +17,196 @@
  */
 package dht.hdfs.server.namenode;
 
-import java.net.URI;
-
-/** Interface that represents the over the wire information for a file.
+/**
+ * Interface that represents the over the wire information for a file.
  */
 public class HdfsFileStatus {
 
-  private byte[] path;  // local name of the inode that's encoded in java UTF8
-  private long length;
-  private boolean isdir;
-  private short block_replication;
-  private long blocksize;
-  private long modification_time;
-  private long access_time;
-  private String owner;
-  private String group;
-  private long fileId;
-  
-  // Used by dir, not including dot and dotdot. Always zero for a regular file.
-  private int childrenNum;
-  
-  public static final byte[] EMPTY_NAME = new byte[0];
+	private byte[] path; // local name of the inode that's encoded in java UTF8
+	private long length;
+	private boolean isdir;
+	private short block_replication;
+	private long blocksize;
+	private long modification_time;
+	private long access_time;
+	private String owner;
+	private String group;
+	private long fileId;
 
-  /**
-   * Constructor
-   * @param length the number of bytes the file has
-   * @param isdir if the path is a directory
-   * @param block_replication the replication factor
-   * @param blocksize the block size
-   * @param modification_time modification time
-   * @param access_time access time
-   * @param permission permission
-   * @param owner the owner of the path
-   * @param group the group of the path
-   * @param path the local name in java UTF8 encoding the same as that in-memory
-   * @param fileId the file id
-   */
-  public HdfsFileStatus(long length, boolean isdir, int block_replication,
-                    long blocksize, long modification_time, long access_time, String owner, String group, 
-                    byte[] symlink, byte[] path, long fileId, int childrenNum) {
-    this.length = length;
-    this.isdir = isdir;
-    this.block_replication = (short)block_replication;
-    this.blocksize = blocksize;
-    this.modification_time = modification_time;
-    this.access_time = access_time;
-    this.owner = (owner == null) ? "" : owner;
-    this.group = (group == null) ? "" : group;
-    this.path = path;
-    this.fileId = fileId;
-    this.childrenNum = childrenNum;
-  }
+	// Used by dir, not including dot and dotdot. Always zero for a regular
+	// file.
+	private int childrenNum;
 
-  /**
-   * Get the length of this file, in bytes.
-   * @return the length of this file, in bytes.
-   */
-  final public long getLen() {
-    return length;
-  }
+	public static final byte[] EMPTY_NAME = new byte[0];
 
-  /**
-   * Is this a directory?
-   * @return true if this is a directory
-   */
-  final public boolean isDir() {
-    return isdir;
-  }
+	/**
+	 * Constructor
+	 * 
+	 * @param length
+	 *            the number of bytes the file has
+	 * @param isdir
+	 *            if the path is a directory
+	 * @param block_replication
+	 *            the replication factor
+	 * @param blocksize
+	 *            the block size
+	 * @param modification_time
+	 *            modification time
+	 * @param access_time
+	 *            access time
+	 * @param permission
+	 *            permission
+	 * @param owner
+	 *            the owner of the path
+	 * @param group
+	 *            the group of the path
+	 * @param path
+	 *            the local name in java UTF8 encoding the same as that
+	 *            in-memory
+	 * @param fileId
+	 *            the file id
+	 */
+	public HdfsFileStatus(long length, boolean isdir, int block_replication, long blocksize, long modification_time,
+			long access_time, String owner, String group, byte[] symlink, byte[] path, long fileId, int childrenNum) {
+		this.length = length;
+		this.isdir = isdir;
+		this.block_replication = (short) block_replication;
+		this.blocksize = blocksize;
+		this.modification_time = modification_time;
+		this.access_time = access_time;
+		this.owner = (owner == null) ? "" : owner;
+		this.group = (group == null) ? "" : group;
+		this.path = path;
+		this.fileId = fileId;
+		this.childrenNum = childrenNum;
+	}
 
-  /**
-   * Get the block size of the file.
-   * @return the number of bytes
-   */
-  final public long getBlockSize() {
-    return blocksize;
-  }
+	/**
+	 * Get the length of this file, in bytes.
+	 * 
+	 * @return the length of this file, in bytes.
+	 */
+	final public long getLen() {
+		return length;
+	}
 
-  /**
-   * Get the replication factor of a file.
-   * @return the replication factor of a file.
-   */
-  final public short getReplication() {
-    return block_replication;
-  }
+	/**
+	 * Is this a directory?
+	 * 
+	 * @return true if this is a directory
+	 */
+	final public boolean isDir() {
+		return isdir;
+	}
 
-  /**
-   * Get the modification time of the file.
-   * @return the modification time of file in milliseconds since January 1, 1970 UTC.
-   */
-  final public long getModificationTime() {
-    return modification_time;
-  }
+	/**
+	 * Get the block size of the file.
+	 * 
+	 * @return the number of bytes
+	 */
+	final public long getBlockSize() {
+		return blocksize;
+	}
 
-  /**
-   * Get the access time of the file.
-   * @return the access time of file in milliseconds since January 1, 1970 UTC.
-   */
-  final public long getAccessTime() {
-    return access_time;
-  }
+	/**
+	 * Get the replication factor of a file.
+	 * 
+	 * @return the replication factor of a file.
+	 */
+	final public short getReplication() {
+		return block_replication;
+	}
 
-  /**
-   * Get the owner of the file.
-   * @return owner of the file
-   */
-  final public String getOwner() {
-    return owner;
-  }
-  
-  /**
-   * Get the group associated with the file.
-   * @return group for the file. 
-   */
-  final public String getGroup() {
-    return group;
-  }
-  
-  /**
-   * Check if the local name is empty
-   * @return true if the name is empty
-   */
-  final public boolean isEmptyLocalName() {
-    return path.length == 0;
-  }
+	/**
+	 * Get the modification time of the file.
+	 * 
+	 * @return the modification time of file in milliseconds since January 1,
+	 *         1970 UTC.
+	 */
+	final public long getModificationTime() {
+		return modification_time;
+	}
 
-  /**
-   * Get the string representation of the local name
-   * @return the local name in string
-   */
-  final public String getLocalName() {
-    return new String(path);
-  }
-  
-  /**
-   * Get the Java UTF8 representation of the local name
-   * @return the local name in java UTF8
-   */
-  final public byte[] getLocalNameInBytes() {
-    return path;
-  }
+	/**
+	 * Get the access time of the file.
+	 * 
+	 * @return the access time of file in milliseconds since January 1, 1970
+	 *         UTC.
+	 */
+	final public long getAccessTime() {
+		return access_time;
+	}
 
-  /**
-   * Get the string representation of the full path name
-   * @param parent the parent path
-   * @return the full path in string
-   */
-  final public String getFullName(final String parent) {
-    if (isEmptyLocalName()) {
-      return parent;
-    }
-    
-    StringBuilder fullName = new StringBuilder(parent);
-    if (!parent.endsWith(HdfsPath.separator)) {
-      fullName.append(HdfsPath.separator);
-    }
-    fullName.append(getLocalName());
-    return fullName.toString();
-  }
+	/**
+	 * Get the owner of the file.
+	 * 
+	 * @return owner of the file
+	 */
+	final public String getOwner() {
+		return owner;
+	}
 
+	/**
+	 * Get the group associated with the file.
+	 * 
+	 * @return group for the file.
+	 */
+	final public String getGroup() {
+		return group;
+	}
 
-  final public long getFileId() {
-    return fileId;
-  }
-  
-  final public int getChildrenNum() {
-    return childrenNum;
-  }
+	/**
+	 * Check if the local name is empty
+	 * 
+	 * @return true if the name is empty
+	 */
+	final public boolean isEmptyLocalName() {
+		return path.length == 0;
+	}
+
+	/**
+	 * Get the string representation of the local name
+	 * 
+	 * @return the local name in string
+	 */
+	final public String getLocalName() {
+		return new String(path);
+	}
+
+	/**
+	 * Get the Java UTF8 representation of the local name
+	 * 
+	 * @return the local name in java UTF8
+	 */
+	final public byte[] getLocalNameInBytes() {
+		return path;
+	}
+
+	/**
+	 * Get the string representation of the full path name
+	 * 
+	 * @param parent
+	 *            the parent path
+	 * @return the full path in string
+	 */
+	final public String getFullName(final String parent) {
+		if (isEmptyLocalName()) {
+			return parent;
+		}
+
+		StringBuilder fullName = new StringBuilder(parent);
+		if (!parent.endsWith(HdfsPath.separator)) {
+			fullName.append(HdfsPath.separator);
+		}
+		fullName.append(getLocalName());
+		return fullName.toString();
+	}
+
+	final public long getFileId() {
+		return fileId;
+	}
+
+	final public int getChildrenNum() {
+		return childrenNum;
+	}
 }

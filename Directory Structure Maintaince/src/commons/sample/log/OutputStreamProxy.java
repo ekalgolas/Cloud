@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * Created by Yongtao on 9/13/2015.
  */
 public class OutputStreamProxy extends FilterOutputStream {
-	protected AtomicLong	counter;
+	protected AtomicLong counter;
 
 	public OutputStreamProxy(final OutputStream out, final AtomicLong counter) {
 		super(out);

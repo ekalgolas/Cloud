@@ -5,12 +5,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import metadata.Directory;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.distribution.ZipfDistribution;
 
 import com.sun.media.sound.InvalidDataException;
+
+import metadata.Directory;
 
 /**
  * Class to generate commands using Zipf distribution
@@ -105,7 +105,8 @@ public class CommandGenerator {
 			// Take a sample from the distribution
 			final int random = zipfDistribution.sample();
 
-			// Select the sample index from the collection and assign it to current index of distributed array
+			// Select the sample index from the collection and assign it to
+			// current index of distributed array
 			distribution[i] = collection[random - 1];
 		}
 

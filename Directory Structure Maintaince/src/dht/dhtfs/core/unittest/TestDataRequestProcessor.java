@@ -25,102 +25,102 @@ import dht.nio.server.IProcessor;
  */
 public class TestDataRequestProcessor {
 
-    public static void main(String[] args) throws Exception {
-        // testCreateFile();
-        // testOpenFile();
-        // testDeleteFile();
-        // testCommitFile();
-        testReadFile();
-        // testWriteFile();
-    }
+	public static void main(String[] args) throws Exception {
+		// testCreateFile();
+		// testOpenFile();
+		// testDeleteFile();
+		// testCommitFile();
+		testReadFile();
+		// testWriteFile();
+	}
 
-    public static void testCreateFile() {
-        IProcessor processor = new DataRequestProcessor();
-        CreateFileReq req = new CreateFileReq(ReqType.CREATE_FILE);
-        req.setFileName("/a/b/c/a.txt");
-        req.setNewBlkNum(3);
-        CreateFileResp resp = (CreateFileResp) processor.process(null, req);
-        resp.dump();
-    }
+	public static void testCreateFile() {
+		IProcessor processor = new DataRequestProcessor();
+		CreateFileReq req = new CreateFileReq(ReqType.CREATE_FILE);
+		req.setFileName("/a/b/c/a.txt");
+		req.setNewBlkNum(3);
+		CreateFileResp resp = (CreateFileResp) processor.process(null, req);
+		resp.dump();
+	}
 
-    public static void testOpenFile() {
-        IProcessor processor = new DataRequestProcessor();
-        OpenFileReq req = new OpenFileReq(ReqType.OPEN_FILE);
-        req.setFileName("/a/b/c/a.txt");
-        req.setNewBlkNum(3);
-        OpenFileResp resp = (OpenFileResp) processor.process(null, req);
-        resp.dump();
-    }
+	public static void testOpenFile() {
+		IProcessor processor = new DataRequestProcessor();
+		OpenFileReq req = new OpenFileReq(ReqType.OPEN_FILE);
+		req.setFileName("/a/b/c/a.txt");
+		req.setNewBlkNum(3);
+		OpenFileResp resp = (OpenFileResp) processor.process(null, req);
+		resp.dump();
+	}
 
-    public static void testDeleteFile() {
-        IProcessor processor = new DataRequestProcessor();
-        DeleteFileReq req = new DeleteFileReq(ReqType.DELETE_FILE);
-        req.setFileName("/a/b/c/a.txt");
-        DeleteFileResp resp = (DeleteFileResp) processor.process(null, req);
-        resp.dump();
-    }
+	public static void testDeleteFile() {
+		IProcessor processor = new DataRequestProcessor();
+		DeleteFileReq req = new DeleteFileReq(ReqType.DELETE_FILE);
+		req.setFileName("/a/b/c/a.txt");
+		DeleteFileResp resp = (DeleteFileResp) processor.process(null, req);
+		resp.dump();
+	}
 
-    public static void testCommitFile() {
-        IProcessor processor = new DataRequestProcessor();
-        CommitFileReq req = new CommitFileReq(ReqType.COMMIT_FILE);
-        req.setFileName("/a/b/c/a.txt");
-        req.setFileSize(166);
-        req.setBlkNum(2);
+	public static void testCommitFile() {
+		IProcessor processor = new DataRequestProcessor();
+		CommitFileReq req = new CommitFileReq(ReqType.COMMIT_FILE);
+		req.setFileName("/a/b/c/a.txt");
+		req.setFileSize(166);
+		req.setBlkNum(2);
 
-        // ******
-        List<Long> blkVersions = new ArrayList<Long>();
-        blkVersions.add(3l);
-        blkVersions.add(1l);
-        req.setBlkVersions(blkVersions);
+		// ******
+		List<Long> blkVersions = new ArrayList<Long>();
+		blkVersions.add(3l);
+		blkVersions.add(1l);
+		req.setBlkVersions(blkVersions);
 
-        // ******
-        List<Long> blkSizes = new ArrayList<Long>();
-        blkSizes.add(133l);
-        blkSizes.add(33l);
-        req.setBlkSizes(blkSizes);
+		// ******
+		List<Long> blkSizes = new ArrayList<Long>();
+		blkSizes.add(133l);
+		blkSizes.add(33l);
+		req.setBlkSizes(blkSizes);
 
-        // ******
-        List<String> blkNames = new ArrayList<String>();
-        blkNames.add("gggggggg-b706-4b32-b45b-909eef3d7f52");
-        blkNames.add("35b8074c-e1fb-48c8-b84c-c4a1de93630a");
-        req.setBlkNames(blkNames);
+		// ******
+		List<String> blkNames = new ArrayList<String>();
+		blkNames.add("gggggggg-b706-4b32-b45b-909eef3d7f52");
+		blkNames.add("35b8074c-e1fb-48c8-b84c-c4a1de93630a");
+		req.setBlkNames(blkNames);
 
-        // ******
-        List<String> blkCheckSums = new ArrayList<String>();
-        blkCheckSums.add("hello");
-        blkCheckSums.add("world");
-        req.setBlkCheckSums(blkCheckSums);
+		// ******
+		List<String> blkCheckSums = new ArrayList<String>();
+		blkCheckSums.add("hello");
+		blkCheckSums.add("world");
+		req.setBlkCheckSums(blkCheckSums);
 
-        CommitFileResp resp = (CommitFileResp) processor.process(null, req);
-        resp.dump();
-    }
+		CommitFileResp resp = (CommitFileResp) processor.process(null, req);
+		resp.dump();
+	}
 
-    public static void testReadFile() {
-        IProcessor processor = new DataRequestProcessor();
-        ReadFileReq req = new ReadFileReq(ReqType.READ_FILE);
+	public static void testReadFile() {
+		IProcessor processor = new DataRequestProcessor();
+		ReadFileReq req = new ReadFileReq(ReqType.READ_FILE);
 
-        req.setBlkName("/a/b/c/a.txt.0");
-        req.setBlkVersion(1l);
-        req.setPos(30);
-        req.setLen(32);
+		req.setBlkName("/a/b/c/a.txt.0");
+		req.setBlkVersion(1l);
+		req.setPos(30);
+		req.setLen(32);
 
-        ReadFileResp resp = (ReadFileResp) processor.process(null, req);
-        resp.dump();
-    }
+		ReadFileResp resp = (ReadFileResp) processor.process(null, req);
+		resp.dump();
+	}
 
-    public static void testWriteFile() {
-        IProcessor processor = new DataRequestProcessor();
-        WriteFileReq req = new WriteFileReq(ReqType.WRITE_FILE);
+	public static void testWriteFile() {
+		IProcessor processor = new DataRequestProcessor();
+		WriteFileReq req = new WriteFileReq(ReqType.WRITE_FILE);
 
-        req.setBlkName("/a/b/c/a.txt.0");
-        req.setToken("");
-        req.setBaseBlkVersion(1l);
-        req.setBuf("hello world!".getBytes());
-        req.setPos(20);
-        req.setInsert(false);
+		req.setBlkName("/a/b/c/a.txt.0");
+		req.setToken("");
+		req.setBaseBlkVersion(1l);
+		req.setBuf("hello world!".getBytes());
+		req.setPos(20);
+		req.setInsert(false);
 
-        WriteFileResp resp = (WriteFileResp) processor.process(null, req);
-        resp.dump();
-    }
+		WriteFileResp resp = (WriteFileResp) processor.process(null, req);
+		resp.dump();
+	}
 
 }

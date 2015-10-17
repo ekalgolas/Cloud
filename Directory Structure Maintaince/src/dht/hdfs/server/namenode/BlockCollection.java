@@ -19,40 +19,42 @@ package dht.hdfs.server.namenode;
 
 import java.io.IOException;
 
-/** 
- * This interface is used by the block manager to expose a
- * few characteristics of a collection of Block/BlockUnderConstruction.
+/**
+ * This interface is used by the block manager to expose a few characteristics
+ * of a collection of Block/BlockUnderConstruction.
  */
 public interface BlockCollection {
-  /**
-   * Get the last block of the collection.
-   */
-  public BlockInfo getLastBlock() throws IOException;
+	/**
+	 * Get the last block of the collection.
+	 */
+	public BlockInfo getLastBlock() throws IOException;
 
-  /**
-   * @return the number of blocks
-   */ 
-  public int numBlocks();
+	/**
+	 * @return the number of blocks
+	 */
+	public int numBlocks();
 
-  /**
-   * Get the blocks.
-   */
-  public BlockInfo[] getBlocks();
+	/**
+	 * Get the blocks.
+	 */
+	public BlockInfo[] getBlocks();
 
-  /**
-   * Get preferred block size for the collection 
-   * @return preferred block size in bytes
-   */
-  public long getPreferredBlockSize();
+	/**
+	 * Get preferred block size for the collection
+	 * 
+	 * @return preferred block size in bytes
+	 */
+	public long getPreferredBlockSize();
 
-  /**
-   * Get block replication for the collection 
-   * @return block replication value
-   */
-  public short getBlockReplication();
+	/**
+	 * Get block replication for the collection
+	 * 
+	 * @return block replication value
+	 */
+	public short getBlockReplication();
 
-  /**
-   * Get the name of the collection.
-   */
-  public String getName();
+	/**
+	 * Get the name of the collection.
+	 */
+	public String getName();
 }

@@ -25,10 +25,10 @@ import commons.util.Log;
  * </pre>
  */
 public class FileReadClient {
-	private static final Log	log	= Log.get();
+	private static final Log log = Log.get();
 
-	static Session downloadFile(final IOControl control, final String ip, final int port, final String path, final long position, final long limit)
-			throws Exception {
+	static Session downloadFile(final IOControl control, final String ip, final int port, final String path,
+			final long position, final long limit) throws Exception {
 		final Session session = new Session(FileReadMsgType.READ_FILE);
 		session.set("path", path);
 		if (position > 0) {
@@ -40,7 +40,8 @@ public class FileReadClient {
 		return control.request(session, ip, port);
 	}
 
-	static String downloadToTemp(final Path tempDir, final IOControl control, final String ip, final int port, final String path) {
+	static String downloadToTemp(final Path tempDir, final IOControl control, final String ip, final int port,
+			final String path) {
 		try {
 			final Session response = downloadFile(control, ip, port, path, 0, 0);
 			if (response.getType() != FileReadMsgType.READ_FILE_OK) {
@@ -58,7 +59,8 @@ public class FileReadClient {
 		}
 	}
 
-	static long readFile(final IOControl control, final String ip, final int port, final String path, final long position, final long limit) {
+	static long readFile(final IOControl control, final String ip, final int port, final String path,
+			final long position, final long limit) {
 		try {
 			final Session response = downloadFile(control, ip, port, path, position, limit);
 			if (response.getType() != FileReadMsgType.READ_FILE_OK) {
@@ -109,8 +111,7 @@ public class FileReadClient {
 				for (;;) {
 					final String cmd = in.nextLine();
 					if (cmd.length() > 0) {
-						final String[] tokens = cmd.trim()
-								.split("\\s");
+						final String[] tokens = cmd.trim().split("\\s");
 						if (tokens.length == 1) {
 							// download to temp
 							log.i("Down to: " + downloadToTemp(tempDir, control, serverIP, serverPort, tokens[0]));
@@ -141,7 +142,8 @@ public class FileReadClient {
 								try {
 									final long position = Long.parseLong(tokens[2]);
 									final long limit = Long.parseLong(tokens[3]);
-									log.i("Read: " + readFile(control, serverIP, serverPort, tokens[1], position, limit));
+									log.i("Read: "
+											+ readFile(control, serverIP, serverPort, tokens[1], position, limit));
 								} catch (final NumberFormatException e) {
 									log.i("position not recognized.");
 								}

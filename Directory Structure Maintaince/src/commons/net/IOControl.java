@@ -50,17 +50,18 @@ import commons.util.Log;
  * </pre>
  */
 public class IOControl {
-	private static final Log										log				= Log.get();
-	private static int												maxRetry		= 3;
-	private final GenericKeyedObjectPool<Address, SocketChannel>	socketPool		= new GenericKeyedObjectPool<>(new SocketPoolFactory());
-	private final Map<MsgType, ArrayList<MsgHandler>>				handlerChain	= new HashMap<>();
-	private final List<MsgFilter>									filters			= new ArrayList<>();
-	private final BlockingQueue<InternalCmd>						exitQueue		= new LinkedBlockingQueue<>();
-	private final Queue<InternalCmd>								cmdQueue		= new ConcurrentLinkedQueue<>();
-	private ExecutorService											pool			= Executors.newCachedThreadPool();
-	private Selector												selector;
-	private final AtomicBoolean										startMark		= new AtomicBoolean(false);
-	private final Queue<SocketChannel>								returnQueue		= new ConcurrentLinkedDeque<>();
+	private static final Log log = Log.get();
+	private static int maxRetry = 3;
+	private final GenericKeyedObjectPool<Address, SocketChannel> socketPool = new GenericKeyedObjectPool<>(
+			new SocketPoolFactory());
+	private final Map<MsgType, ArrayList<MsgHandler>> handlerChain = new HashMap<>();
+	private final List<MsgFilter> filters = new ArrayList<>();
+	private final BlockingQueue<InternalCmd> exitQueue = new LinkedBlockingQueue<>();
+	private final Queue<InternalCmd> cmdQueue = new ConcurrentLinkedQueue<>();
+	private ExecutorService pool = Executors.newCachedThreadPool();
+	private Selector selector;
+	private final AtomicBoolean startMark = new AtomicBoolean(false);
+	private final Queue<SocketChannel> returnQueue = new ConcurrentLinkedDeque<>();
 
 	public ExecutorService getPool() {
 		return pool;
@@ -201,8 +202,7 @@ public class IOControl {
 
 	private void forwardToHandler(final Session session) throws IOException {
 		try {
-			final ObjectInputStream ois = new ObjectInputStream(session.getSocket()
-					.getInputStream());
+			final ObjectInputStream ois = new ObjectInputStream(session.getSocket().getInputStream());
 			final Session readOut = (Session) ois.readObject();
 			session.copy(readOut);
 			final MsgType type = session.getType();
@@ -220,7 +220,9 @@ public class IOControl {
 	}
 
 	/**
-	 * If you change MsgType, call this method to forward to new MsgType handlers. If MsgType is unchanged, the whole handler chain will still be called.
+	 * If you change MsgType, call this method to forward to new MsgType
+	 * handlers. If MsgType is unchanged, the whole handler chain will still be
+	 * called.
 	 *
 	 * @param session
 	 *            Modified session.
@@ -250,7 +252,8 @@ public class IOControl {
 	}
 
 	/**
-	 * Start listening to port and all registered filters/handlers will be called if there's incoming connection.
+	 * Start listening to port and all registered filters/handlers will be
+	 * called if there's incoming connection.
 	 *
 	 * @param port
 	 *            Port to listen.
@@ -262,8 +265,7 @@ public class IOControl {
 		}
 		final ServerSocketChannel server = ServerSocketChannel.open();
 		selector = Selector.open();
-		server.socket()
-		.bind(new InetSocketAddress(port));
+		server.socket().bind(new InetSocketAddress(port));
 		server.configureBlocking(false);
 		server.register(selector, SelectionKey.OP_ACCEPT);
 		final Coordinator coordinator = new Coordinator(selector);
@@ -274,7 +276,8 @@ public class IOControl {
 	}
 
 	/**
-	 * Send internal control command to coordinator. You also need to add logic in class Coordinator.
+	 * Send internal control command to coordinator. You also need to add logic
+	 * in class Coordinator.
 	 *
 	 * @param cmd
 	 */
@@ -315,8 +318,10 @@ public class IOControl {
 	 * Quit server.
 	 *
 	 * @param forceShutdown
-	 *            False for shutting down server gracefully, waiting for all ongoing filter/handler threads to finish their jobs. True if shutting down server
-	 *            by closing thread pool. Note once brutally shut down, the IOControl object should NOT be reused.
+	 *            False for shutting down server gracefully, waiting for all
+	 *            ongoing filter/handler threads to finish their jobs. True if
+	 *            shutting down server by closing thread pool. Note once
+	 *            brutally shut down, the IOControl object should NOT be reused.
 	 */
 	public void quitServer(final boolean forceShutdown) {
 		if (!startMark.get()) {
@@ -333,7 +338,8 @@ public class IOControl {
 	}
 
 	/**
-	 * Send msg to ip:port once. Connection may be pooled. This is client IO operation. Connected socket and channel will be write to outgoing session
+	 * Send msg to ip:port once. Connection may be pooled. This is client IO
+	 * operation. Connected socket and channel will be write to outgoing session
 	 *
 	 * @param session
 	 *            Msg to send.
@@ -357,8 +363,7 @@ public class IOControl {
 				continue;
 			}
 			try {
-				final ObjectOutputStream oos = new ObjectOutputStream(cachedSocket.socket()
-						.getOutputStream());
+				final ObjectOutputStream oos = new ObjectOutputStream(cachedSocket.socket().getOutputStream());
 				oos.writeObject(session);
 				oos.flush();
 				session.setSocketChannel(cachedSocket);
@@ -399,7 +404,8 @@ public class IOControl {
 	}
 
 	/**
-	 * Reply to oldSession. If you send reply, the handler should return false so keep request/response pair consistent.
+	 * Reply to oldSession. If you send reply, the handler should return false
+	 * so keep request/response pair consistent.
 	 *
 	 * @param newSession
 	 *            Msg to send.
@@ -433,8 +439,9 @@ public class IOControl {
 	}
 
 	/**
-	 * Same as request(Session session,String ip,int port). Only ip and port info is used from old session, the underlying connection is not guaranteed to be
-	 * reused.
+	 * Same as request(Session session,String ip,int port). Only ip and port
+	 * info is used from old session, the underlying connection is not
+	 * guaranteed to be reused.
 	 *
 	 * @param session
 	 *            Msg to send
@@ -444,11 +451,8 @@ public class IOControl {
 	 * @throws Exception
 	 */
 	public Session request(final Session session, final Session oldSession) throws Exception {
-		final String ip = oldSession.getSocket()
-				.getInetAddress()
-				.getHostAddress();
-		final int port = oldSession.getSocket()
-				.getPort();
+		final String ip = oldSession.getSocket().getInetAddress().getHostAddress();
+		final int port = oldSession.getSocket().getPort();
 		return request(session, ip, port);
 	}
 
@@ -470,8 +474,7 @@ public class IOControl {
 		@Override
 		public void destroyObject(final Address key, final PooledObject<SocketChannel> p) throws Exception {
 			try {
-				p.getObject()
-				.close();
+				p.getObject().close();
 			} catch (final IOException ignored) {
 			}
 			super.destroyObject(key, p);
@@ -490,7 +493,7 @@ public class IOControl {
 	}
 
 	class FilterChainImpl implements FilterChain {
-		private int	position	= 0;
+		private int position = 0;
 
 		@Override
 		public void doFilter(final Session session, final MsgFilter pre) throws IOException {
@@ -513,9 +516,9 @@ public class IOControl {
 	}
 
 	class Coordinator implements Runnable {
-		private final Semaphore		semaphore	= new Semaphore(0);
-		private final AtomicInteger	counter		= new AtomicInteger(0);
-		private final Selector		selector;
+		private final Semaphore semaphore = new Semaphore(0);
+		private final AtomicInteger counter = new AtomicInteger(0);
+		private final Selector selector;
 
 		Coordinator(final Selector selector) {
 			this.selector = selector;
@@ -545,8 +548,7 @@ public class IOControl {
 					}
 				}
 				if (count != 0) {
-					final Iterator<SelectionKey> it = selector.selectedKeys()
-							.iterator();
+					final Iterator<SelectionKey> it = selector.selectedKeys().iterator();
 					while (it.hasNext()) {
 						final SelectionKey key = it.next();
 						it.remove();
@@ -563,7 +565,8 @@ public class IOControl {
 						} else if (key.isReadable()) {
 							final SocketChannel channel = (SocketChannel) key.channel();
 							try {
-								// System.out.println("Key: "+key.isValid()+" Block: "+channel.isBlocking());
+								// System.out.println("Key: "+key.isValid()+"
+								// Block: "+channel.isBlocking());
 								key.cancel();
 								channel.configureBlocking(true);
 							} catch (final IOException e) {
@@ -600,8 +603,8 @@ public class IOControl {
 	}
 
 	class Worker implements Runnable {
-		private final SocketChannel	socketChannel;
-		private final Semaphore		semaphore;
+		private final SocketChannel socketChannel;
+		private final Semaphore semaphore;
 
 		Worker(final SocketChannel socketChannel, final Semaphore semaphore) {
 			this.socketChannel = socketChannel;

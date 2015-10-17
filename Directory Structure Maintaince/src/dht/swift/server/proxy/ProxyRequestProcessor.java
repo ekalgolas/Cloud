@@ -35,8 +35,7 @@ public class ProxyRequestProcessor implements IProcessor {
 		conf = config;
 		client = new TCPClient();
 		try {
-			table = (RouteTable) RouteTable.loadMeta(config
-					.getProperty("imgFile"));
+			table = (RouteTable) RouteTable.loadMeta(config.getProperty("imgFile"));
 		} catch (IOException e) {
 			table = new RouteTable();
 			table.initialize(config);
@@ -85,8 +84,7 @@ public class ProxyRequestProcessor implements IProcessor {
 		return resp;
 	}
 
-	public ProtocolResp handleCreateFileReq(ConnectionInfo info,
-			CreateFileReq createReq) {
+	public ProtocolResp handleCreateFileReq(ConnectionInfo info, CreateFileReq createReq) {
 		CreateFileResp createResp = new CreateFileResp(RespType.OK);
 
 		DhtPath path = new DhtPath(createReq.getFileName());
@@ -94,8 +92,7 @@ public class ProxyRequestProcessor implements IProcessor {
 
 		TCPConnection connection;
 		try {
-			connection = TCPConnection.getInstance(node.getIpAddress(),
-					node.getPort());
+			connection = TCPConnection.getInstance(node.getIpAddress(), node.getPort());
 
 			CreateFileReq req = new CreateFileReq(ReqType.CREATE_FILE);
 			req.setFileName(path.getAbsolutePath());
@@ -104,8 +101,7 @@ public class ProxyRequestProcessor implements IProcessor {
 			CreateFileResp resp = (CreateFileResp) connection.response();
 			if (resp.getResponseType() != RespType.OK) {
 				createResp.setResponseType(RespType.IOERROR);
-				createResp.setMsg("create file " + path.getPath()
-						+ " failed, error: " + createResp.getResponseType()
+				createResp.setMsg("create file " + path.getPath() + " failed, error: " + createResp.getResponseType()
 						+ " msg: " + resp.getMsg());
 			}
 		} catch (IOException e) {
@@ -115,8 +111,7 @@ public class ProxyRequestProcessor implements IProcessor {
 		return createResp;
 	}
 
-	public ProtocolResp handleOpenFileReq(ConnectionInfo info,
-			OpenFileReq openReq) {
+	public ProtocolResp handleOpenFileReq(ConnectionInfo info, OpenFileReq openReq) {
 		OpenFileResp openResp = new OpenFileResp(RespType.OK);
 
 		DhtPath path = new DhtPath(openReq.getFileName());
@@ -124,17 +119,15 @@ public class ProxyRequestProcessor implements IProcessor {
 
 		TCPConnection connection;
 		try {
-			connection = TCPConnection.getInstance(node.getIpAddress(),
-					node.getPort());
+			connection = TCPConnection.getInstance(node.getIpAddress(), node.getPort());
 			OpenFileReq req = new OpenFileReq(ReqType.OPEN_FILE);
 			req.setFileName(path.getPath());
 			connection.request(req);
 			OpenFileResp resp = (OpenFileResp) connection.response();
 			if (resp.getResponseType() != RespType.OK) {
 				openResp.setResponseType(RespType.IOERROR);
-				openResp.setMsg("open file " + path.getPath()
-						+ " failed, error: " + resp.getResponseType()
-						+ " msg: " + resp.getMsg());
+				openResp.setMsg("open file " + path.getPath() + " failed, error: " + resp.getResponseType() + " msg: "
+						+ resp.getMsg());
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

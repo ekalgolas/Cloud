@@ -104,8 +104,7 @@ public class TCPServer {
 			long[] reactorByteReceived = new long[ioReactorNum];
 			long[] reactorByteSent = new long[ioReactorNum];
 			for (int i = 0; i < ioReactorNum; ++i) {
-				reactorConnectionNum[i] = reactors[i].reactorConnectionNum
-						.get();
+				reactorConnectionNum[i] = reactors[i].reactorConnectionNum.get();
 				reactorReqNum[i] = reactors[i].reactorReqNum.get();
 				reactorRespNum[i] = reactors[i].reactorRespNum.get();
 				reactorByteReceived[i] = reactors[i].reactorByteReceived.get();
@@ -144,8 +143,7 @@ public class TCPServer {
 				reactorByteSent = new AtomicLong(0);
 			}
 
-			public void register(SocketChannel channel, int op)
-					throws IOException {
+			public void register(SocketChannel channel, int op) throws IOException {
 				// System.out.println("register " + id);
 				synchronized (lock) {
 					// System.out.println("grab lock");
@@ -180,8 +178,7 @@ public class TCPServer {
 						if (count == 0) {
 							continue;
 						}
-						Iterator<SelectionKey> it = selector.selectedKeys()
-								.iterator();
+						Iterator<SelectionKey> it = selector.selectedKeys().iterator();
 						while (it.hasNext()) {
 							SelectionKey key = it.next();
 							it.remove();
@@ -199,21 +196,18 @@ public class TCPServer {
 				public void handleIO(SelectionKey key) throws IOException {
 					try {
 						if (key.isReadable()) {
-							SocketChannel channel = (SocketChannel) key
-									.channel();
+							SocketChannel channel = (SocketChannel) key.channel();
 							IOBuffer ioBuffer = (IOBuffer) key.attachment();
 							if (ioBuffer == null) {
 								ioBuffer = new IOBuffer(key, selector, lock);
 								key.attach(ioBuffer);
 							}
 							if (!ioBuffer.read(channel)) {
-								throw new IOException(
-										"socket input stream reach the end");
+								throw new IOException("socket input stream reach the end");
 								// deregister(key);
 							}
 							ConnectionInfo info = new ConnectionInfo();
-							info.setIp(channel.socket().getInetAddress()
-									.getHostAddress());
+							info.setIp(channel.socket().getInetAddress().getHostAddress());
 							info.setPort(channel.socket().getPort());
 							// System.out.println("connectionInfo: "
 							// + info.getIp() + " " + info.getPort());
@@ -223,42 +217,35 @@ public class TCPServer {
 									// System.out.println(((ServerReportReq)
 									// req)
 									// .toString());
-									ServerReportResp resp = new ServerReportResp(
-											req.getrId(), RespType.OK);
+									ServerReportResp resp = new ServerReportResp(req.getrId(), RespType.OK);
 									generateReport(resp);
 									ioBuffer.addResponse(resp);
 								} else {
-									WorkThread worker = new WorkThread(
-											processor, info, req, ioBuffer);
+									WorkThread worker = new WorkThread(processor, info, req, ioBuffer);
 									ThreadPool.execute(worker);
 								}
 							}
 						}
 						if (key.isWritable()) {
-							SocketChannel socketChannel = (SocketChannel) key
-									.channel();
+							SocketChannel socketChannel = (SocketChannel) key.channel();
 							IOBuffer ioBuffer = (IOBuffer) key.attachment();
 							ProtocolResp resp = null;
 							while ((resp = ioBuffer.pollResponse()) != null) {
 								ByteArrayOutputStream bout = new ByteArrayOutputStream();
-								ObjectOutputStream out = new ObjectOutputStream(
-										bout);
+								ObjectOutputStream out = new ObjectOutputStream(bout);
 								out.writeObject(resp);
 								out.flush();
 								// TODO optimize and share the buffer
 								ByteBuffer headBuffer = ByteBuffer.allocate(4);
-								ByteBuffer respBuffer = ByteBuffer
-										.allocate(bout.size());
+								ByteBuffer respBuffer = ByteBuffer.allocate(bout.size());
 								headBuffer.putInt(bout.size());
 								respBuffer.put(bout.toByteArray());
 								headBuffer.flip();
 								socketChannel.write(headBuffer);
-								reactorByteSent
-										.addAndGet(headBuffer.capacity());
+								reactorByteSent.addAndGet(headBuffer.capacity());
 								respBuffer.flip();
 								socketChannel.write(respBuffer);
-								reactorByteSent
-										.addAndGet(respBuffer.capacity());
+								reactorByteSent.addAndGet(respBuffer.capacity());
 								reactorRespNum.incrementAndGet();
 								bout.close();
 								out.close();
@@ -281,9 +268,7 @@ public class TCPServer {
 					IOBuffer ioBuffer;
 					ProtocolReq req;
 
-					public WorkThread(IProcessor processor,
-							ConnectionInfo info, ProtocolReq req,
-							IOBuffer ioBuffer) {
+					public WorkThread(IProcessor processor, ConnectionInfo info, ProtocolReq req, IOBuffer ioBuffer) {
 						this.processor = processor;
 						this.info = info;
 						this.ioBuffer = ioBuffer;
@@ -326,8 +311,7 @@ public class TCPServer {
 						lock = l;
 					}
 
-					public boolean read(SocketChannel channel)
-							throws IOException {
+					public boolean read(SocketChannel channel) throws IOException {
 						while (true) {
 							int len;
 							if (head == -1) {
@@ -349,10 +333,8 @@ public class TCPServer {
 								}
 								reactorByteReceived.addAndGet(len);
 								if (contentBuffer.position() == head) {
-									ByteArrayInputStream bais = new ByteArrayInputStream(
-											contentBuffer.array());
-									ObjectInputStream ois = new ObjectInputStream(
-											bais);
+									ByteArrayInputStream bais = new ByteArrayInputStream(contentBuffer.array());
+									ObjectInputStream ois = new ObjectInputStream(bais);
 									ProtocolReq req = null;
 									try {
 										req = (ProtocolReq) ois.readObject();
@@ -403,8 +385,7 @@ public class TCPServer {
 						// e.printStackTrace();
 						// }
 						// System.out.println("interest");
-						key.interestOps(SelectionKey.OP_READ
-								| SelectionKey.OP_WRITE);
+						key.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
 						// System.out.println("interested over");
 						key.selector().wakeup();// I think this wakeup is needed
 												// in linux environment, but not

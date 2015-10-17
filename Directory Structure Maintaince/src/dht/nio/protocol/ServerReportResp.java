@@ -1,4 +1,5 @@
 package dht.nio.protocol;
+
 public class ServerReportResp extends ProtocolResp {
 
 	private static final long serialVersionUID = 1L;
@@ -72,14 +73,11 @@ public class ServerReportResp extends ProtocolResp {
 		for (int i = 0; i < ioReactorNum; ++i) {
 			totalConnection += reactorConnectionNum[i];
 		}
-		s += " ioReactorNum: " + ioReactorNum + " totalConnection: "
-				+ totalConnection + "\n";
+		s += " ioReactorNum: " + ioReactorNum + " totalConnection: " + totalConnection + "\n";
 		for (int i = 0; i < ioReactorNum; ++i) {
-			s += "reactor[" + i + "]: " + " connection: "
-					+ reactorConnectionNum[i] + " req: " + reactorReqNum[i]
-					+ " resp: " + reactorRespNum[i] + " received: "
-					+ reactorByteReceived[i] + " sent: " + reactorByteSent[i]
-					+ "\n";
+			s += "reactor[" + i + "]: " + " connection: " + reactorConnectionNum[i] + " req: " + reactorReqNum[i]
+					+ " resp: " + reactorRespNum[i] + " received: " + reactorByteReceived[i] + " sent: "
+					+ reactorByteSent[i] + "\n";
 		}
 		return s;
 	}

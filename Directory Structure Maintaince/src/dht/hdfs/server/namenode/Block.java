@@ -17,7 +17,10 @@
  */
 package dht.hdfs.server.namenode;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.File;
+import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,11 +32,9 @@ public class Block implements Comparable<Block> {
 	public static final String BLOCK_FILE_PREFIX = "blk_";
 	public static final String METADATA_EXTENSION = ".meta";
 
-	public static final Pattern blockFilePattern = Pattern
-			.compile(BLOCK_FILE_PREFIX + "(-??\\d++)$");
+	public static final Pattern blockFilePattern = Pattern.compile(BLOCK_FILE_PREFIX + "(-??\\d++)$");
 	public static final Pattern metaFilePattern = Pattern
-			.compile(BLOCK_FILE_PREFIX + "(-??\\d++)_(\\d++)\\"
-					+ METADATA_EXTENSION + "$");
+			.compile(BLOCK_FILE_PREFIX + "(-??\\d++)_(\\d++)\\" + METADATA_EXTENSION + "$");
 
 	public static boolean isBlockFilename(File f) {
 		String name = f.getName();
@@ -99,7 +100,7 @@ public class Block implements Comparable<Block> {
 	}
 
 	/**
-   */
+	*/
 	public long getBlockId() {
 		return blockId;
 	}
@@ -109,13 +110,13 @@ public class Block implements Comparable<Block> {
 	}
 
 	/**
-   */
+	*/
 	public String getBlockName() {
 		return BLOCK_FILE_PREFIX + String.valueOf(blockId);
 	}
 
 	/**
-   */
+	*/
 	public long getNumBytes() {
 		return numBytes;
 	}
@@ -133,15 +134,14 @@ public class Block implements Comparable<Block> {
 	}
 
 	/**
-   */
+	*/
 	@Override
 	public String toString() {
 		return getBlockName() + "_" + getGenerationStamp();
 	}
 
 	public void appendStringTo(StringBuilder sb) {
-		sb.append(BLOCK_FILE_PREFIX).append(blockId).append("_")
-				.append(getGenerationStamp());
+		sb.append(BLOCK_FILE_PREFIX).append(blockId).append("_").append(getGenerationStamp());
 	}
 
 	// ///////////////////////////////////

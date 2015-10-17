@@ -39,8 +39,7 @@ public class SwiftFileSystem implements IFileSystem {
 	}
 
 	TCPConnection openConnection(PhysicalNode node) throws IOException {
-		TCPConnection connection = TCPConnection.getInstance(
-				node.getIpAddress(), node.getPort());
+		TCPConnection connection = TCPConnection.getInstance(node.getIpAddress(), node.getPort());
 		return connection;
 	}
 
@@ -62,8 +61,7 @@ public class SwiftFileSystem implements IFileSystem {
 
 	@Override
 	public IDFSFile open(DhtPath path) throws IOException {
-		return SwiftFile.open(path, IDFSFile.READ | IDFSFile.WRITE, master,
-				location);
+		return SwiftFile.open(path, IDFSFile.READ | IDFSFile.WRITE, master, location);
 	}
 
 	/*
@@ -96,8 +94,7 @@ public class SwiftFileSystem implements IFileSystem {
 	}
 
 	@Override
-	public void copyFromLocal(DhtPath srcPath, DhtPath dstPath)
-			throws IOException {
+	public void copyFromLocal(DhtPath srcPath, DhtPath dstPath) throws IOException {
 		SwiftFile file = SwiftFile.create(dstPath, master, location);
 		file.upload(srcPath.getPath());
 		file.close();
@@ -105,10 +102,8 @@ public class SwiftFileSystem implements IFileSystem {
 	}
 
 	@Override
-	public void copyToLocal(DhtPath srcPath, DhtPath dstPath)
-			throws IOException {
-		SwiftFile file = SwiftFile.open(srcPath,
-				IDFSFile.READ | IDFSFile.WRITE, master, location);
+	public void copyToLocal(DhtPath srcPath, DhtPath dstPath) throws IOException {
+		SwiftFile file = SwiftFile.open(srcPath, IDFSFile.READ | IDFSFile.WRITE, master, location);
 		file.download(dstPath.getPath());
 		file.close();
 	}

@@ -17,18 +17,17 @@ import java.util.concurrent.Executors;
 import commons.util.Log;
 
 /**
- * Created by Yongtao on 9/17/2015.
- * A simple log server to print received log to console, if you need to do more, modify code in Worker.
+ * Created by Yongtao on 9/17/2015. A simple log server to print received log to
+ * console, if you need to do more, modify code in Worker.
  */
 public class LogServer {
-	private static final ExecutorService	pool	= Executors.newCachedThreadPool();
-	private static final Log				log		= Log.get();
+	private static final ExecutorService pool = Executors.newCachedThreadPool();
+	private static final Log log = Log.get();
 
 	public LogServer(final int port) throws IOException {
 		final ServerSocketChannel server = ServerSocketChannel.open();
 		final Selector selector = Selector.open();
-		server.socket()
-		.bind(new InetSocketAddress(port));
+		server.socket().bind(new InetSocketAddress(port));
 		server.configureBlocking(false);
 		server.register(selector, SelectionKey.OP_ACCEPT);
 		final Coordinator coordinator = new Coordinator(selector);
@@ -36,7 +35,7 @@ public class LogServer {
 	}
 
 	class Coordinator implements Runnable {
-		private final Selector	selector;
+		private final Selector selector;
 
 		Coordinator(final Selector selector) {
 			this.selector = selector;
@@ -53,8 +52,7 @@ public class LogServer {
 					break;
 				}
 				if (count != 0) {
-					final Iterator<SelectionKey> it = selector.selectedKeys()
-							.iterator();
+					final Iterator<SelectionKey> it = selector.selectedKeys().iterator();
 					while (it.hasNext()) {
 						final SelectionKey key = it.next();
 						it.remove();
@@ -74,7 +72,7 @@ public class LogServer {
 	}
 
 	class Worker implements Runnable {
-		private final SocketChannel	socketChannel;
+		private final SocketChannel socketChannel;
 
 		Worker(final SocketChannel socketChannel) {
 			this.socketChannel = socketChannel;
@@ -87,8 +85,7 @@ public class LogServer {
 				final InputStream is = socket.getInputStream();
 				final BufferedReader br = new BufferedReader(new InputStreamReader(is));
 				String line;
-				final String ip = socket.getInetAddress()
-						.getHostAddress();
+				final String ip = socket.getInetAddress().getHostAddress();
 				final int port = socket.getPort();
 				final String prefix = "[" + ip + ":" + port + "]";
 				while ((line = br.readLine()) != null) {

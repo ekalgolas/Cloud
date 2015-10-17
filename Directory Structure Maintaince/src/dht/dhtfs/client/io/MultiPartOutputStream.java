@@ -19,8 +19,7 @@ public abstract class MultiPartOutputStream {
 
 	public void initialize(long size, long segmentSize) {
 		if (size < 0 || segmentSize <= 0) {
-			throw new IllegalArgumentException("size: " + size
-					+ " segmentSize: " + segmentSize);
+			throw new IllegalArgumentException("size: " + size + " segmentSize: " + segmentSize);
 		}
 		this.size = size;
 		this.segmentSize = segmentSize;
@@ -42,8 +41,7 @@ public abstract class MultiPartOutputStream {
 
 	public long bytePending(int segmentId) {
 		long remain = (segmentId + 1) * segmentSize - idx[segmentId];
-		remain = remain > (size - idx[segmentId]) ? (size - idx[segmentId])
-				: remain;
+		remain = remain > (size - idx[segmentId]) ? (size - idx[segmentId]) : remain;
 		return remain;
 	}
 
@@ -61,8 +59,7 @@ public abstract class MultiPartOutputStream {
 		return segmentNum;
 	}
 
-	abstract public void write(byte[] buf, int len, int segmentId,
-			long blkOffset) throws IOException;
+	abstract public void write(byte[] buf, int len, int segmentId, long blkOffset) throws IOException;
 
 	abstract public void close() throws IOException;
 }

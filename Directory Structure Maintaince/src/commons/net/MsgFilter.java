@@ -12,9 +12,11 @@ import java.io.IOException;
  */
 public interface MsgFilter {
 	/**
-	 * This method is invoked in order of filter chain and survives entire life cycle of request and response pair. 
-	 * Please remember to call chain.doFilter to pass to next filter. 
-	 * Anything executed after calling chain.doFilter will be executed after any MsgHandler and in reversed order of filter chain.
+	 * This method is invoked in order of filter chain and survives entire life
+	 * cycle of request and response pair. Please remember to call
+	 * chain.doFilter to pass to next filter. Anything executed after calling
+	 * chain.doFilter will be executed after any MsgHandler and in reversed
+	 * order of filter chain.
 	 *
 	 * @param session
 	 *            Raw session, only socket and thread pool are usable.

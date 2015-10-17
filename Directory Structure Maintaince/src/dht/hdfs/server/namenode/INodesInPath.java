@@ -44,8 +44,7 @@ public class INodesInPath {
 		return buf.toString();
 	}
 
-	static INodesInPath resolve(final INodeDirectory startingDir,
-			final byte[][] components) throws Exception {
+	static INodesInPath resolve(final INodeDirectory startingDir, final byte[][] components) throws Exception {
 		return resolve(startingDir, components, components.length, false);
 	}
 
@@ -96,8 +95,7 @@ public class INodesInPath {
 	 *            when the path refers to a symbolic link.
 	 * @return the specified number of existing INodes in the path
 	 */
-	static INodesInPath resolve(final INodeDirectory startingDir,
-			final byte[][] components, final int numOfINodes,
+	static INodesInPath resolve(final INodeDirectory startingDir, final byte[][] components, final int numOfINodes,
 			final boolean resolveLink) throws Exception {
 
 		INode curNode = startingDir;
@@ -147,7 +145,7 @@ public class INodesInPath {
 
 	private INodesInPath(byte[][] path, int number) {
 		this.path = path;
-		assert (number >= 0);
+		assert(number >= 0);
 		inodes = new INode[number];
 		capacity = number;
 		numNonNull = 0;
@@ -173,7 +171,9 @@ public class INodesInPath {
 		return inodes[i >= 0 ? i : inodes.length + i];
 	}
 
-	/** @return the last inode. */
+	/**
+	 * @return the last inode.
+	 */
 	public INode getLastINode() {
 		return inodes[inodes.length - 1];
 	}
@@ -209,9 +209,8 @@ public class INodesInPath {
 	}
 
 	public String toString() {
-		final StringBuilder b = new StringBuilder(getClass().getSimpleName())
-				.append(": path = ").append(path.toString())
-				.append("\n  inodes = ");
+		final StringBuilder b = new StringBuilder(getClass().getSimpleName()).append(": path = ")
+				.append(path.toString()).append("\n  inodes = ");
 		if (inodes == null) {
 			b.append("null");
 		} else if (inodes.length == 0) {
@@ -223,8 +222,7 @@ public class INodesInPath {
 			}
 			b.append("], length=").append(inodes.length);
 		}
-		b.append("\n  numNonNull = ").append(numNonNull)
-				.append("\n  capacity   = ").append(capacity);
+		b.append("\n  numNonNull = ").append(numNonNull).append("\n  capacity   = ").append(capacity);
 		return b.toString();
 	}
 }

@@ -19,9 +19,6 @@ package dht.hdfs.server.namenode;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Arrays;
-
-import com.google.common.base.Preconditions;
 
 import dht.hdfs.server.common.HdfsServerConstants.BlockUCState;
 import dht.hdfs.server.protocol.DatanodeID;
@@ -31,12 +28,10 @@ import dht.hdfs.server.protocol.DatanodeID;
  */
 public class INodeFileUnderConstruction extends INodeFile {
 	/** Cast INode to INodeFileUnderConstruction. */
-	public static INodeFileUnderConstruction valueOf(INode inode, String path)
-			throws FileNotFoundException {
+	public static INodeFileUnderConstruction valueOf(INode inode, String path) throws FileNotFoundException {
 		final INodeFile file = INodeFile.valueOf(inode, path);
 		if (!file.isUnderConstruction()) {
-			throw new FileNotFoundException("File is not under construction: "
-					+ path);
+			throw new FileNotFoundException("File is not under construction: " + path);
 		}
 		return (INodeFileUnderConstruction) file;
 	}
@@ -45,24 +40,22 @@ public class INodeFileUnderConstruction extends INodeFile {
 	private final String clientMachine;
 	private final DatanodeID clientNode; // if client is a cluster node too.
 
-	INodeFileUnderConstruction(long id, short replication,
-			long preferredBlockSize, long modTime, String clientName,
+	INodeFileUnderConstruction(long id, short replication, long preferredBlockSize, long modTime, String clientName,
 			String clientMachine, DatanodeID clientNode) {
-		this(id, null, replication, modTime, preferredBlockSize,
-				BlockInfo.EMPTY_ARRAY, clientName, clientMachine, clientNode);
+		this(id, null, replication, modTime, preferredBlockSize, BlockInfo.EMPTY_ARRAY, clientName, clientMachine,
+				clientNode);
 	}
 
-	INodeFileUnderConstruction(long id, byte[] name, short blockReplication,
-			long modificationTime, long preferredBlockSize, BlockInfo[] blocks,
-			String clientName, String clientMachine, DatanodeID clientNode) {
+	INodeFileUnderConstruction(long id, byte[] name, short blockReplication, long modificationTime,
+			long preferredBlockSize, BlockInfo[] blocks, String clientName, String clientMachine,
+			DatanodeID clientNode) {
 		super(id, name, blocks, blockReplication, preferredBlockSize);
 		this.clientName = clientName;
 		this.clientMachine = clientMachine;
 		this.clientNode = clientNode;
 	}
 
-	public INodeFileUnderConstruction(final INodeFile that,
-			final String clientName, final String clientMachine,
+	public INodeFileUnderConstruction(final INodeFile that, final String clientName, final String clientMachine,
 			final DatanodeID clientNode) {
 		super(that);
 		this.clientName = clientName;
@@ -86,7 +79,9 @@ public class INodeFileUnderConstruction extends INodeFile {
 		return clientNode;
 	}
 
-	/** @return true unconditionally. */
+	/**
+	 * @return true unconditionally.
+	 */
 	@Override
 	public final boolean isUnderConstruction() {
 		return true;
@@ -100,8 +95,8 @@ public class INodeFileUnderConstruction extends INodeFile {
 	protected INodeFile toINodeFile(long mtime) {
 		assertAllBlocksComplete();
 
-		final INodeFile f = new INodeFile(getId(), getLocalNameBytes(),
-				getBlocks(), getFileReplication(), getPreferredBlockSize());
+		final INodeFile f = new INodeFile(getId(), getLocalNameBytes(), getBlocks(), getFileReplication(),
+				getPreferredBlockSize());
 		f.setParent(getParent());
 		return f;
 	}
@@ -160,14 +155,12 @@ public class INodeFileUnderConstruction extends INodeFile {
 	 * its locations.
 	 */
 	// @Override
-	public BlockInfoUnderConstruction setLastBlock(BlockInfo lastBlock,
-			DatanodeID[] targets) throws IOException {
+	public BlockInfoUnderConstruction setLastBlock(BlockInfo lastBlock, DatanodeID[] targets) throws IOException {
 		if (numBlocks() == 0) {
 			throw new IOException("Failed to set last block: File is empty.");
 		}
-		BlockInfoUnderConstruction ucBlock = lastBlock
-				.convertToBlockUnderConstruction(
-						BlockUCState.UNDER_CONSTRUCTION, targets);
+		BlockInfoUnderConstruction ucBlock = lastBlock.convertToBlockUnderConstruction(BlockUCState.UNDER_CONSTRUCTION,
+				targets);
 		// ucBlock.setBlockCollection(this);
 		setBlock(numBlocks() - 1, ucBlock);
 		return ucBlock;
@@ -182,10 +175,9 @@ public class INodeFileUnderConstruction extends INodeFile {
 	 */
 	void updateLengthOfLastBlock(long lastBlockLength) throws IOException {
 		BlockInfo lastBlock = this.getLastBlock();
-		assert (lastBlock != null) : "The last block for path "
-				+ this.getFullPathName() + " is null when updating its length";
-		assert (lastBlock instanceof BlockInfoUnderConstruction) : "The last block for path "
-				+ this.getFullPathName()
+		assert(lastBlock != null) : "The last block for path " + this.getFullPathName()
+				+ " is null when updating its length";
+		assert(lastBlock instanceof BlockInfoUnderConstruction) : "The last block for path " + this.getFullPathName()
 				+ " is not a BlockInfoUnderConstruction when updating its length";
 		lastBlock.setNumBytes(lastBlockLength);
 	}

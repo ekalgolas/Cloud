@@ -17,7 +17,7 @@ import commons.util.Log;
  * This is demo how to use IOControl as client.
  */
 public class EchoClient {
-	private static Log	log	= Log.get();
+	private static Log log = Log.get();
 
 	public static void main(final String args[]) {
 		try {
@@ -34,8 +34,7 @@ public class EchoClient {
 				for (;;) {
 					final String cmd = in.nextLine();
 					if (cmd.length() > 0) {
-						final String test = cmd.toLowerCase()
-								.trim();
+						final String test = cmd.toLowerCase().trim();
 						// ask server to quit
 						if (test.equals("quit") || test.equals("exit") || test.equals("q") || test.equals("e")) {
 							control.send(new Session(EchoMsgType.EXIT_SERVER), serverIP, serverPort);

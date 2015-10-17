@@ -20,9 +20,9 @@ import java.util.concurrent.atomic.AtomicLong;
  * </pre>
  */
 public class SocketProxy extends Socket {
-	protected Socket		socket;
-	protected InputStream	inStream;
-	protected OutputStream	outStream;
+	protected Socket socket;
+	protected InputStream inStream;
+	protected OutputStream outStream;
 
 	public SocketProxy(final Socket socket, final AtomicLong in, final AtomicLong out) throws IOException {
 		this.socket = socket;

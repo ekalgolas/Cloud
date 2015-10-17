@@ -22,8 +22,6 @@ import dht.dhtfs.core.table.PhysicalNode;
 import dht.dhtfs.core.table.RouteTable;
 import dht.dhtfs.server.datanode.FileMeta;
 import dht.nio.client.TCPConnection;
-import dht.nio.protocol.ExistFileReq;
-import dht.nio.protocol.ExistFileResp;
 import dht.nio.protocol.ReqType;
 import dht.nio.protocol.RespType;
 import dht.nio.protocol.block.ReadFileReq;
@@ -52,8 +50,7 @@ public class DHTFile implements IDFSFile {
 	TCPConnection metaServer;
 	HashMap<Integer, Long> currentBlkVersion;
 
-	private DHTFile(DhtPath path, int mode, RouteTable table,
-			GeometryLocation location, TCPConnection metaServer,
+	private DHTFile(DhtPath path, int mode, RouteTable table, GeometryLocation location, TCPConnection metaServer,
 			FileMeta fileMeta) {
 		this.fileMeta = fileMeta;
 		this.path = path;
@@ -69,7 +66,7 @@ public class DHTFile implements IDFSFile {
 	public FileMeta getFileMeta() {
 		return fileMeta;
 	}
-	
+
 	@Override
 	public void close() throws IOException {
 		metaServer.close();
@@ -109,14 +106,13 @@ public class DHTFile implements IDFSFile {
 			throw new NullPointerException("b is null");
 		}
 		if (offset < 0 || len < 0 || len > b.length - offset) {
-			throw new IndexOutOfBoundsException("b size: " + b.length
-					+ " off: " + offset + " len: " + len);
+			throw new IndexOutOfBoundsException("b size: " + b.length + " off: " + offset + " len: " + len);
 		}
 		if (b.length - offset == 0) {
 			return 0;
 		}
-		MultiPartOutputStreamNew mPartOutputStreamNew = new MultiPartBufferOutputStreamNew(
-				b, offset, len, pointer, fileMeta);
+		MultiPartOutputStreamNew mPartOutputStreamNew = new MultiPartBufferOutputStreamNew(b, offset, len, pointer,
+				fileMeta);
 		read(mPartOutputStreamNew);
 		return (int) mPartOutputStreamNew.getByteWritten();
 	}
@@ -135,14 +131,12 @@ public class DHTFile implements IDFSFile {
 			throw new NullPointerException("b is null");
 		}
 		if (offset < 0 || len < 0 || len > b.length - offset) {
-			throw new IndexOutOfBoundsException("b size: " + b.length
-					+ " offset: " + offset + " len: " + len);
+			throw new IndexOutOfBoundsException("b size: " + b.length + " offset: " + offset + " len: " + len);
 		}
 		if (b.length - offset == 0) {
 			return;
 		}
-		MultiPartInputStreamNew is = new MultiPartBufferInputStreamNew(b,
-				offset, len, pointer, fileMeta);
+		MultiPartInputStreamNew is = new MultiPartBufferInputStreamNew(b, offset, len, pointer, fileMeta);
 		write(is);
 
 	}
@@ -151,8 +145,7 @@ public class DHTFile implements IDFSFile {
 	public void seek(long pos) throws IOException {
 		if (pos >= fileMeta.getFileSize()) {
 			throw new IllegalArgumentException(
-					"pos beyond the file size, pos: " + pos + " filesize: "
-							+ fileMeta.getFileSize());
+					"pos beyond the file size, pos: " + pos + " filesize: " + fileMeta.getFileSize());
 		}
 		pointer = pos;
 	}
@@ -167,8 +160,7 @@ public class DHTFile implements IDFSFile {
 	public void commit() throws IOException {
 		PhysicalNode node = table.getPrimaryNode(path);
 
-		TCPConnection connection = TCPConnection.getInstance(
-				node.getIpAddress(), node.getPort());
+		TCPConnection connection = TCPConnection.getInstance(node.getIpAddress(), node.getPort());
 		CommitFileReq req = new CommitFileReq(ReqType.COMMIT_FILE);
 		req.setFileName(path.getAbsolutePath());
 		req.setFileSize(fileMeta.getFileSize());
@@ -182,44 +174,38 @@ public class DHTFile implements IDFSFile {
 
 		CommitFileResp resp = (CommitFileResp) connection.response();
 		if (resp.getResponseType() != RespType.OK) {
-			throw new IOException("create file " + path.getPath()
-					+ " failed, error: " + resp.getResponseType() + " msg: "
-					+ resp.getMsg());
+			throw new IOException("create file " + path.getPath() + " failed, error: " + resp.getResponseType()
+					+ " msg: " + resp.getMsg());
 		}
 	}
 
 	@Override
 	public void download(String dest) throws IOException {
-		MultiPartOutputStreamNew os = new MultiPartFileOutputStreamNew(dest,
-				fileMeta.getFileSize(), fileMeta);
+		MultiPartOutputStreamNew os = new MultiPartFileOutputStreamNew(dest, fileMeta.getFileSize(), fileMeta);
 		read(os);
 	}
 
 	@Override
 	public void upload(String src) throws IOException {
-		MultiPartInputStreamNew is = new MultiPartFileInputStreamNew(src,
-				fileMeta);
+		MultiPartInputStreamNew is = new MultiPartFileInputStreamNew(src, fileMeta);
 		write(is);
 	}
 
-	public static DHTFile create(DhtPath path, RouteTable table,
-			GeometryLocation location) throws IOException {
+	public static DHTFile create(DhtPath path, RouteTable table, GeometryLocation location) throws IOException {
 		PhysicalNode node = table.getPrimaryNode(path);
 
 		// System.out.println("Node: " + node.getIpAddress() + " "
 		// + node.getPort());
 
-		TCPConnection connection = TCPConnection.getInstance(
-				node.getIpAddress(), node.getPort());
+		TCPConnection connection = TCPConnection.getInstance(node.getIpAddress(), node.getPort());
 		CreateFileReq req = new CreateFileReq(ReqType.CREATE_FILE);
 		req.setFileName(path.getAbsolutePath());
 		req.setNewBlkNum(1);
 		connection.request(req);
 		CreateFileResp resp = (CreateFileResp) connection.response();
 		if (resp.getResponseType() != RespType.OK) {
-			throw new IOException("create file " + path.getPath()
-					+ " failed, error: " + resp.getResponseType() + " msg: "
-					+ resp.getMsg());
+			throw new IOException("create file " + path.getPath() + " failed, error: " + resp.getResponseType()
+					+ " msg: " + resp.getMsg());
 		}
 
 		FileMeta fileMeta = new FileMeta(path.getAbsolutePath());
@@ -232,27 +218,23 @@ public class DHTFile implements IDFSFile {
 		fileMeta.setBlkVersions(blkVersions);
 		fileMeta.setFileName(path.getAbsolutePath());
 
-		return new DHTFile(path, READ | WRITE, table, location, connection,
-				fileMeta);
+		return new DHTFile(path, READ | WRITE, table, location, connection, fileMeta);
 	}
 
-	public static DHTFile open(DhtPath path, int mode, RouteTable table,
-			GeometryLocation location) throws IOException {
+	public static DHTFile open(DhtPath path, int mode, RouteTable table, GeometryLocation location) throws IOException {
 		PhysicalNode node = null;
 		if ((mode & IDFSFile.WRITE) != 0) {
 			node = table.getPrimaryNode(path);
 		} else {
 			node = table.getNearestNode(path, location);
 		}
-		TCPConnection connection = TCPConnection.getInstance(
-				node.getIpAddress(), node.getPort());
+		TCPConnection connection = TCPConnection.getInstance(node.getIpAddress(), node.getPort());
 		OpenFileReq req = new OpenFileReq(ReqType.OPEN_FILE);
 		req.setFileName(path.getPath());
 		connection.request(req);
 		OpenFileResp resp = (OpenFileResp) connection.response();
 		if (resp.getResponseType() != RespType.OK) {
-			throw new IOException("open file " + path.getPath()
-					+ " failed, error: " + resp.getResponseType() + " msg: "
+			throw new IOException("open file " + path.getPath() + " failed, error: " + resp.getResponseType() + " msg: "
 					+ resp.getMsg());
 		}
 
@@ -272,19 +254,16 @@ public class DHTFile implements IDFSFile {
 		return new DHTFile(path, mode, table, location, connection, fileMeta);
 	}
 
-	public static void delete(DhtPath path, RouteTable table)
-			throws IOException {
+	public static void delete(DhtPath path, RouteTable table) throws IOException {
 		PhysicalNode node = table.getPrimaryNode(path);
-		TCPConnection connection = TCPConnection.getInstance(
-				node.getIpAddress(), node.getPort());
+		TCPConnection connection = TCPConnection.getInstance(node.getIpAddress(), node.getPort());
 		DeleteFileReq req = new DeleteFileReq(ReqType.DELETE_FILE);
 		req.setFileName(path.getPath());
 		connection.request(req);
 		DeleteFileResp resp = (DeleteFileResp) connection.response();
 		if (resp.getResponseType() != RespType.OK) {
-			throw new IOException("delete file " + path.getPath()
-					+ " failed, error: " + resp.getResponseType() + " msg: "
-					+ resp.getMsg());
+			throw new IOException("delete file " + path.getPath() + " failed, error: " + resp.getResponseType()
+					+ " msg: " + resp.getMsg());
 		}
 	}
 
@@ -296,14 +275,13 @@ public class DHTFile implements IDFSFile {
 
 		System.out.println("No of segment: " + os.getNoOfSegment());
 
-		ExecutorService executorService = Executors.newFixedThreadPool(Math
-				.min(os.getNoOfSegment(), DHTFileSystem.maxThread));
+		ExecutorService executorService = Executors
+				.newFixedThreadPool(Math.min(os.getNoOfSegment(), DHTFileSystem.maxThread));
 
 		Future[] future = new Future[os.getNoOfSegment()];
 		for (int i = 0; i < os.getNoOfSegment(); ++i) {
 			if (os.bytePending(i) > 0) {
-				future[i] = executorService.submit(new MultiPartDownloader(os,
-						i));
+				future[i] = executorService.submit(new MultiPartDownloader(os, i));
 			}
 		}
 		for (int i = 0; i < os.getNoOfSegment(); ++i) {
@@ -313,8 +291,7 @@ public class DHTFile implements IDFSFile {
 				System.out.println("Exception: " + e.getMessage());
 				e.printStackTrace();
 
-				throw new IOException("download failed, status: "
-						+ future[i].isCancelled() + " blockId: " + i);
+				throw new IOException("download failed, status: " + future[i].isCancelled() + " blockId: " + i);
 			}
 		}
 		executorService.shutdown();
@@ -323,15 +300,14 @@ public class DHTFile implements IDFSFile {
 
 	void write(MultiPartInputStreamNew is) throws IOException {
 
-		ExecutorService executorService = Executors.newFixedThreadPool(Math
-				.min(is.getNoOfSegment(), DHTFileSystem.maxThread));
+		ExecutorService executorService = Executors
+				.newFixedThreadPool(Math.min(is.getNoOfSegment(), DHTFileSystem.maxThread));
 
 		Future[] future = new Future[is.getNoOfSegment()];
 		for (int i = 0; i < is.getNoOfSegment(); ++i) {
 			if (is.remaining(i) > 0) {
 
-				future[i] = executorService.submit(new MultiPartUploader(is, i,
-						fileMeta.getBlkNames().get(i)));
+				future[i] = executorService.submit(new MultiPartUploader(is, i, fileMeta.getBlkNames().get(i)));
 			}
 		}
 		for (int i = 0; i < is.getNoOfSegment(); ++i) {
@@ -341,9 +317,8 @@ public class DHTFile implements IDFSFile {
 				System.out.println("Exception: " + e.getMessage());
 				e.printStackTrace();
 
-				throw new IOException("upload failed, status:"
-						+ future[i].isCancelled() + " Done:"
-						+ future[i].isDone() + " blockId:" + i);
+				throw new IOException("upload failed, status:" + future[i].isCancelled() + " Done:" + future[i].isDone()
+						+ " blockId:" + i);
 			}
 		}
 		executorService.shutdown();
@@ -370,8 +345,7 @@ public class DHTFile implements IDFSFile {
 
 		for (Integer blkId : currentBlkVersion.keySet()) {
 
-			System.out.println("currentBlkVersion: "
-					+ currentBlkVersion.get(blkId));
+			System.out.println("currentBlkVersion: " + currentBlkVersion.get(blkId));
 			fileMeta.getBlkVersions().add(blkId, currentBlkVersion.get(blkId));
 		}
 	}
@@ -380,8 +354,7 @@ public class DHTFile implements IDFSFile {
 		TCPConnection connection = connections.get(blkId);
 
 		if (connection == null) {
-			Vector<PhysicalNode> nodes = table
-					.getAllSortedNodes(path, location);
+			Vector<PhysicalNode> nodes = table.getAllSortedNodes(path, location);
 			OpenFileReq req = new OpenFileReq(ReqType.OPEN_FILE);
 
 			// long versionNumber = getConnectVersion(blkId);
@@ -397,8 +370,7 @@ public class DHTFile implements IDFSFile {
 
 			OpenFileResp resp = null;
 			for (PhysicalNode node : nodes) {
-				connection = TCPConnection.getInstance(node.getIpAddress(),
-						node.getPort());
+				connection = TCPConnection.getInstance(node.getIpAddress(), node.getPort());
 				// System.out.println("Node selected: " + node.getIpAddress()
 				// + " " + node.getPort());
 				connection.request(req);
@@ -409,11 +381,8 @@ public class DHTFile implements IDFSFile {
 				connection.close();
 			}
 			if (resp.getResponseType() != RespType.OK) {
-				throw new IOException(
-						"no such block version exists, filename: "
-								+ req.getFileName() + " blkId: " + blkId
-								+ " version: " + versionNumber + " message: "
-								+ resp.getMsg());
+				throw new IOException("no such block version exists, filename: " + req.getFileName() + " blkId: "
+						+ blkId + " version: " + versionNumber + " message: " + resp.getMsg());
 			}
 			connections.put(blkId, connection);
 		}
@@ -450,8 +419,7 @@ public class DHTFile implements IDFSFile {
 
 			TCPConnection connection = getConnection(blkId);
 
-			while ((len = os.moveForward(msgBufferSize, blkId)) != -1
-					&& pendingNum < reqWindowSize) {
+			while ((len = os.moveForward(msgBufferSize, blkId)) != -1 && pendingNum < reqWindowSize) {
 				req.setLen(len);
 				req.setPos(os.getOffset(blkId) - len);
 				req.setrId(reqId++);
@@ -482,8 +450,7 @@ public class DHTFile implements IDFSFile {
 		int blkId;
 		String blkName;
 
-		public MultiPartUploader(MultiPartInputStreamNew is, int blkId,
-				String blkName) {
+		public MultiPartUploader(MultiPartInputStreamNew is, int blkId, String blkName) {
 			this.is = is;
 			this.blkId = blkId;
 			this.blkName = blkName;
@@ -528,15 +495,13 @@ public class DHTFile implements IDFSFile {
 				pendingNum++;
 				resp = (WriteFileResp) connection.response();
 				if (resp.getResponseType() != RespType.OK) {
-					throw new IOException("Problem in File Writing at server: "
-							+ resp.getMsg());
+					throw new IOException("Problem in File Writing at server: " + resp.getMsg());
 				}
 				pendingNum--;
 
 			}
 
-			while ((len = is.read(buf, blkId)) != -1
-					&& pendingNum < reqWindowSize) {
+			while ((len = is.read(buf, blkId)) != -1 && pendingNum < reqWindowSize) {
 				req.setBuf(buf);
 				req.setrId(reqId++);
 				req.setBaseBlkVersion(baseVersionNumber);

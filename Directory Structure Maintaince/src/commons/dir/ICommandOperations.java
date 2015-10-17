@@ -3,7 +3,6 @@ package commons.dir;
 import java.util.InvalidPropertiesFormatException;
 
 import commons.Message;
-
 import metadata.Directory;
 
 /**
@@ -24,7 +23,8 @@ public interface ICommandOperations {
 	 * @return Directory contents in string representation
 	 * @throws InvalidPropertiesFormatException
 	 */
-	public Message ls(Directory root, final String filePath, String... arguments) throws InvalidPropertiesFormatException;
+	public Message ls(Directory root, final String filePath, String... arguments)
+			throws InvalidPropertiesFormatException;
 
 	/**
 	 * Create directory operation
@@ -35,7 +35,8 @@ public interface ICommandOperations {
 	 *            Absolute path of the directory to be created
 	 * @throws InvalidPropertiesFormatException
 	 */
-	public void mkdir(final Directory root, final String path, String... arguments) throws InvalidPropertiesFormatException;
+	public void mkdir(final Directory root, final String path, String... arguments)
+			throws InvalidPropertiesFormatException;
 
 	/**
 	 * Create file operation
@@ -59,7 +60,8 @@ public interface ICommandOperations {
 	 *            Arguments to the command
 	 * @throws InvalidPropertiesFormatException
 	 */
-	public void rmdir(final Directory root, final String path, String... arguments) throws InvalidPropertiesFormatException;
+	public void rmdir(final Directory root, final String path, String... arguments)
+			throws InvalidPropertiesFormatException;
 
 	/**
 	 * Delete file operation

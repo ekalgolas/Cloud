@@ -26,7 +26,7 @@ public class LocatedBlock {
 
 	private ExtendedBlock b;
 	private long offset; // offset of the first byte of the block in the file
-//	 private DatanodeInfo[] locs;
+	// private DatanodeInfo[] locs;
 	// corrupt flag is true if all of the replicas of a block are corrupt.
 	// else false. If block has few corrupt replicas, they are filtered and
 	// their locations are not part of this object
@@ -81,9 +81,8 @@ public class LocatedBlock {
 
 	@Override
 	public String toString() {
-		return getClass().getSimpleName() + "{" + b + "; getBlockSize()="
-				+ getBlockSize() + "; corrupt=" + corrupt + "; offset="
-				+ offset
+		return getClass().getSimpleName() + "{" + b + "; getBlockSize()=" + getBlockSize() + "; corrupt=" + corrupt
+				+ "; offset=" + offset
 				// + "; locs=" + java.util.Arrays.asList(locs)
 				+ "}";
 	}

@@ -8,7 +8,8 @@ import org.ini4j.Wini;
 import commons.net.LogServer;
 
 /**
- * Created by Yongtao on 9/17/2015. Demo log server. It should be started before other clients/servers.
+ * Created by Yongtao on 9/17/2015. Demo log server. It should be started before
+ * other clients/servers.
  */
 public class LogPrintServer {
 	public static void main(final String args[]) {

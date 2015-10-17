@@ -84,8 +84,8 @@ public class INode implements Diff.Element<byte[]> {
 			throw new AssertionError("Absolute path required");
 		}
 
-		String[] split=path.split("/");
-		
+		String[] split = path.split("/");
+
 		return split;
 	}
 

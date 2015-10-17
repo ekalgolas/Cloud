@@ -20,8 +20,7 @@ public class INodeDirectory extends INode {
 		super(null, id, name);
 	}
 
-	public static INodeDirectory valueOf(INode inode, Object path)
-			throws Exception {
+	public static INodeDirectory valueOf(INode inode, Object path) throws Exception {
 		if (inode == null) {
 			throw new FileNotFoundException("Directory does not exist: ");
 		}
@@ -98,18 +97,15 @@ public class INodeDirectory extends INode {
 	}
 
 	public ReadOnlyList<INode> getChildrenList() {
-		return children == null ? ReadOnlyList.Util.<INode> emptyList()
-				: ReadOnlyList.Util.asReadOnlyList(children);
+		return children == null ? ReadOnlyList.Util.<INode> emptyList() : ReadOnlyList.Util.asReadOnlyList(children);
 	}
 
 	INode getNode(String path, boolean resolveLink) throws Exception {
 		return getLastINodeInPath(path, resolveLink).getINode(0);
 	}
 
-	INodesInPath getLastINodeInPath(String path, boolean resolveLink)
-			throws Exception {
-		return INodesInPath.resolve(this, getPathComponents(path), 1,
-				resolveLink);
+	INodesInPath getLastINodeInPath(String path, boolean resolveLink) throws Exception {
+		return INodesInPath.resolve(this, getPathComponents(path), 1, resolveLink);
 	}
 
 	/**
@@ -119,11 +115,9 @@ public class INodeDirectory extends INode {
 	 * @throws SnapshotAccessControlException
 	 *             if path is in RO snapshot
 	 */
-	INodesInPath getINodesInPath4Write(String src, boolean resolveLink)
-			throws Exception {
+	INodesInPath getINodesInPath4Write(String src, boolean resolveLink) throws Exception {
 		final byte[][] components = INode.getPathComponents(src);
-		INodesInPath inodesInPath = INodesInPath.resolve(this, components,
-				components.length, resolveLink);
+		INodesInPath inodesInPath = INodesInPath.resolve(this, components, components.length, resolveLink);
 		return inodesInPath;
 	}
 

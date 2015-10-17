@@ -4,7 +4,6 @@ import java.io.Serializable;
 
 import dht.dhtfs.core.GeometryLocation;
 
-
 public class PhysicalNode implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -41,8 +40,8 @@ public class PhysicalNode implements Serializable {
 	}
 
 	public String toString() {
-		return "ipAddress: " + ipAddress + " port: " + port + " location: "
-				+ location.toString() + " status: " + status;
+		return "ipAddress: " + ipAddress + " port: " + port + " location: " + location.toString() + " status: "
+				+ status;
 	}
 
 	public String getIpAddress() {

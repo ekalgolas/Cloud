@@ -11,9 +11,6 @@ import dht.dhtfs.core.def.IFileSystem;
 import dht.dhtfs.core.table.PhysicalNode;
 import dht.dhtfs.core.table.RouteTable;
 import dht.nio.client.TCPConnection;
-import dht.nio.protocol.ReqType;
-import dht.nio.protocol.table.TableReq;
-import dht.nio.protocol.table.TableResp;
 
 public class HDFSFileSystem implements IFileSystem {
 
@@ -35,25 +32,24 @@ public class HDFSFileSystem implements IFileSystem {
 		double y = Double.parseDouble(conf.getProperty("locationY"));
 		location = new GeometryLocation(x, y);
 		maxThread = Integer.parseInt(conf.getProperty("maxThread"));
-//		updateRouteTable();
+		// updateRouteTable();
 	}
 
 	TCPConnection openConnection(PhysicalNode node) throws IOException {
-		TCPConnection connection = TCPConnection.getInstance(
-				node.getIpAddress(), node.getPort());
+		TCPConnection connection = TCPConnection.getInstance(node.getIpAddress(), node.getPort());
 		return connection;
 	}
 
-//	private void updateRouteTable() throws IOException {
-//		TCPConnection connection = openConnection(master);
-//		TableReq req = new TableReq(ReqType.TABLE);
-//		connection.request(req);
-//		TableResp resp = (TableResp) connection.response();
-//		connection.close();
-//		table = resp.getTable();
-//		table.dump();
-//		connection.close();
-//	}
+	// private void updateRouteTable() throws IOException {
+	// TCPConnection connection = openConnection(master);
+	// TableReq req = new TableReq(ReqType.TABLE);
+	// connection.request(req);
+	// TableResp resp = (TableResp) connection.response();
+	// connection.close();
+	// table = resp.getTable();
+	// table.dump();
+	// connection.close();
+	// }
 
 	@Override
 	public IDFSFile create(DhtPath path) throws IOException {
@@ -62,8 +58,7 @@ public class HDFSFileSystem implements IFileSystem {
 
 	@Override
 	public IDFSFile open(DhtPath path) throws IOException {
-		return HDFSFile.open(path, IDFSFile.READ | IDFSFile.WRITE, master,
-				location);
+		return HDFSFile.open(path, IDFSFile.READ | IDFSFile.WRITE, master, location);
 	}
 
 	/*
@@ -96,8 +91,7 @@ public class HDFSFileSystem implements IFileSystem {
 	}
 
 	@Override
-	public void copyFromLocal(DhtPath srcPath, DhtPath dstPath)
-			throws IOException {
+	public void copyFromLocal(DhtPath srcPath, DhtPath dstPath) throws IOException {
 		HDFSFile file = HDFSFile.create(dstPath, master, location);
 		file.upload(srcPath.getPath());
 		file.close();
@@ -105,10 +99,8 @@ public class HDFSFileSystem implements IFileSystem {
 	}
 
 	@Override
-	public void copyToLocal(DhtPath srcPath, DhtPath dstPath)
-			throws IOException {
-		HDFSFile file = HDFSFile.open(srcPath, IDFSFile.READ | IDFSFile.WRITE,
-				master, location);
+	public void copyToLocal(DhtPath srcPath, DhtPath dstPath) throws IOException {
+		HDFSFile file = HDFSFile.open(srcPath, IDFSFile.READ | IDFSFile.WRITE, master, location);
 		file.download(dstPath.getPath());
 		file.close();
 	}

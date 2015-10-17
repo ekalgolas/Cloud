@@ -6,6 +6,6 @@ package dht.dhtfs.core.def;
  */
 public interface IIDAssigner {
 
-    public String generateUID();
+	public String generateUID();
 
 }

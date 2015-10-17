@@ -94,7 +94,6 @@ public class FileMeta extends Meta {
 
 	@Override
 	public String toString() {
-		return "FileMeta [fileName=" + fileName + ", fileSize=" + fileSize
-				+ ", blkNum=" + blkNum + "]";
+		return "FileMeta [fileName=" + fileName + ", fileSize=" + fileSize + ", blkNum=" + blkNum + "]";
 	}
 }

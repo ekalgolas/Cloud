@@ -6,9 +6,5 @@ package commons;
  * @author Ekal.Golas
  */
 public enum CommandsSupported {
-	LS,
-	MKDIR,
-	RMDIR,
-	TOUCH,
-	EXIT
+	LS, MKDIR, RMDIR, TOUCH, EXIT
 }

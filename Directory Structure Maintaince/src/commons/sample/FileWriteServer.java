@@ -31,11 +31,11 @@ import commons.util.Log;
  * Chunk upload server using GFS scheme
  */
 public class FileWriteServer {
-	private static final Log	log	= Log.get();
+	private static final Log log = Log.get();
 
 	static class WriteResult {
-		public Address			address;
-		public FileWriteMsgType	result;
+		public Address address;
+		public FileWriteMsgType result;
 
 		WriteResult(final Address address, final FileWriteMsgType result) {
 			this.address = address;
@@ -44,8 +44,8 @@ public class FileWriteServer {
 	}
 
 	static class WriteServer implements MsgHandler {
-		private final IOControl	control;
-		private final Path		chunkDir;
+		private final IOControl control;
+		private final Path chunkDir;
 
 		WriteServer(final IOControl control, final Path chunkDir) throws IOException {
 			this.control = control;
@@ -90,11 +90,10 @@ public class FileWriteServer {
 						final FileChannel dest = fos.getChannel();
 						if (addresses.size() == 0) {
 							// no more forwarding
-							final Future<Object> writeTrans = session.getExecutor()
-									.submit(() -> {
-										FileHelper.download(src, dest, size, position);
-										return null;
-									});
+							final Future<Object> writeTrans = session.getExecutor().submit(() -> {
+								FileHelper.download(src, dest, size, position);
+								return null;
+							});
 							try {
 								writeTrans.get(timeout + start - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
 								fos.close();
@@ -115,7 +114,8 @@ public class FileWriteServer {
 							forwardResult.put(transID, results);
 							forward.set("start", start);
 							control.send(forward, addresses.get(0));
-							FileHelper.pipe(session.getExecutor(), src, dest, forward.getSocketChannel(), size, position, start, timeout);
+							FileHelper.pipe(session.getExecutor(), src, dest, forward.getSocketChannel(), size,
+									position, start, timeout);
 							fos.close();
 							if (newChunk.length() != size) {
 								break;
@@ -163,7 +163,7 @@ public class FileWriteServer {
 			}
 		}
 
-		private final Map<UUID, BlockingQueue<WriteResult>>	forwardResult	= new ConcurrentHashMap<>();
+		private final Map<UUID, BlockingQueue<WriteResult>> forwardResult = new ConcurrentHashMap<>();
 
 		@Override
 		public boolean process(final Session session) throws IOException {

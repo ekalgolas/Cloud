@@ -2,9 +2,9 @@ package client.cache;
 
 import java.util.InvalidPropertiesFormatException;
 
-import metadata.Directory;
 import commons.Message;
 import commons.dir.ICommandOperations;
+import metadata.Directory;
 
 /**
  * Class to provide cache operation before client contacts the master
@@ -14,27 +14,35 @@ import commons.dir.ICommandOperations;
 public class CacheOperations implements ICommandOperations {
 	/*
 	 * (non-Javadoc)
-	 * @see commons.ICommandOperations#ls(metadata.Directory, java.lang.String, java.lang.String[])
+	 * 
+	 * @see commons.ICommandOperations#ls(metadata.Directory, java.lang.String,
+	 * java.lang.String[])
 	 */
 	@Override
-	public Message ls(final Directory root, final String filePath, final String... arguments) throws InvalidPropertiesFormatException {
+	public Message ls(final Directory root, final String filePath, final String... arguments)
+			throws InvalidPropertiesFormatException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see commons.ICommandOperations#mkdir(metadata.Directory, java.lang.String)
+	 * 
+	 * @see commons.ICommandOperations#mkdir(metadata.Directory,
+	 * java.lang.String)
 	 */
 	@Override
-	public void mkdir(final Directory root, final String path, String... arguments) throws InvalidPropertiesFormatException {
+	public void mkdir(final Directory root, final String path, String... arguments)
+			throws InvalidPropertiesFormatException {
 		// TODO Auto-generated method stub
 
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see commons.ICommandOperations#touch(metadata.Directory, java.lang.String)
+	 * 
+	 * @see commons.ICommandOperations#touch(metadata.Directory,
+	 * java.lang.String)
 	 */
 	@Override
 	public void touch(final Directory root, final String path) throws InvalidPropertiesFormatException {
@@ -44,16 +52,20 @@ public class CacheOperations implements ICommandOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see commons.ICommandOperations#rmdir(metadata.Directory, java.lang.String, java.lang.String[])
+	 * 
+	 * @see commons.ICommandOperations#rmdir(metadata.Directory,
+	 * java.lang.String, java.lang.String[])
 	 */
 	@Override
-	public void rmdir(final Directory root, final String path, final String... arguments) throws InvalidPropertiesFormatException {
+	public void rmdir(final Directory root, final String path, final String... arguments)
+			throws InvalidPropertiesFormatException {
 		// TODO Auto-generated method stub
 
 	}
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see commons.ICommandOperations#rm(metadata.Directory, java.lang.String)
 	 */
 	@Override
@@ -64,6 +76,7 @@ public class CacheOperations implements ICommandOperations {
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see commons.ICommandOperations#cd(metadata.Directory, java.lang.String)
 	 */
 	@Override

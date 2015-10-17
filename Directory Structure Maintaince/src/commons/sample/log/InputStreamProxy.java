@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * Created by Yongtao on 9/13/2015.
  */
 public class InputStreamProxy extends FilterInputStream {
-	protected AtomicLong	counter;
+	protected AtomicLong counter;
 
 	public InputStreamProxy(final InputStream in, final AtomicLong counter) {
 		super(in);

@@ -22,13 +22,13 @@ import commons.util.Log;
  * This is demo for using IOControl as server.
  */
 public class FileReadEchoServer {
-	private static Log	log	= Log.get();
+	private static Log log = Log.get();
 
 	/**
 	 * Deal with echo and exit msg
 	 */
 	static class Echo implements MsgHandler {
-		private final IOControl	control;
+		private final IOControl control;
 
 		Echo(final IOControl control) {
 			this.control = control;
@@ -48,7 +48,7 @@ public class FileReadEchoServer {
 	 * Handle file read.
 	 */
 	static class FileServer implements MsgHandler {
-		private final IOControl	control;
+		private final IOControl control;
 
 		FileServer(final IOControl control) {
 			this.control = control;

@@ -21,10 +21,10 @@ import java.util.logging.StreamHandler;
  * </pre>
  */
 public class ReconnectSocketHandler extends StreamHandler {
-	protected AtomicBoolean		reconnect	= new AtomicBoolean(false);
-	protected ExecutorService	single		= Executors.newSingleThreadExecutor();
-	protected Runnable			recoRun		= new Reconnect();
-	protected long				waitTime	= 10 * 1000;							// 10 seconds
+	protected AtomicBoolean reconnect = new AtomicBoolean(false);
+	protected ExecutorService single = Executors.newSingleThreadExecutor();
+	protected Runnable recoRun = new Reconnect();
+	protected long waitTime = 10 * 1000; // 10 seconds
 
 	class Reconnect implements Runnable {
 
@@ -56,9 +56,9 @@ public class ReconnectSocketHandler extends StreamHandler {
 
 	// rest are copied from jdk
 
-	private Socket			sock;
-	private final String	host;
-	private final int		port;
+	private Socket sock;
+	private final String host;
+	private final int port;
 
 	public ReconnectSocketHandler(final String host, final int port) {
 		this.port = port;
@@ -101,7 +101,8 @@ public class ReconnectSocketHandler extends StreamHandler {
 	 * Close this output stream.
 	 *
 	 * @throws SecurityException
-	 *             if a security manager exists and if the caller does not have <tt>LoggingPermission("control")</tt>.
+	 *             if a security manager exists and if the caller does not have
+	 *             <tt>LoggingPermission("control")</tt>.
 	 */
 	@Override
 	public synchronized void close() throws SecurityException {
@@ -120,7 +121,8 @@ public class ReconnectSocketHandler extends StreamHandler {
 	 * Format and publish a <tt>LogRecord</tt>.
 	 *
 	 * @param record
-	 *            description of the log event. A null record is silently ignored and is not published
+	 *            description of the log event. A null record is silently
+	 *            ignored and is not published
 	 */
 	@Override
 	public synchronized void publish(final LogRecord record) {

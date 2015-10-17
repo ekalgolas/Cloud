@@ -9,11 +9,10 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.util.InvalidPropertiesFormatException;
 
-import metadata.Directory;
-
 import commons.AppConfig;
 import commons.Globals;
 import commons.dir.DirectoryParser;
+import metadata.Directory;
 
 /**
  * <pre>
@@ -26,8 +25,8 @@ import commons.dir.DirectoryParser;
  * </pre>
  */
 public class Master {
-	private static ServerSocket	gfsListenerSocket	= null;
-	private static ServerSocket mdsListenerSocket   = null;
+	private static ServerSocket gfsListenerSocket = null;
+	private static ServerSocket mdsListenerSocket = null;
 
 	/**
 	 * Setup the listener socket
@@ -45,10 +44,10 @@ public class Master {
 
 		// Else, initialize the socket
 		try {
-			if(gfsListenerSocket == null) {
+			if (gfsListenerSocket == null) {
 				gfsListenerSocket = new ServerSocket(Integer.parseInt(AppConfig.getValue(Globals.GFS_SERVER_PORT)));
 			}
-			if(mdsListenerSocket == null) {
+			if (mdsListenerSocket == null) {
 				mdsListenerSocket = new ServerSocket(Integer.parseInt(AppConfig.getValue(Globals.MDS_SERVER_PORT)));
 			}
 		} catch (final IOException e) {

@@ -15,8 +15,7 @@ public class DhtPath extends File {
 
 		// Comment for Windows OS
 		if (path.length() < 1 /* || path.charAt(0) != File.separatorChar */) {
-			throw new IllegalArgumentException(
-					"path should be an absolute path, path: " + path);
+			throw new IllegalArgumentException("path should be an absolute path, path: " + path);
 		}
 	}
 
@@ -48,10 +47,8 @@ public class DhtPath extends File {
 		// + (((val & 0xff000000) >> 24) & 0xff);
 
 		// "/1024/1024/1024/512" for directory
-		String hashName = DataRequestProcessor.dataDir + "/" + (val & 0x3ff)
-				+ "/" + ((val & 0xffc00) >> 10) + "/"
-				+ ((val & 0x3ff00000) >> 20) + "/"
-				+ (((val & 0xff800000) >> 23) & 0x1ff);
+		String hashName = DataRequestProcessor.dataDir + "/" + (val & 0x3ff) + "/" + ((val & 0xffc00) >> 10) + "/"
+				+ ((val & 0x3ff00000) >> 20) + "/" + (((val & 0xff800000) >> 23) & 0x1ff);
 		return hashName;
 	}
 }

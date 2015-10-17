@@ -1,13 +1,9 @@
 package dht.hdfs.client;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 
 import dht.dhtfs.core.Configuration;
 import dht.dhtfs.core.DhtPath;
-import dht.dhtfs.core.def.IFile;
 import dht.dhtfs.core.def.IFileSystem;
 
 public class HDFSClient {

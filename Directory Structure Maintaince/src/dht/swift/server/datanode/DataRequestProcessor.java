@@ -81,8 +81,7 @@ public class DataRequestProcessor implements IProcessor {
 	}
 
 	TCPConnection openConnection(PhysicalNode node) throws IOException {
-		TCPConnection connection = TCPConnection.getInstance(
-				node.getIpAddress(), node.getPort());
+		TCPConnection connection = TCPConnection.getInstance(node.getIpAddress(), node.getPort());
 		return connection;
 	}
 
@@ -144,8 +143,7 @@ public class DataRequestProcessor implements IProcessor {
 			break;
 		default:
 			resp = new ProtocolResp(RespType.UNRECOGNIZE);
-			resp.setMsg("unrecognized request type, type: "
-					+ req.getRequestType());
+			resp.setMsg("unrecognized request type, type: " + req.getRequestType());
 		}
 		resp.setrId(req.getrId());
 		return resp;
@@ -222,7 +220,7 @@ public class DataRequestProcessor implements IProcessor {
 		}
 		long endTime = System.currentTimeMillis();
 		resp.setFileName(fileMeta.getFileName());
-		//change afterwards
+		// change afterwards
 		// resp.setFileSize(fileMeta.getFileSize());
 		resp.setFileSize(endTime);
 		resp.setBlkNum(fileMeta.getBlkNum());
@@ -319,12 +317,10 @@ public class DataRequestProcessor implements IProcessor {
 			resp.setMsg("file is not in this server");
 			return resp;
 		}
-		DhtPath mappingPath = sourcePath.getMappingPath("_"
-				+ req.getBlkVersion());
+		DhtPath mappingPath = sourcePath.getMappingPath("_" + req.getBlkVersion());
 		try {
 			IFile blockFile = dataFileSystem.open(mappingPath);
-			int num = (int) Math.min(req.getLen(),
-					blockFile.length() - req.getPos());
+			int num = (int) Math.min(req.getLen(), blockFile.length() - req.getPos());
 			byte[] buf = new byte[Math.max(0, num)];
 			blockFile.seek(req.getPos());
 			blockFile.read(buf);
@@ -352,25 +348,20 @@ public class DataRequestProcessor implements IProcessor {
 			resp.setMsg("file is not in this server");
 			return resp;
 		}
-		DhtPath basePath = sourcePath.getMappingPath("_"
-				+ (req.getBaseBlkVersion()));
-		DhtPath mappingPath = sourcePath.getMappingPath("_"
-				+ (req.getBaseBlkVersion() + 1));
+		DhtPath basePath = sourcePath.getMappingPath("_" + (req.getBaseBlkVersion()));
+		DhtPath mappingPath = sourcePath.getMappingPath("_" + (req.getBaseBlkVersion() + 1));
 		try {
 			dataLockManager.acquireWriteLock(basePath.getAbsolutePath());
 			String token = req.getToken();
 			if (req.getToken() == null || req.getToken().trim().equals("")) {
 				token = getToken(basePath, req.getBaseBlkVersion() + 1);
 				if (req.getBaseBlkVersion() != 0) {
-					dataFileSystem.copy(
-							sourcePath.getMappingPath("_"
-									+ (req.getBaseBlkVersion())), mappingPath);
+					dataFileSystem.copy(sourcePath.getMappingPath("_" + (req.getBaseBlkVersion())), mappingPath);
 				} else {
 					dataFileSystem.create(mappingPath).close();
 				}
 			} else {
-				verifyToken(req.getToken(), basePath,
-						req.getBaseBlkVersion() + 1);
+				verifyToken(req.getToken(), basePath, req.getBaseBlkVersion() + 1);
 			}
 			IFile blockFile = dataFileSystem.open(mappingPath, IFile.WRITE);
 			// blockFile.seek(req.getPos());
@@ -390,10 +381,9 @@ public class DataRequestProcessor implements IProcessor {
 		return resp;
 	}
 
-	private void verifyToken(String token, DhtPath basePath, long version)
-			throws IOException {
-		DhtPath tokenPath = new DhtPath(basePath.getParentFile()
-				.getAbsolutePath() + "/" + token + ".token" + "-" + version);
+	private void verifyToken(String token, DhtPath basePath, long version) throws IOException {
+		DhtPath tokenPath = new DhtPath(
+				basePath.getParentFile().getAbsolutePath() + "/" + token + ".token" + "-" + version);
 		if (!dataFileSystem.exists(tokenPath)) {
 			throw new IOException("token verification failed: " + token);
 		}
@@ -406,8 +396,8 @@ public class DataRequestProcessor implements IProcessor {
 		}
 		dataFileSystem.create(lockPath).close();
 		String token = tokenAssigner.generateUID();
-		DhtPath tokenPath = new DhtPath(basePath.getParentFile()
-				.getAbsolutePath() + "/" + token + ".token" + "-" + version);
+		DhtPath tokenPath = new DhtPath(
+				basePath.getParentFile().getAbsolutePath() + "/" + token + ".token" + "-" + version);
 		dataFileSystem.create(tokenPath).close();
 		return token;
 	}
@@ -419,28 +409,21 @@ public class DataRequestProcessor implements IProcessor {
 	// }
 	private FileMeta mergeVersion(FileMeta baseFileMeta, FileMeta newFileMeta) {
 		FileMeta commitFileMeta = new FileMeta(newFileMeta.getFileName());
-		int i = 0, j = 0, baseLen = baseFileMeta.getBlkNum(), newLen = newFileMeta
-				.getBlkNum();
+		int i = 0, j = 0, baseLen = baseFileMeta.getBlkNum(), newLen = newFileMeta.getBlkNum();
 		System.out.println("baseLen: " + baseLen + " newLen: " + newLen);
-		while (i < baseLen
-				&& !newFileMeta.getBlkNames().contains(
-						baseFileMeta.getBlkNames().get(i))) {
+		while (i < baseLen && !newFileMeta.getBlkNames().contains(baseFileMeta.getBlkNames().get(i))) {
 			addBlk(commitFileMeta, baseFileMeta, i++);
 		}
 		while (j < newLen) {
-			i = baseFileMeta.getBlkNames().indexOf(
-					newFileMeta.getBlkNames().get(j));
+			i = baseFileMeta.getBlkNames().indexOf(newFileMeta.getBlkNames().get(j));
 			if (i != -1) {
-				if (baseFileMeta.getBlkVersions().get(i) > newFileMeta
-						.getBlkVersions().get(j)) {
+				if (baseFileMeta.getBlkVersions().get(i) > newFileMeta.getBlkVersions().get(j)) {
 					addBlk(commitFileMeta, baseFileMeta, i);
 				} else {
 					addBlk(commitFileMeta, newFileMeta, j);
 				}
 				++i;
-				while (i < baseLen
-						&& !newFileMeta.getBlkNames().contains(
-								baseFileMeta.getBlkNames().get(i))) {
+				while (i < baseLen && !newFileMeta.getBlkNames().contains(baseFileMeta.getBlkNames().get(i))) {
 					addBlk(commitFileMeta, baseFileMeta, i);
 				}
 			} else {

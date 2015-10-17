@@ -39,8 +39,7 @@ public class DHTFileSystem implements IFileSystem {
 	}
 
 	TCPConnection openConnection(PhysicalNode node) throws IOException {
-		TCPConnection connection = TCPConnection.getInstance(
-				node.getIpAddress(), node.getPort());
+		TCPConnection connection = TCPConnection.getInstance(node.getIpAddress(), node.getPort());
 		return connection;
 	}
 
@@ -62,8 +61,7 @@ public class DHTFileSystem implements IFileSystem {
 
 	@Override
 	public IDFSFile open(DhtPath path) throws IOException {
-		return DHTFile.open(path, IDFSFile.READ | IDFSFile.WRITE, table,
-				location);
+		return DHTFile.open(path, IDFSFile.READ | IDFSFile.WRITE, table, location);
 	}
 
 	/*
@@ -96,8 +94,7 @@ public class DHTFileSystem implements IFileSystem {
 	}
 
 	@Override
-	public void copyFromLocal(DhtPath srcPath, DhtPath dstPath)
-			throws IOException {
+	public void copyFromLocal(DhtPath srcPath, DhtPath dstPath) throws IOException {
 		DHTFile file = DHTFile.create(dstPath, table, location);
 		file.upload(srcPath.getPath());
 		file.close();
@@ -105,10 +102,8 @@ public class DHTFileSystem implements IFileSystem {
 	}
 
 	@Override
-	public void copyToLocal(DhtPath srcPath, DhtPath dstPath)
-			throws IOException {
-		DHTFile file = DHTFile.open(srcPath, IDFSFile.READ | IDFSFile.WRITE,
-				table, location);
+	public void copyToLocal(DhtPath srcPath, DhtPath dstPath) throws IOException {
+		DHTFile file = DHTFile.open(srcPath, IDFSFile.READ | IDFSFile.WRITE, table, location);
 		file.download(dstPath.getPath());
 		file.close();
 	}

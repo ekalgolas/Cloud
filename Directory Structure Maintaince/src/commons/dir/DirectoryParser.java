@@ -21,23 +21,23 @@ import metadata.Directory;
  */
 public class DirectoryParser {
 	/**
-	 * Constants based on the output format of 
-	 * 'tree -F -R -p --timefmt "%s" --du --noreport' command
+	 * Constants based on the output format of 'tree -F -R -p --timefmt "%s"
+	 * --du --noreport' command
 	 */
-	private static final int ACCESS_RIGHT_ENDINDEX 	= 10;
-	private static final int SIZE_STARTINDEX 		= 10;
+	private static final int ACCESS_RIGHT_ENDINDEX = 10;
+	private static final int SIZE_STARTINDEX = 10;
 
 	/**
 	 * Mapping for directory and level of hierarchy
 	 */
-	private static HashMap<Integer, Directory>	levelDirectoryMap	= new HashMap<>();
+	private static HashMap<Integer, Directory> levelDirectoryMap = new HashMap<>();
 
 	/**
 	 * Parses a text file and creates the directory structure
 	 *
 	 * @param filePath
-	 *            Path of the file to read
-	 *            (output of 'tree -F -R -p --timefmt "%s" --du --noreport' command)
+	 *            Path of the file to read (output of 'tree -F -R -p --timefmt
+	 *            "%s" --du --noreport' command)
 	 * @return Directory structure as {@link Directory}
 	 */
 	public static Directory parseText(final String filePath) {
@@ -58,8 +58,7 @@ public class DirectoryParser {
 				}
 
 				// Calculate current level
-				int currentLevel = StringUtils.countMatches(line, "├") 
-						+ StringUtils.countMatches(line, "└") 
+				int currentLevel = StringUtils.countMatches(line, "├") + StringUtils.countMatches(line, "└")
 						+ StringUtils.countMatches(line, "│");
 				if (line.startsWith(" ")) {
 					currentLevel++;
@@ -86,13 +85,14 @@ public class DirectoryParser {
 				String size = details.substring(SIZE_STARTINDEX, sizeEndIndex).trim();
 
 				// Create a new directory object
-				final Directory dir = new Directory(name, isFile, new ArrayList<>(),
-						Long.parseLong(readableTimeStamp), accessRights, Long.parseLong(size));
+				final Directory dir = new Directory(name, isFile, new ArrayList<>(), Long.parseLong(readableTimeStamp),
+						accessRights, Long.parseLong(size));
 
 				// Put current directory to current level
 				levelDirectoryMap.put(currentLevel, dir);
 
-				// Add the current node into children list of previous level node
+				// Add the current node into children list of previous level
+				// node
 				final Directory parent = levelDirectoryMap.get(currentLevel - 1);
 				parent.getChildren().add(dir);
 			}

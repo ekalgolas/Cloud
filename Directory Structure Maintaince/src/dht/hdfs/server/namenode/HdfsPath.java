@@ -10,8 +10,7 @@ public class HdfsPath extends File {
 
 		// Comment for Windows OS
 		if (path.length() < 1 /* || path.charAt(0) != File.separatorChar */) {
-			throw new IllegalArgumentException(
-					"path should be an absolute path, path: " + path);
+			throw new IllegalArgumentException("path should be an absolute path, path: " + path);
 		}
 	}
 

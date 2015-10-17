@@ -8,8 +8,8 @@ import dht.nio.protocol.ProtocolResp;
 
 public interface IProcessor {
 
-    public ProtocolResp process(ConnectionInfo info, ProtocolReq req);
+	public ProtocolResp process(ConnectionInfo info, ProtocolReq req);
 
-    public void initialize(Configuration config) throws IOException;
+	public void initialize(Configuration config) throws IOException;
 
 }

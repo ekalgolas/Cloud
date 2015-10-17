@@ -6,8 +6,8 @@ import java.io.Serializable;
  * IP:port address as key.
  */
 public class Address implements Serializable {
-	private final String	ip;
-	private final int		port;
+	private final String ip;
+	private final int port;
 
 	public Address(final String ip, final int port) {
 		this.ip = ip;

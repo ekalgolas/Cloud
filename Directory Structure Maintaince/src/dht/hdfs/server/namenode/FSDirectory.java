@@ -13,8 +13,7 @@ import dht.hdfs.server.protocol.DatanodeID;
 public class FSDirectory implements Closeable {
 
 	private static INodeDirectory createRoot() {
-		INodeDirectory r = new INodeDirectory(INodeId.ROOT_INODE_ID,
-				INodeDirectory.ROOT_NAME);
+		INodeDirectory r = new INodeDirectory(INodeId.ROOT_INODE_ID, INodeDirectory.ROOT_NAME);
 		return r;
 	}
 
@@ -63,8 +62,8 @@ public class FSDirectory implements Closeable {
 		return rootDir;
 	}
 
-	INodeFile addFile(String path, short replication, long preferredBlockSize,
-			String clientName, String clientMachine) throws Exception {
+	INodeFile addFile(String path, short replication, long preferredBlockSize, String clientName, String clientMachine)
+			throws Exception {
 
 		HdfsPath parent = new HdfsPath(path).getDir();
 		if (parent == null) {
@@ -75,8 +74,8 @@ public class FSDirectory implements Closeable {
 			return null;
 		}
 
-		INodeFile newNode = new INodeFile(namesystem.allocateNewInodeId(),
-				null, BlockInfo.EMPTY_ARRAY, replication, preferredBlockSize);
+		INodeFile newNode = new INodeFile(namesystem.allocateNewInodeId(), null, BlockInfo.EMPTY_ARRAY, replication,
+				preferredBlockSize);
 		boolean added = false;
 		writeLock();
 		try {
@@ -88,10 +87,9 @@ public class FSDirectory implements Closeable {
 		return newNode;
 	}
 
-	INodeFile unprotectedAddFile(long id, String path, short replication,
-			long modificationTime, long atime, long preferredBlockSize,
-			boolean underConstruction, String clientName, String clientMachine)
-			throws Exception {
+	INodeFile unprotectedAddFile(long id, String path, short replication, long modificationTime, long atime,
+			long preferredBlockSize, boolean underConstruction, String clientName, String clientMachine)
+					throws Exception {
 		final INodeFile newNode;
 		assert hasWriteLock();
 
@@ -156,16 +154,15 @@ public class FSDirectory implements Closeable {
 			for (; i < inodes.length && inodes[i] != null; i++) {
 				pathbuilder.append(HdfsPath.separator).append(names[i]);
 				if (!inodes[i].isDirectory()) {
-					throw new Exception("Parent path is not a directory: "
-							+ pathbuilder + " " + inodes[i].getLocalName());
+					throw new Exception(
+							"Parent path is not a directory: " + pathbuilder + " " + inodes[i].getLocalName());
 				}
 			}
 
 			// create directories beginning from the first null index
 			for (; i < inodes.length; i++) {
 				pathbuilder.append(HdfsPath.separator + names[i]);
-				unprotectedMkdir(namesystem.allocateNewInodeId(), iip, i,
-						components[i]);
+				unprotectedMkdir(namesystem.allocateNewInodeId(), iip, i, components[i]);
 				if (inodes[i] == null) {
 					return false;
 				}
@@ -180,8 +177,7 @@ public class FSDirectory implements Closeable {
 	 * create a directory at index pos. The parent path to the directory is at
 	 * [0, pos-1]. All ancestors exist. Newly created one stored at index pos.
 	 */
-	private void unprotectedMkdir(long inodeId, INodesInPath inodesInPath,
-			int pos, byte[] name) throws Exception {
+	private void unprotectedMkdir(long inodeId, INodesInPath inodesInPath, int pos, byte[] name) throws Exception {
 		assert hasWriteLock();
 		final INodeDirectory dir = new INodeDirectory(inodeId, name);
 		if (addChild(inodesInPath, pos, dir)) {
@@ -208,18 +204,13 @@ public class FSDirectory implements Closeable {
 	 *         return true;
 	 * @throw QuotaExceededException is thrown if it violates quota limit
 	 */
-	private boolean addChild(INodesInPath iip, int pos, INode child)
-			throws Exception {
+	private boolean addChild(INodesInPath iip, int pos, INode child) throws Exception {
 		final INode[] inodes = iip.getINodes();
 
 		if (pos == 0 && inodes[0] == rootDir) {
-			throw new Exception(
-					"File name \""
-							+ child.getLocalName()
-							+ "\" is reserved and cannot "
-							+ "be created. If this is during upgrade change the name of the "
-							+ "existing file or directory to another name before upgrading "
-							+ "to the new release.");
+			throw new Exception("File name \"" + child.getLocalName() + "\" is reserved and cannot "
+					+ "be created. If this is during upgrade change the name of the "
+					+ "existing file or directory to another name before upgrading " + "to the new release.");
 		}
 
 		final INodeDirectory parent = inodes[pos - 1].asDirectory();
@@ -245,8 +236,7 @@ public class FSDirectory implements Closeable {
 		}
 	}
 
-	private boolean addLastINode(INodesInPath inodesInPath, INode inode)
-			throws Exception {
+	private boolean addLastINode(INodesInPath inodesInPath, INode inode) throws Exception {
 		final int pos = inodesInPath.getINodes().length - 1;
 		return addChild(inodesInPath, pos, inode);
 	}
@@ -295,8 +285,7 @@ public class FSDirectory implements Closeable {
 	 * 
 	 * @return Whether the block exists in the corresponding file
 	 */
-	boolean removeBlock(String path, INodeFile fileNode, Block block)
-			throws IOException {
+	boolean removeBlock(String path, INodeFile fileNode, Block block) throws IOException {
 		waitForReady();
 
 		writeLock();
@@ -307,8 +296,7 @@ public class FSDirectory implements Closeable {
 		}
 	}
 
-	boolean unprotectedRemoveBlock(String path, INodeFile fileNode, Block block)
-			throws IOException {
+	boolean unprotectedRemoveBlock(String path, INodeFile fileNode, Block block) throws IOException {
 		// modify file-> block and blocksMap
 		boolean removed = fileNode.removeLastBlock(block);
 		if (!removed) {
@@ -360,12 +348,10 @@ public class FSDirectory implements Closeable {
 	// return file.getBlocks();
 	// }
 
-	long getPreferredBlockSize(String path) throws Exception,
-			FileNotFoundException, IOException {
+	long getPreferredBlockSize(String path) throws Exception, FileNotFoundException, IOException {
 		readLock();
 		try {
-			return INodeFile.valueOf(rootDir.getNode(path, false), path)
-					.getPreferredBlockSize();
+			return INodeFile.valueOf(rootDir.getNode(path, false), path).getPreferredBlockSize();
 		} finally {
 			readUnlock();
 		}
@@ -409,8 +395,7 @@ public class FSDirectory implements Closeable {
 		}
 	}
 
-	private boolean addLastINode(INodesInPath inodesInPath, INode inode,
-			boolean checkQuota) throws Exception {
+	private boolean addLastINode(INodesInPath inodesInPath, INode inode, boolean checkQuota) throws Exception {
 		final int pos = inodesInPath.getINodes().length - 1;
 		return addChild(inodesInPath, pos, inode);
 	}
@@ -437,8 +422,7 @@ public class FSDirectory implements Closeable {
 	boolean isNonEmptyDirectory(String path) throws Exception {
 		readLock();
 		try {
-			final INodesInPath inodesInPath = rootDir.getLastINodeInPath(path,
-					false);
+			final INodesInPath inodesInPath = rootDir.getLastINodeInPath(path, false);
 			final INode inode = inodesInPath.getINode(0);
 			if (inode == null || !inode.isDirectory()) {
 				// not found or not a directory
@@ -451,17 +435,14 @@ public class FSDirectory implements Closeable {
 		}
 	}
 
-	HdfsFileStatus getFileInfo(String src, boolean resolveLink)
-			throws Exception {
+	HdfsFileStatus getFileInfo(String src, boolean resolveLink) throws Exception {
 		String srcs = normalizePath(src);
 		readLock();
 		try {
 
-			final INodesInPath inodesInPath = rootDir.getLastINodeInPath(srcs,
-					false);
+			final INodesInPath inodesInPath = rootDir.getLastINodeInPath(srcs, false);
 			final INode i = inodesInPath.getINode(0);
-			return i == null ? null : createFileStatus(
-					HdfsFileStatus.EMPTY_NAME, i);
+			return i == null ? null : createFileStatus(HdfsFileStatus.EMPTY_NAME, i);
 		} finally {
 			readUnlock();
 		}
@@ -479,9 +460,8 @@ public class FSDirectory implements Closeable {
 		}
 		int childrenNum = 0;
 
-		return new HdfsFileStatus(size, node.isDirectory(), replication,
-				blocksize, 0, 0, "user1", "group1", null, path, node.getId(),
-				childrenNum);
+		return new HdfsFileStatus(size, node.isDirectory(), replication, blocksize, 0, 0, "user1", "group1", null, path,
+				node.getId(), childrenNum);
 	}
 
 	public void dump() {
@@ -513,22 +493,19 @@ public class FSDirectory implements Closeable {
 	 * Add a block to the file. Returns a reference to the added block.
 	 */
 
-	BlockInfo addBlock(String path, INodesInPath inodesInPath, Block block,
-			DatanodeID targets[]) throws IOException {
+	BlockInfo addBlock(String path, INodesInPath inodesInPath, Block block, DatanodeID targets[]) throws IOException {
 		waitForReady();
 
 		writeLock();
 		try {
-			final INodeFileUnderConstruction fileINode = INodeFileUnderConstruction
-					.valueOf(inodesInPath.getLastINode(), path);
-
+			final INodeFileUnderConstruction fileINode = INodeFileUnderConstruction.valueOf(inodesInPath.getLastINode(),
+					path);
 
 			// associate new last block for the file
-			BlockInfoUnderConstruction blockInfo = new BlockInfoUnderConstruction(
-					block, fileINode.getFileReplication(),
+			BlockInfoUnderConstruction blockInfo = new BlockInfoUnderConstruction(block, fileINode.getFileReplication(),
 					BlockUCState.UNDER_CONSTRUCTION, targets);
-//			getBlockManager().addBlockCollection(blockInfo, fileINode);
-//			fileINode.addBlock(blockInfo);
+			// getBlockManager().addBlockCollection(blockInfo, fileINode);
+			// fileINode.addBlock(blockInfo);
 
 			return blockInfo;
 		} finally {

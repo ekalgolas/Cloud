@@ -14,7 +14,7 @@ public class Globals {
 	 * Strictly use "synchronized" writes
 	 * </pre>
 	 */
-	public static Directory	gfsMetadataRoot	= null;
+	public static Directory gfsMetadataRoot = null;
 	public static HashMap<String, Directory> subTreePartitionList = null;
 
 	public static final String GFS_SERVER_PORT = "gfs.server.port";
@@ -34,22 +34,19 @@ public class Globals {
 
 	/**
 	 * Find the closest Directory that matches with the required file path.
+	 * 
 	 * @param filePath
 	 * @return closest directory.
 	 */
-	public static Directory findClosestNode(final String filePath,final StringBuffer matchedPath)
-	{
+	public static Directory findClosestNode(final String filePath, final StringBuffer matchedPath) {
 		int maxLevel = 0;
 		String maxMatchPath = "";
-		for(final String node:Globals.subTreePartitionList.keySet())
-		{
+		for (final String node : Globals.subTreePartitionList.keySet()) {
 			int currentLevel = 0;
-			int i=0;
-			while(i< node.length() && i < filePath.length())
-			{
-				if(node.charAt(i) == filePath.charAt(i))
-				{
-					if(node.charAt(i) == '/') {
+			int i = 0;
+			while (i < node.length() && i < filePath.length()) {
+				if (node.charAt(i) == filePath.charAt(i)) {
+					if (node.charAt(i) == '/') {
 						currentLevel++;
 					}
 				} else {
@@ -57,8 +54,7 @@ public class Globals {
 				}
 				i++;
 			}
-			if(currentLevel > maxLevel && i==node.length())
-			{
+			if (currentLevel > maxLevel && i == node.length()) {
 				maxLevel = currentLevel;
 				maxMatchPath = node;
 			}

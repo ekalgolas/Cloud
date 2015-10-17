@@ -97,9 +97,8 @@ public class BlockInfo extends Block {
 		assert index >= 0 && index * 3 + 1 < triplets.length : "Index is out of bound";
 		BlockInfo info = (BlockInfo) triplets[index * 3 + 1];
 		assert info == null
-				|| info.getClass().getName()
-						.startsWith(BlockInfo.class.getName()) : "BlockInfo is expected at "
-				+ index * 3;
+				|| info.getClass().getName().startsWith(BlockInfo.class.getName()) : "BlockInfo is expected at "
+						+ index * 3;
 		return info;
 	}
 
@@ -108,9 +107,8 @@ public class BlockInfo extends Block {
 		assert index >= 0 && index * 3 + 2 < triplets.length : "Index is out of bound";
 		BlockInfo info = (BlockInfo) triplets[index * 3 + 2];
 		assert info == null
-				|| info.getClass().getName()
-						.startsWith(BlockInfo.class.getName()) : "BlockInfo is expected at "
-				+ index * 3;
+				|| info.getClass().getName().startsWith(BlockInfo.class.getName()) : "BlockInfo is expected at "
+						+ index * 3;
 		return info;
 	}
 
@@ -364,11 +362,9 @@ public class BlockInfo extends Block {
 		return getBlockUCState().equals(BlockUCState.COMPLETE);
 	}
 
-	public BlockInfoUnderConstruction convertToBlockUnderConstruction(
-			BlockUCState s, DatanodeID[] targets) {
+	public BlockInfoUnderConstruction convertToBlockUnderConstruction(BlockUCState s, DatanodeID[] targets) {
 		if (isComplete()) {
-			return new BlockInfoUnderConstruction(this, getBlockCollection()
-					.getBlockReplication(), s, targets);
+			return new BlockInfoUnderConstruction(this, getBlockCollection().getBlockReplication(), s, targets);
 		}
 		// the block is already under construction
 		BlockInfoUnderConstruction ucBlock = (BlockInfoUnderConstruction) this;

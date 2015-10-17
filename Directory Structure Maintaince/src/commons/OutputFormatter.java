@@ -11,7 +11,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author Ekal.Golas
  */
 public class OutputFormatter {
-	private final List<String[]>	rows	= new LinkedList<String[]>();
+	private final List<String[]> rows = new LinkedList<String[]>();
 
 	/**
 	 * Add a row to output
@@ -46,6 +46,7 @@ public class OutputFormatter {
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override

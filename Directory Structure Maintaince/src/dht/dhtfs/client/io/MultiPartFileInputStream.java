@@ -7,8 +7,7 @@ public class MultiPartFileInputStream extends MultiPartInputStream {
 	// TODO
 	BufferedRandomAccessFile raf;
 
-	public MultiPartFileInputStream(String fileName, long segmentSize)
-			throws IOException {
+	public MultiPartFileInputStream(String fileName, long segmentSize) throws IOException {
 		raf = new BufferedRandomAccessFile(fileName, "r");
 		System.out.println("filelen: " + raf.length());
 		initialize(raf.length(), segmentSize);
@@ -20,9 +19,8 @@ public class MultiPartFileInputStream extends MultiPartInputStream {
 			throw new NullPointerException("buf is null");
 		}
 		if (buf.length < 1 || segmentId < 0 || segmentId >= segmentNum) {
-			throw new IllegalArgumentException("buf length: " + buf.length
-					+ " segmentId: " + segmentId + " (segmentNum: "
-					+ segmentNum + ")");
+			throw new IllegalArgumentException(
+					"buf length: " + buf.length + " segmentId: " + segmentId + " (segmentNum: " + segmentNum + ")");
 		}
 		long remain = remaining(segmentId);
 		if (remain == 0)
@@ -30,8 +28,7 @@ public class MultiPartFileInputStream extends MultiPartInputStream {
 		int len = -1;
 		synchronized (raf) {
 			raf.seek(idx[segmentId]);
-			len = raf.read(buf, 0, buf.length > remain ? (int) remain
-					: buf.length);
+			len = raf.read(buf, 0, buf.length > remain ? (int) remain : buf.length);
 		}
 		idx[segmentId] += len;
 		byteRead += len;

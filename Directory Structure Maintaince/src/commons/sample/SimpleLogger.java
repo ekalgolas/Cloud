@@ -13,13 +13,12 @@ import commons.util.Log;
  * This is sample msg handler simply recording incoming session info.
  */
 public class SimpleLogger implements MsgHandler {
-	private static Log	log	= Log.get();
+	private static Log log = Log.get();
 
 	@Override
 	public boolean process(final Session session) {
 		final Socket socket = session.getSocket();
-		final String ip = socket.getInetAddress()
-				.getHostAddress();
+		final String ip = socket.getInetAddress().getHostAddress();
 		final int port = socket.getPort();
 		final MsgType type = session.getType();
 		log.i("Receive " + type + " from " + ip + ":" + port + " " + session.getKeyValuePairs());

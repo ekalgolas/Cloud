@@ -23,15 +23,14 @@ public class SwiftClient {
 		IFileSystem swiftFS = new SwiftFileSystem();
 		swiftFS.initialize(conf);
 
-//		swiftFS.create(new DhtPath("/home/cyz0430/dht12.txt"));
+		// swiftFS.create(new DhtPath("/home/cyz0430/dht12.txt"));
 
 		// swiftFS.open(new DhtPath("/home/cyz0430/dht12.txt"));
 
 		int lineNo = 0;
 		BufferedReader br = null;
 		try {
-			br = new BufferedReader(new FileReader(
-					"/home/jemish/DirectoryPaths/LookUpFiles/HDFS/20k_1"));
+			br = new BufferedReader(new FileReader("/home/jemish/DirectoryPaths/LookUpFiles/HDFS/20k_1"));
 
 			String line;
 			while ((line = br.readLine()) != null) {

@@ -24,13 +24,12 @@ public class MasterRequestProcessor implements IProcessor {
 	protected TCPClient client;
 	protected RouteTable table;
 
-    @Override
+	@Override
 	public void initialize(Configuration config) throws IOException {
 		conf = config;
 		client = new TCPClient();
 		try {
-			table = (RouteTable) RouteTable.loadMeta(config
-					.getProperty("imgFile"));
+			table = (RouteTable) RouteTable.loadMeta(config.getProperty("imgFile"));
 		} catch (IOException e) {
 			table = new RouteTable();
 			table.initialize(config);

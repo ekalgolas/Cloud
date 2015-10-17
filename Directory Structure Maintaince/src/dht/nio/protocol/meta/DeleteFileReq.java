@@ -9,12 +9,12 @@ public class DeleteFileReq extends ProtocolReq {
 
 	private String fileName;
 
-    public void dump() {
-        System.out.println("***********BEGIN***********");
-        super.dump();
-        System.out.println("fileName: " + fileName);
-        System.out.println("***********END***********");
-    }
+	public void dump() {
+		System.out.println("***********BEGIN***********");
+		super.dump();
+		System.out.println("fileName: " + fileName);
+		System.out.println("***********END***********");
+	}
 
 	public DeleteFileReq(ReqType requestType) {
 		super(requestType);

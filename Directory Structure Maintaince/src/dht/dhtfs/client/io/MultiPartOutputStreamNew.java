@@ -78,8 +78,7 @@ public abstract class MultiPartOutputStreamNew {
 		return noOfSegment;
 	}
 
-	abstract public void write(byte[] buf, int len, int segmentId,
-			long blkOffset) throws IOException;
+	abstract public void write(byte[] buf, int len, int segmentId, long blkOffset) throws IOException;
 
 	abstract public void close() throws IOException;
 }
