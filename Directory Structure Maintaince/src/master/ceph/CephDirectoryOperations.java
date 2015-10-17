@@ -7,7 +7,9 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.InvalidPropertiesFormatException;
+import java.util.List;
 
 import commons.AppConfig;
 import commons.Globals;
@@ -50,6 +52,9 @@ public class CephDirectoryOperations implements ICommandOperations {
 						.equalsIgnoreCase(path)) {
 					root = child;
 					found = true;
+					long operationCounter = child.getOperationCounter();
+					operationCounter++;
+					child.setOperationCounter(operationCounter);
 					break;
 				}
 			}
@@ -240,11 +245,37 @@ public class CephDirectoryOperations implements ICommandOperations {
 				{
 					// Add file if isFile is true
 					if (isFile) {
+						boolean fileExist = false;
+						for(Directory child:directory.getChildren())
+						{
+							if(child.getName().equalsIgnoreCase(name) && child.isFile())
+							{
+								fileExist = true;
+								break;
+							}
+						}
+						if(fileExist)
+						{
+							return; // need to add message explaining the file already exist
+						}
 						final Directory file = new Directory(name, isFile, null);
 						directory.getChildren()
 						.add(file);
 					} else {
 						// Else, add directory here
+						boolean fileExist = false;
+						for(Directory child:directory.getChildren())
+						{
+							if(child.getName().equalsIgnoreCase(name) && !child.isFile())
+							{
+								fileExist = true;
+								break;
+							}
+						}
+						if(fileExist)
+						{
+							return; // need to add message explaining the file already exist
+						}
 						final Directory dir = new Directory(name, isFile, new ArrayList<Directory>());
 						directory.getChildren()
 						.add(dir);
@@ -300,7 +331,35 @@ public class CephDirectoryOperations implements ICommandOperations {
 
 	@Override
 	public void touch(Directory root, String path) throws InvalidPropertiesFormatException {
-		// TODO Auto-generated method stub
+		// Get the parent directory and the name of file
+		final String[] paths = path.split("/");
+		final String name = paths[paths.length - 1];
+		final String dirPath = path.substring(0, path.length() - name.length());
+
+		StringBuffer resultCode = new StringBuffer();
+		final Directory directory = search(root, dirPath, resultCode);
+		if (directory == null) {
+			throw new InvalidPathException(dirPath, "Does not exist");
+		}
+
+		// Create the file
+		final Directory file = new Directory(name, true, null);
+		final List<Directory> contents = directory.getChildren();
+		boolean found = false;
+		for (final Directory child : contents) {
+			if (child.equals(file)) {
+				// Already present, set modified timestamp to current
+				child.setModifiedTimeStamp(new Date().getTime());
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			// Not present, add it in the list
+			file.setModifiedTimeStamp(new Date().getTime());
+			contents.add(file);
+		}
+		directory.setChildren(contents);
 
 	}
 
