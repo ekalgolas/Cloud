@@ -1,5 +1,6 @@
 package client;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -35,18 +36,16 @@ public class Client {
 
 	/**
 	 * Execute commands listed in a file
-	 * 
+	 *
 	 * @param inputFileName
 	 *            File that contains the commands
 	 */
 	public void executeCommands(final String inputFileName) {
-		/**
-		 * TODO : Change it to line below in future, to read commands from input file:
-		 * Scanner scanner = new Scanner(new File(inputFileName))
-		 */
-		try (Scanner scanner = new Scanner(System.in)){
+		// Read commands
+		try (Scanner scanner = new Scanner(new File(inputFileName))) {
 			while(scanner.hasNext()) {
 				final String command = scanner.nextLine();
+
 				// Send command to master
 				outputStream.writeObject(new Message(command));
 				outputStream.flush();
@@ -70,6 +69,7 @@ public class Client {
 	 *            Command line arguments
 	 */
 	public static void main(final String[] args) {
+		// Create client
 		Client client = null;
 		try {
 			client = new Client();
@@ -79,17 +79,24 @@ public class Client {
 			e.printStackTrace();
 		}
 
-		/**
-		 * Client can read a previously generated file which has a thousands of commands
-		 * It then sends the commands one by one to the master,
-		 * after receiving reply for the previous one
-		 * TODO : We need to generate this file separately with combination of random and fixed commands
-		 */
+		// Exit if client creation failed
 		if(client == null) {
 			System.err.println("Error occured while initializing the client");
 			System.exit(0);
 		}
 
-		client.executeCommands(AppConfig.getValue("client.inputFile"));
+		// Else, generate commands
+		final CommandGenerator generator = new CommandGenerator();
+		try {
+			generator.generateCommands(Integer.parseInt(AppConfig.getValue("client.numberOfCommands")));
+		} catch (NumberFormatException | IOException e) {
+			// Exit if commands cannot be generated
+			System.err.println("Error occured while generating the commands");
+			e.printStackTrace();
+			System.exit(0);
+		}
+
+		// Execute these commands
+		client.executeCommands(AppConfig.getValue("client.commandsFile"));
 	}
 }

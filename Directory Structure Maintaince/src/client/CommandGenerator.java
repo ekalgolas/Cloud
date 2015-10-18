@@ -1,9 +1,19 @@
 package client;
 
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import metadata.Directory;
 
@@ -11,6 +21,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.distribution.ZipfDistribution;
 
 import com.sun.media.sound.InvalidDataException;
+import commons.AppConfig;
+import commons.CommandsSupported;
+import commons.dir.DirectoryParser;
 
 /**
  * Class to generate commands using Zipf distribution
@@ -18,6 +31,50 @@ import com.sun.media.sound.InvalidDataException;
  * @author Ekal.Golas
  */
 public class CommandGenerator {
+	/**
+	 * Reads input file and generates an output file with each line having a command to the server
+	 *
+	 * @param size
+	 *            Size of distribution
+	 * @throws UnsupportedEncodingException
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
+	public void generateCommands(int size)
+			throws UnsupportedEncodingException,
+			FileNotFoundException,
+			IOException {
+		// Get list of commands supported
+		final List<String> values = Stream.of(CommandsSupported.values())
+				.map(CommandsSupported::name)
+				.filter(x -> x != CommandsSupported.EXIT.name())
+				.collect(Collectors.toList());
+		String[] commands = values.toArray(new String[values.size()]);
+
+		// Get paths
+		String[] paths = getAllPaths(DirectoryParser.parseText(AppConfig.getValue("client.inputFile")));
+
+		// Distribute paths and commands
+		paths = createZipfDistribution(paths);
+		commands = createZipfDistribution(commands);
+
+		// Write these commands to a file
+		try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(AppConfig.getValue("client.commandsFile")), "utf-8"))) {
+			final Random random = new Random();
+			while (size-- > 0) {
+				// Get random path and command
+				final String path = paths[random.nextInt(paths.length)];
+				final String command = commands[random.nextInt(commands.length)];
+
+				// Write the line obtained
+				writer.write(command + " " + path + "\n");
+			}
+
+			// Lastly write the exit command
+			writer.write(CommandsSupported.EXIT.name());
+		}
+	}
+
 	/**
 	 * <pre>
 	 * Gets all possible paths in a directory structure
@@ -29,7 +86,8 @@ public class CommandGenerator {
 	 * @return Array of paths as strings
 	 * @throws InvalidDataException
 	 */
-	String[] getAllPaths(final Directory root) throws InvalidDataException {
+	String[] getAllPaths(final Directory root)
+			throws InvalidDataException {
 		// Create a list
 		final Set<String> paths = new HashSet<>();
 
@@ -60,7 +118,10 @@ public class CommandGenerator {
 	 * @param index
 	 *            Index of the current node
 	 */
-	void traverse(final Directory root, final Set<String> paths, final List<String> path, int index) {
+	void traverse(final Directory root,
+			final Set<String> paths,
+			final List<String> path,
+			int index) {
 		// If root is null, just exit
 		if (root == null) {
 			return;

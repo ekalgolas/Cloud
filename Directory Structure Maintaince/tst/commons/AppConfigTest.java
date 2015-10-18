@@ -42,24 +42,23 @@ public class AppConfigTest {
 
 	/**
 	 * Test if properties can be loaded successfully
+	 * 
+	 * @throws IOException
 	 */
 	@Test
-	public void loadConfigurationTest() {
-		try {
-			// Initialize
-			final AppConfig appConfig = new AppConfig(folder.getRoot().getAbsolutePath());
+	public void loadConfigurationTest()
+			throws IOException {
+		// Initialize
+		final AppConfig appConfig = new AppConfig(folder.getRoot().getAbsolutePath());
 
-			// Get a temporary file
-			final File file = folder.newFile();
+		// Get a temporary file
+		final File file = folder.newFile();
 
-			// Write to file
-			FileUtils.writeStringToFile(file, "test=value");
+		// Write to file
+		FileUtils.writeStringToFile(file, "test=value");
 
-			// Load and test
-			appConfig.loadConfiguration(file);
-			Assert.assertEquals("Configuration not loaded as expected", "value", AppConfig.getValue("test"));
-		} catch (final IOException e) {
-			e.printStackTrace();
-		}
+		// Load and test
+		appConfig.loadConfiguration(file);
+		Assert.assertEquals("Configuration not loaded as expected", "value", AppConfig.getValue("test"));
 	}
 }

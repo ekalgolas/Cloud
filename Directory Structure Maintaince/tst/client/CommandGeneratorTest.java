@@ -4,15 +4,22 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import metadata.Directory;
 
+import org.apache.commons.io.FileUtils;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import com.sun.media.sound.InvalidDataException;
+import commons.AppConfig;
 
 /**
  * Class to test command generation
@@ -23,6 +30,12 @@ public class CommandGeneratorTest {
 	private final CommandGenerator	generator	= new CommandGenerator();
 
 	/**
+	 * Temporary folder to create files for unit testing
+	 */
+	@Rule
+	public final TemporaryFolder	folder		= new TemporaryFolder();
+
+	/**
 	 * Test if an invalid directory creates error or not
 	 *
 	 * @throws InvalidDataException
@@ -30,6 +43,17 @@ public class CommandGeneratorTest {
 	@Test(expected = InvalidDataException.class)
 	public void testInvalidDirectory() throws InvalidDataException {
 		generator.getAllPaths(null);
+	}
+
+	/**
+	 * Test if we get empty result when directory is null
+	 */
+	@Test
+	public void testInvalidTraverse() {
+		// Call traverse with null directory
+		final Set<String> paths = new HashSet<>();
+		generator.traverse(null, paths, null, 0);
+		assertEquals("Expected no paths in the result but got some", 0, paths.size());
 	}
 
 	/**
@@ -98,5 +122,47 @@ public class CommandGeneratorTest {
 
 		// Test if set contains repeated elements as it is weighted distribution
 		assertTrue("Number of unique elements in weighted distribution should be lesser than the original collection", set.size() < dist.length);
+	}
+
+	/**
+	 * Tests if commands can be generated successfully from an input file
+	 *
+	 * @throws IOException
+	 */
+	@Test
+	public void testCommandGeneration()
+			throws IOException {
+		// Create files for configuration, input and output
+		final File conf = folder.newFile();
+		final File inputFile = folder.newFile();
+		final File outputFile = folder.newFile();
+
+		// Write configuration data
+		FileUtils.writeStringToFile(conf, "client.inputFile=" + inputFile.getPath().replace("\\", "/") + "\n");
+		FileUtils.writeStringToFile(conf, "client.commandsFile=" + outputFile.getPath().replace("\\", "/"), true);
+
+		// Write test data in input file
+		FileUtils.writeStringToFile(inputFile, "Fall 2015\n" + "├── [-rw-rw-r--      198852 1443563302]  AcademicCalendarFall2015.pdf\n"
+				+ "├── [drwxrwxr-x    22161867 1443921137]  AOS/\n" + "│   ├── [-rw-rw-r--        3016 1443670856]  grade.sh\n"
+				+ "│   ├── [-rw-rw-r--         344 1443670856]  grading-output.txt\n"
+				+ "│   ├── [-rw-rw-rw-         625 1442265401]  launcher.sh\n" + "│   ├── [drwxrwxr-x     9313786 1443629435]  Lectures/\n"
+				+ "│   │   ├── [-rw-rw-r--      627887 1443629410]  commit.pptx\n"
+				+ "│   │   ├── [-rw-rw-r--     1468140 1441076550]  Commit Protocols.pdf\n"
+				+ "│   │   ├── [-rw-rw-r--     2712828 1441076532]  foundations-animated.pdf\n"
+				+ "│   │   ├── [-rw-rw-r--      233027 1441076542]  foundations-nonanimated.pdf\n"
+				+ "│   │   ├── [-rw-rw-r--      140545 1443629435]  mutex-handout(1).pdf\n"
+				+ "│   │   └── [-rw-rw-r--     4127263 1443629399]  mutex-slides.pdf\n"
+				+ "│   ├── [-rw-rw-r--     8305617 1442890880]  New Doc 2.pdf");
+
+		// Create configuration and call command generation
+		new AppConfig(folder.getRoot().getAbsolutePath());
+		generator.generateCommands(10);
+
+		// Read the commands and see if size matches
+		final List<String> commands = FileUtils.readLines(outputFile);
+		assertEquals("Expected number of commands created are not equal to the commands created", 11, commands.size());
+
+		// Also check if last line is exit
+		assertEquals("Last line is not exit", "EXIT", commands.get(10));
 	}
 }
