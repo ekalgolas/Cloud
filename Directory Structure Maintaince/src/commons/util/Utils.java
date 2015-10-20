@@ -1,7 +1,7 @@
 package commons.util;
 
 /**
- * Created by Yongtao on 9/17/2015. MISC utils.
+ * Created by Yongtao on 9/17/2015. MISC master.dht.utils.
  */
 public class Utils {
 	public static final long	kilo	= 0x400;

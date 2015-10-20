@@ -4,18 +4,18 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Class to test the serializable message
+ * Class to master.dht.test the serializable message
  *
  * @author Ekal.Golas
  */
 public class MessageTest {
 	/**
-	 * To test if we can serialize a string to a message object
+	 * To master.dht.test if we can serialize a string to a message object
 	 */
 	@Test
 	public void createMessageTest() {
-		// Get a test string
-		final String testString = "This is a test string";
+		// Get a master.dht.test string
+		final String testString = "This is a master.dht.test string";
 
 		// Try to serialize as a message
 		final Message message = new Message(testString);
@@ -23,12 +23,12 @@ public class MessageTest {
 	}
 
 	/**
-	 * To test if we can get content back from a serialized object
+	 * To master.dht.test if we can get content back from a serialized object
 	 */
 	@Test
 	public void deserializeTest() {
-		// Get a test string
-		final String testString = "This is a test string";
+		// Get a master.dht.test string
+		final String testString = "This is a master.dht.test string";
 
 		// Try to serialize as a message
 		final Message message = new Message(testString);
@@ -39,12 +39,12 @@ public class MessageTest {
 	}
 
 	/**
-	 * To test if we can append content to serialized object
+	 * To master.dht.test if we can append content to serialized object
 	 */
 	@Test
 	public void appendTest() {
-		// Get test strings
-		final String testString = "This is a test string";
+		// Get master.dht.test strings
+		final String testString = "This is a master.dht.test string";
 		final String testString2 = " and so is this too";
 
 		// Try to serialize as a message
