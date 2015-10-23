@@ -104,7 +104,7 @@ public class Worker implements Runnable {
 						reply = new Message("Directory created successfully");
 
 						LOGGER.debug("Directory structure after " + command);
-						LOGGER.debug(root.toString());
+						LOGGER.debug("\n" + root.toString());
 					} else if (command.startsWith(CommandsSupported.TOUCH.name())) {
 						// Command line parameter (directory name) start from index '6' in the received string
 						String argument = command.substring(6);
@@ -116,7 +116,7 @@ public class Worker implements Runnable {
 						reply = new Message("File created successfully");
 
 						LOGGER.debug("Directory structure after " + command);
-						LOGGER.debug(root.toString());
+						LOGGER.debug("\n" + root.toString());
 					} else if (command.startsWith(CommandsSupported.RMDIR.name())) {
 						// Command line parameter (directory name) start from index '6' in the received string
 						String argument = command.substring(6);
@@ -128,7 +128,7 @@ public class Worker implements Runnable {
 						reply = new Message("Directory deleted successfully");
 
 						LOGGER.debug("Directory structure after " + command);
-						LOGGER.debug(root.toString());
+						LOGGER.debug("\n" + root.toString());
 					} else if (command.startsWith(CommandsSupported.EXIT.name())) {
 						// Close the connection
 						isRunning = false;
