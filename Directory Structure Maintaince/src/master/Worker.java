@@ -7,6 +7,7 @@ import java.net.Socket;
 
 import master.ceph.CephDirectoryOperations;
 import master.gfs.GFSDirectoryOperations;
+import master.gfs.GFSMetadataReplicationOperations;
 
 import org.apache.log4j.Logger;
 
@@ -65,21 +66,28 @@ public class Worker implements Runnable {
 				final String command = message.getContent().toUpperCase();
 				Message reply = null;
 				Directory root = null;
+				Directory replica = null;
 				final StringBuffer partialFilePath = new StringBuffer();
 
 				try {
 					final ICommandOperations directoryOperations;
+					final GFSMetadataReplicationOperations replicationOperations;
 
 					// Figure out the command and call the operations
 					if (Globals.GFS_MODE.equalsIgnoreCase(listenerType)) {
 						directoryOperations = new GFSDirectoryOperations();
+						replicationOperations = new GFSMetadataReplicationOperations();
 						root = Globals.gfsMetadataRoot;
+						replica = Globals.gfsMetadataCopy;
 					} else if (Globals.MDS_MODE.equalsIgnoreCase(listenerType)) {
 						directoryOperations = new CephDirectoryOperations();
+						replicationOperations = null;
 						root = Globals.findClosestNode(command.substring(3), partialFilePath);
 					} else {
 						directoryOperations = new GFSDirectoryOperations();
+						replicationOperations = new GFSMetadataReplicationOperations();
 						root = Globals.gfsMetadataRoot;
+						replica = Globals.gfsMetadataCopy;
 					}
 
 					if (command.startsWith(CommandsSupported.LS.name())) {
@@ -87,21 +95,36 @@ public class Worker implements Runnable {
 						reply = directoryOperations.ls(root, command.substring(3), partialFilePath.toString());
 					} else if (command.startsWith(CommandsSupported.MKDIR.name())) {
 						// Command line parameter (directory name) start from index '6' in the received string
-						directoryOperations.mkdir(root, command.substring(6), partialFilePath.toString());
+						String argument = command.substring(6);
+						
+						directoryOperations.mkdir(root, argument, partialFilePath.toString());
+						if(replicationOperations != null) {
+							replicationOperations.replicateMkdir(root, replica, argument);
+						}
 						reply = new Message("Directory created successfully");
 
 						LOGGER.debug("Directory structure after " + command);
 						LOGGER.debug(root.toString());
 					} else if (command.startsWith(CommandsSupported.TOUCH.name())) {
 						// Command line parameter (directory name) start from index '6' in the received string
-						directoryOperations.touch(root, command.substring(6));
+						String argument = command.substring(6);
+						
+						directoryOperations.touch(root, argument);
+						if(replicationOperations != null) {
+							replicationOperations.replicateTouch(root, replica, argument);
+						}
 						reply = new Message("File created successfully");
 
 						LOGGER.debug("Directory structure after " + command);
 						LOGGER.debug(root.toString());
 					} else if (command.startsWith(CommandsSupported.RMDIR.name())) {
 						// Command line parameter (directory name) start from index '6' in the received string
-						directoryOperations.rmdir(root, command.substring(6));
+						String argument = command.substring(6);
+						
+						directoryOperations.rmdir(root, argument);
+						if(replicationOperations != null) {
+							replicationOperations.replicateRmdir(replica, argument);
+						}
 						reply = new Message("Directory deleted successfully");
 
 						LOGGER.debug("Directory structure after " + command);

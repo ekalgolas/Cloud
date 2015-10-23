@@ -121,6 +121,13 @@ public class Master {
 
 			// Set the globals root
 			Globals.gfsMetadataRoot = directory;
+			
+			// Create metadata replica
+			final Directory replica = generateMetadata();
+						
+			// Set global replica
+			Globals.gfsMetadataCopy = replica;
+
 		} catch (ClassNotFoundException | IOException e) {
 			LOGGER.error("", e);
 		}
