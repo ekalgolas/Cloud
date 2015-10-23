@@ -8,16 +8,21 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Scanner;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
 import commons.AppConfig;
+import commons.CommandsSupported;
 import commons.Message;
 
 /**
  * Class to implement the client interface
  */
 public class Client {
-	private final Socket socket;
-	private final ObjectInputStream inputStream;
-	private final ObjectOutputStream outputStream;
+	private final Socket				socket;
+	private final ObjectInputStream		inputStream;
+	private final ObjectOutputStream	outputStream;
+	private final static Logger			LOGGER	= Logger.getLogger(Client.class);
 
 	/**
 	 * Constructor
@@ -28,6 +33,7 @@ public class Client {
 	public Client() throws UnknownHostException, IOException {
 		// Initialize configuration
 		new AppConfig("conf");
+		LOGGER.setLevel(Level.INFO);
 
 		socket = new Socket(AppConfig.getValue("client.masterIp"), Integer.parseInt(AppConfig.getValue("client.masterPort")));
 		outputStream = new ObjectOutputStream(socket.getOutputStream());
@@ -41,23 +47,33 @@ public class Client {
 	 *            File that contains the commands
 	 */
 	public void executeCommands(final String inputFileName) {
+		int number = 0;
+
 		// Read commands
 		try (Scanner scanner = new Scanner(new File(inputFileName))) {
-			while(scanner.hasNext()) {
+			while (scanner.hasNext()) {
 				final String command = scanner.nextLine();
 
 				// Send command to master
 				outputStream.writeObject(new Message(command));
 				outputStream.flush();
 
+				// Exit if command is exit
+				if (command.equalsIgnoreCase(CommandsSupported.EXIT.name())) {
+					LOGGER.info("Command " + number + " : " + command);
+					break;
+				}
+
 				// Wait and read the reply
 				final Message message = (Message) inputStream.readObject();
 				final String reply = message.getContent();
-				System.out.println(reply);
+				LOGGER.info("Command " + number + " : " + command);
+				LOGGER.info(reply + "\n");
+
+				number++;
 			}
 		} catch (final IOException | ClassNotFoundException e) {
-			System.err.println("Error occured while executing commands");
-			e.printStackTrace();
+			LOGGER.error("Error occured while executing commands", e);
 			System.exit(0);
 		}
 	}
@@ -73,15 +89,13 @@ public class Client {
 		Client client = null;
 		try {
 			client = new Client();
-		} catch (final UnknownHostException e) {
-			e.printStackTrace();
 		} catch (final IOException e) {
-			e.printStackTrace();
+			LOGGER.error("", e);
 		}
 
 		// Exit if client creation failed
-		if(client == null) {
-			System.err.println("Error occured while initializing the client");
+		if (client == null) {
+			LOGGER.error("Error occured while initializing the client");
 			System.exit(0);
 		}
 
@@ -91,8 +105,7 @@ public class Client {
 			generator.generateCommands(Integer.parseInt(AppConfig.getValue("client.numberOfCommands")));
 		} catch (NumberFormatException | IOException e) {
 			// Exit if commands cannot be generated
-			System.err.println("Error occured while generating the commands");
-			e.printStackTrace();
+			LOGGER.error("Error occured while generating the commands", e);
 			System.exit(0);
 		}
 

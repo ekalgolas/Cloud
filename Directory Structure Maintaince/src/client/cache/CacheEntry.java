@@ -1,6 +1,6 @@
 package client.cache;
 
-import metadata.Directory;
+import commons.dir.Directory;
 
 public class CacheEntry {
 	private Directory	dir;

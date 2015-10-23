@@ -2,8 +2,8 @@ package client.cache;
 
 import java.util.InvalidPropertiesFormatException;
 
-import metadata.Directory;
 import commons.Message;
+import commons.dir.Directory;
 import commons.dir.ICommandOperations;
 
 /**
@@ -14,7 +14,7 @@ import commons.dir.ICommandOperations;
 public class CacheOperations implements ICommandOperations {
 	/*
 	 * (non-Javadoc)
-	 * @see commons.ICommandOperations#ls(metadata.Directory, java.lang.String, java.lang.String[])
+	 * @see commons.ICommandOperations#ls(master.metadata.Directory, java.lang.String, java.lang.String[])
 	 */
 	@Override
 	public Message ls(final Directory root, final String filePath, final String... arguments) throws InvalidPropertiesFormatException {
@@ -24,7 +24,7 @@ public class CacheOperations implements ICommandOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see commons.ICommandOperations#mkdir(metadata.Directory, java.lang.String)
+	 * @see commons.ICommandOperations#mkdir(master.metadata.Directory, java.lang.String)
 	 */
 	@Override
 	public void mkdir(final Directory root, final String path, String... arguments) throws InvalidPropertiesFormatException {
@@ -34,7 +34,7 @@ public class CacheOperations implements ICommandOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see commons.ICommandOperations#touch(metadata.Directory, java.lang.String)
+	 * @see commons.ICommandOperations#touch(master.metadata.Directory, java.lang.String)
 	 */
 	@Override
 	public void touch(final Directory root, final String path) throws InvalidPropertiesFormatException {
@@ -44,7 +44,7 @@ public class CacheOperations implements ICommandOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see commons.ICommandOperations#rmdir(metadata.Directory, java.lang.String, java.lang.String[])
+	 * @see commons.ICommandOperations#rmdir(master.metadata.Directory, java.lang.String, java.lang.String[])
 	 */
 	@Override
 	public void rmdir(final Directory root, final String path, final String... arguments) throws InvalidPropertiesFormatException {
@@ -54,7 +54,7 @@ public class CacheOperations implements ICommandOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see commons.ICommandOperations#rm(metadata.Directory, java.lang.String)
+	 * @see commons.ICommandOperations#rm(master.metadata.Directory, java.lang.String)
 	 */
 	@Override
 	public void rm(final Directory root, final String path) throws InvalidPropertiesFormatException {
@@ -64,7 +64,7 @@ public class CacheOperations implements ICommandOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see commons.ICommandOperations#cd(metadata.Directory, java.lang.String)
+	 * @see commons.ICommandOperations#cd(master.metadata.Directory, java.lang.String)
 	 */
 	@Override
 	public Message cd(final Directory root, final String filePath) throws InvalidPropertiesFormatException {

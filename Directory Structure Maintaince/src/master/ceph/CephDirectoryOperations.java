@@ -9,15 +9,14 @@ import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
 import java.util.InvalidPropertiesFormatException;
 
-import metadata.Directory;
-import metadata.Inode;
-import metadata.MetaDataServerInfo;
-
+import master.metadata.Inode;
+import master.metadata.MetaDataServerInfo;
 import commons.AppConfig;
 import commons.CommandsSupported;
 import commons.Globals;
 import commons.Message;
 import commons.OutputFormatter;
+import commons.dir.Directory;
 import commons.dir.ICommandOperations;
 
 public class CephDirectoryOperations implements ICommandOperations {
@@ -269,7 +268,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 			}
 			else if(inode.getInodeNumber() != null)
 			{
-				return; // need to add message explaining the unstable state of metadata.
+				return; // need to add message explaining the unstable state of master.metadata.
 			}
 			else
 			{

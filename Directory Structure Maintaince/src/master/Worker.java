@@ -7,22 +7,25 @@ import java.net.Socket;
 
 import master.ceph.CephDirectoryOperations;
 import master.gfs.GFSDirectoryOperations;
-import metadata.Directory;
+
+import org.apache.log4j.Logger;
 
 import commons.CommandsSupported;
 import commons.Globals;
 import commons.Message;
+import commons.dir.Directory;
 import commons.dir.ICommandOperations;
 
 /**
  * <pre>
  * Worker class that serves the client
  * 	1. Given a socket connection, read the client request
- * 	2. Modify the metadata accordingly
+ * 	2. Modify the master.metadata accordingly
  * </pre>
  */
 public class Worker implements Runnable {
 	public volatile boolean		isRunning	= true;
+	private final static Logger	LOGGER		= Logger.getLogger(Worker.class);
 	private final String		listenerType;
 	private final Socket		workerSocket;
 	private ObjectInputStream	inputStream;
@@ -43,7 +46,7 @@ public class Worker implements Runnable {
 			outputStream = new ObjectOutputStream(workerSocket.getOutputStream());
 			inputStream = new ObjectInputStream(workerSocket.getInputStream());
 		} catch (final IOException e) {
-			e.printStackTrace();
+			LOGGER.error("", e);
 			isRunning = false;
 		}
 	}
@@ -86,14 +89,23 @@ public class Worker implements Runnable {
 						// Command line parameter (directory name) start from index '6' in the received string
 						directoryOperations.mkdir(root, command.substring(6), partialFilePath.toString());
 						reply = new Message("Directory created successfully");
+
+						LOGGER.debug("Directory structure after " + command);
+						LOGGER.debug(root.toString());
 					} else if (command.startsWith(CommandsSupported.TOUCH.name())) {
 						// Command line parameter (directory name) start from index '6' in the received string
 						directoryOperations.touch(root, command.substring(6));
 						reply = new Message("File created successfully");
+
+						LOGGER.debug("Directory structure after " + command);
+						LOGGER.debug(root.toString());
 					} else if (command.startsWith(CommandsSupported.RMDIR.name())) {
 						// Command line parameter (directory name) start from index '6' in the received string
 						directoryOperations.rmdir(root, command.substring(6));
 						reply = new Message("Directory deleted successfully");
+
+						LOGGER.debug("Directory structure after " + command);
+						LOGGER.debug(root.toString());
 					} else if (command.startsWith(CommandsSupported.EXIT.name())) {
 						// Close the connection
 						isRunning = false;
@@ -110,7 +122,7 @@ public class Worker implements Runnable {
 				outputStream.writeObject(reply);
 				outputStream.flush();
 			} catch (final IOException | ClassNotFoundException e) {
-				e.printStackTrace();
+				LOGGER.error("", e);
 			}
 		}
 	}

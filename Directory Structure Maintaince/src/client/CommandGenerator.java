@@ -15,14 +15,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import metadata.Directory;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.distribution.ZipfDistribution;
 
 import com.sun.media.sound.InvalidDataException;
+
 import commons.AppConfig;
 import commons.CommandsSupported;
+import commons.dir.Directory;
 import commons.dir.DirectoryParser;
 
 /**
@@ -49,14 +49,13 @@ public class CommandGenerator {
 				.map(CommandsSupported::name)
 				.filter(x -> x != CommandsSupported.EXIT.name())
 				.collect(Collectors.toList());
-		String[] commands = values.toArray(new String[values.size()]);
+		final String[] commands = values.toArray(new String[values.size()]);
 
 		// Get paths
 		String[] paths = getAllPaths(DirectoryParser.parseText(AppConfig.getValue("client.inputFile")));
 
-		// Distribute paths and commands
+		// Distribute paths
 		paths = createZipfDistribution(paths);
-		commands = createZipfDistribution(commands);
 
 		// Write these commands to a file
 		try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(AppConfig.getValue("client.commandsFile")), "utf-8"))) {
@@ -91,7 +90,7 @@ public class CommandGenerator {
 		// Create a list
 		final Set<String> paths = new HashSet<>();
 
-		// Check if metadata root exists
+		// Check if master.metadata root exists
 		if (root == null) {
 			throw new InvalidDataException("Metadata root not initialized, cannot create commands");
 		}

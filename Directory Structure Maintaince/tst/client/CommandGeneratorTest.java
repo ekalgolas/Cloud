@@ -11,15 +11,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import metadata.Directory;
-
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.sun.media.sound.InvalidDataException;
+
 import commons.AppConfig;
+import commons.dir.Directory;
 
 /**
  * Class to master.dht.test command generation

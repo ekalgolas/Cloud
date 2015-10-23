@@ -9,10 +9,12 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.util.InvalidPropertiesFormatException;
 
-import metadata.Directory;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import commons.AppConfig;
 import commons.Globals;
+import commons.dir.Directory;
 import commons.dir.DirectoryParser;
 
 /**
@@ -20,23 +22,26 @@ import commons.dir.DirectoryParser;
  * Class to implement the master server
  * Following is the functionality of the master :-
  * 	1. Read the existing deserialized data file of the existing directory structure
- * 	2. Serialize and create a global metadata object
+ * 	2. Serialize and create a global master.metadata object
  * 	3. Launch a {@link Listener} thread
  * 	4. Serve the client
  * </pre>
  */
 public class Master {
 	private static ServerSocket	gfsListenerSocket	= null;
-	private static ServerSocket mdsListenerSocket   = null;
+	private static ServerSocket	mdsListenerSocket	= null;
+	private final static Logger	LOGGER				= Logger.getLogger(Master.class);
 
 	/**
 	 * Setup the listener socket
 	 *
 	 * @throws InvalidPropertiesFormatException
 	 */
-	public static void initializeMaster() throws InvalidPropertiesFormatException {
+	public static void initializeMaster()
+			throws InvalidPropertiesFormatException {
 		// Initialize configuration
 		new AppConfig("conf");
+		LOGGER.setLevel(Level.DEBUG);
 
 		// Do nothing if socket already initialized
 		if (gfsListenerSocket != null && mdsListenerSocket != null) {
@@ -45,24 +50,26 @@ public class Master {
 
 		// Else, initialize the socket
 		try {
-			if(gfsListenerSocket == null) {
+			if (gfsListenerSocket == null) {
 				gfsListenerSocket = new ServerSocket(Integer.parseInt(AppConfig.getValue(Globals.GFS_SERVER_PORT)));
 			}
-			if(mdsListenerSocket == null) {
+			if (mdsListenerSocket == null) {
 				mdsListenerSocket = new ServerSocket(Integer.parseInt(AppConfig.getValue(Globals.MDS_SERVER_PORT)));
 			}
 		} catch (final IOException e) {
-			e.printStackTrace();
+			LOGGER.error("", e);
 		}
 	}
 
 	/**
-	 * Create in-memory metadata structure
+	 * Create in-memory master.metadata structure
 	 *
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 */
-	public static Directory generateMetadata() throws IOException, ClassNotFoundException {
+	public static Directory generateMetadata()
+			throws IOException,
+			ClassNotFoundException {
 		final File metadataStore = new File(AppConfig.getValue("server.metadataFile"));
 		Directory directory = null;
 		if (metadataStore.exists()) {
@@ -74,7 +81,7 @@ public class Master {
 			// Parse the directory
 			directory = DirectoryParser.parseText(AppConfig.getValue("server.inputFile"));
 
-			// Serialize and store the metadata
+			// Serialize and store the master.metadata
 			storeMetadata(directory);
 		}
 
@@ -82,7 +89,7 @@ public class Master {
 	}
 
 	/**
-	 * Serialize the metadata and write it into the file
+	 * Serialize the master.metadata and write it into the file
 	 *
 	 * @param directory
 	 *            {@link Directory} object to be written
@@ -92,7 +99,7 @@ public class Master {
 		try (ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(metadataStore))) {
 			outputStream.writeObject(directory);
 		} catch (final IOException e) {
-			e.printStackTrace();
+			LOGGER.error("", e);
 		}
 	}
 
@@ -103,20 +110,19 @@ public class Master {
 	 *            Command line arguments
 	 * @throws InvalidPropertiesFormatException
 	 */
-	public static void main(final String[] args) throws InvalidPropertiesFormatException {
+	public static void main(final String[] args)
+			throws InvalidPropertiesFormatException {
 		// Initialize master
 		initializeMaster();
 
-		// Generate metadata for existing directory structure
 		try {
+			// Generate master.metadata for existing directory structure
 			final Directory directory = generateMetadata();
 
 			// Set the globals root
 			Globals.gfsMetadataRoot = directory;
-		} catch (final ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (final IOException e) {
-			e.printStackTrace();
+		} catch (ClassNotFoundException | IOException e) {
+			LOGGER.error("", e);
 		}
 
 		// Launch listener to process input requests
@@ -134,7 +140,7 @@ public class Master {
 			mdsListenerThread.join();
 		} catch (final InterruptedException e) {
 			Thread.currentThread().interrupt();
-			e.printStackTrace();
+			LOGGER.error("", e);
 		}
 	}
 }

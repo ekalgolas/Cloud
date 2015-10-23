@@ -2,10 +2,10 @@ package commons;
 
 import java.util.HashMap;
 
-import metadata.Directory;
+import commons.dir.Directory;
 
 /**
- * Class to keep all the globals like metadata structure
+ * Class to keep all the globals like master.metadata structure
  */
 public class Globals {
 	/**

@@ -6,21 +6,27 @@ import java.util.Date;
 import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 
-import metadata.Directory;
+import com.sun.media.sound.InvalidDataException;
+
 import commons.Message;
 import commons.OutputFormatter;
+import commons.dir.Directory;
 import commons.dir.ICommandOperations;
 
 /**
- * Class to implement various directory metadata operations
+ * Class to implement various directory master.metadata operations
  */
 public class GFSDirectoryOperations implements ICommandOperations {
 	/*
 	 * (non-Javadoc)
-	 * @see commons.ICommandOperations#ls(metadata.Directory, java.lang.String, java.lang.String[])
+	 * @see commons.ICommandOperations#ls(master.metadata.Directory, java.lang.String, java.lang.String[])
 	 */
 	@Override
-	public Message ls(Directory root, final String filePath, final String... arguments) throws InvalidPropertiesFormatException {
+	public Message ls(Directory root,
+			final String filePath,
+			final String... arguments)
+					throws InvalidPropertiesFormatException,
+					InvalidDataException {
 		root = search(root, filePath);
 
 		// If search returns null, return
@@ -31,6 +37,12 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		// If path is a file, return
 		if (root.isFile()) {
 			throw new InvalidPropertiesFormatException(filePath + " is a file. Expecting directory!");
+		}
+
+		// Error out if directory is empty
+		if (root.getChildren()
+				.size() == 0) {
+			throw new InvalidDataException("Directory is empty");
 		}
 
 		// If we reach here, it means valid directory was found
@@ -45,7 +57,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		}
 
 		// Return the representation
-		return new Message(output.toString());
+		return new Message("\n" + output.toString());
 	}
 
 	/**
@@ -57,7 +69,9 @@ public class GFSDirectoryOperations implements ICommandOperations {
 	 *            - the latest timestamp of the client's client.cache
 	 * @return a directory with no name if the client client.cache is valid, else if it exists return the directory, null otherwise
 	 */
-	public static Directory lsWithCache(Directory root, final String filePath, final Long clientCacheTimestamp) {
+	public static Directory lsWithCache(Directory root,
+			final String filePath,
+			final Long clientCacheTimestamp) {
 		// Get list of paths
 		final String[] paths = filePath.split("/");
 
@@ -95,7 +109,8 @@ public class GFSDirectoryOperations implements ICommandOperations {
 	 *            Path to search
 	 * @return Node corresponding to the path, null if not found
 	 */
-	private Directory search(Directory root, final String filePath) {
+	private Directory search(Directory root,
+			final String filePath) {
 		// Get list of paths
 		final String[] paths = filePath.split("/");
 
@@ -130,10 +145,13 @@ public class GFSDirectoryOperations implements ICommandOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see commons.ICommandOperations#mkdir(metadata.Directory, java.lang.String)
+	 * @see commons.ICommandOperations#mkdir(master.metadata.Directory, java.lang.String)
 	 */
 	@Override
-	public void mkdir(final Directory root, final String path, String... arguments) throws InvalidPropertiesFormatException {
+	public void mkdir(final Directory root,
+			final String path,
+			final String... arguments)
+					throws InvalidPropertiesFormatException {
 		// Check if path is valid
 		if (path.charAt(path.length() - 1) != '/') {
 			throw new InvalidPropertiesFormatException("Argument invalid: Path should contain a '/' at the end");
@@ -150,10 +168,12 @@ public class GFSDirectoryOperations implements ICommandOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see commons.ICommandOperations#touch(metadata.Directory, java.lang.String)
+	 * @see commons.ICommandOperations#touch(master.metadata.Directory, java.lang.String)
 	 */
 	@Override
-	public void touch(final Directory root, final String path) throws InvalidPropertiesFormatException {
+	public void touch(final Directory root,
+			final String path)
+					throws InvalidPropertiesFormatException {
 		// Check if path is valid
 		if (path.charAt(path.length() - 1) == '/') {
 			throw new InvalidPropertiesFormatException("Argument invalid: Path should not contain a '/' at the end");
@@ -202,7 +222,11 @@ public class GFSDirectoryOperations implements ICommandOperations {
 	 *            Will create file if true, directory otherwise
 	 * @throws InvalidPathException
 	 */
-	private void create(final Directory root, final String path, final String name, final boolean isFile) throws InvalidPathException {
+	private void create(final Directory root,
+			final String path,
+			final String name,
+			final boolean isFile)
+					throws InvalidPathException {
 		// Search and get to the directory where we have to create
 		final Directory directory = search(root, path);
 
@@ -226,10 +250,13 @@ public class GFSDirectoryOperations implements ICommandOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see commons.ICommandOperations#rmdir(metadata.Directory, java.lang.String, java.lang.String[])
+	 * @see commons.ICommandOperations#rmdir(master.metadata.Directory, java.lang.String, java.lang.String[])
 	 */
 	@Override
-	public void rmdir(final Directory root, final String path, final String... arguments) throws InvalidPropertiesFormatException {
+	public void rmdir(final Directory root,
+			final String path,
+			final String... arguments)
+					throws InvalidPropertiesFormatException {
 
 		// Check if path is valid
 		if (path.charAt(path.length() - 1) != '/') {
@@ -257,7 +284,10 @@ public class GFSDirectoryOperations implements ICommandOperations {
 	 *            Resource to be deleted is a file if true, directory otherwise
 	 * @throws InvalidPathException
 	 */
-	private void remove(final Directory root, final String path, final String name, final boolean isFile) {
+	private void remove(final Directory root,
+			final String path,
+			final String name,
+			final boolean isFile) {
 		// Search and get to the directory where we want to remove
 		final Directory directory = search(root, path);
 
@@ -290,20 +320,24 @@ public class GFSDirectoryOperations implements ICommandOperations {
 
 	/*
 	 * (non-Javadoc)
-	 * @see commons.ICommandOperations#rm(metadata.Directory, java.lang.String)
+	 * @see commons.ICommandOperations#rm(master.metadata.Directory, java.lang.String)
 	 */
 	@Override
-	public void rm(final Directory root, final String path) throws InvalidPropertiesFormatException {
+	public void rm(final Directory root,
+			final String path)
+					throws InvalidPropertiesFormatException {
 		// TODO Auto-generated method stub
 
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see commons.ICommandOperations#cd(metadata.Directory, java.lang.String)
+	 * @see commons.ICommandOperations#cd(master.metadata.Directory, java.lang.String)
 	 */
 	@Override
-	public Message cd(final Directory root, final String filePath) throws InvalidPropertiesFormatException {
+	public Message cd(final Directory root,
+			final String filePath)
+					throws InvalidPropertiesFormatException {
 		// TODO Auto-generated method stub
 		return null;
 	}

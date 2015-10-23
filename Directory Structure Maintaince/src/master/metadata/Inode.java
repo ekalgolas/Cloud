@@ -1,4 +1,4 @@
-package metadata;
+package master.metadata;
 
 import java.io.Serializable;
 import java.util.ArrayList;

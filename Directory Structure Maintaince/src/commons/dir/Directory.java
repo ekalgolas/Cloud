@@ -1,8 +1,10 @@
-package metadata;
+package commons.dir;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
+
+import master.metadata.Inode;
 
 /**
  * Class to represent the directory tree
@@ -43,12 +45,12 @@ public class Directory implements Serializable {
 	 * or individual size in case of a file
 	 */
 	private Long 			size;
-	
+
 	/**
-	 * Contains the inode informations like inode number, MDS details. 
+	 * Contains the inode informations like inode number, MDS details.
 	 */
 	private Inode			inode;
-	
+
 	/**
 	 * Counter to keep track of the # of access to this directory.
 	 */
@@ -72,7 +74,7 @@ public class Directory implements Serializable {
 
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param name
 	 *            Name of the file/directory
 	 * @param isFile
@@ -129,8 +131,10 @@ public class Directory implements Serializable {
 		stringBuilder.append((root.isFile ? "File: " : "Directory: ") + root.name);
 
 		// Do for all sub-directories
-		for (Directory directory : root.children) {
-			stringBuilder.append("\n" + print(directory, level + 1));
+		if (root.children != null) {
+			for (final Directory directory : root.children) {
+				stringBuilder.append("\n" + print(directory, level + 1));
+			}
 		}
 
 		// Return the string representation
@@ -228,7 +232,7 @@ public class Directory implements Serializable {
 	public void setSize(final Long size) {
 		this.size = size;
 	}
-	
+
 	/**
 	 * Get the associated inode
 	 * @return inode
@@ -241,10 +245,10 @@ public class Directory implements Serializable {
 	 * Set the inode for this directory.
 	 * @param inode
 	 */
-	public void setInode(Inode inode) {
+	public void setInode(final Inode inode) {
 		this.inode = inode;
 	}
-	
+
 	/**
 	 * Get the total operation counter.
 	 * @return counter
@@ -257,24 +261,24 @@ public class Directory implements Serializable {
 	 * Set the total operation counter.
 	 * @param operationCounter
 	 */
-	public void setOperationCounter(long operationCounter) {
+	public void setOperationCounter(final long operationCounter) {
 		this.operationCounter = operationCounter;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(name, isFile, modifiedTimeStamp);
 	}
-	
+
 	@Override
-	public boolean equals(Object other) {
+	public boolean equals(final Object other) {
 		if(!(other instanceof Directory)) {
 			return false;
 		}
 
-		Directory that = (Directory) other;
-		return this.name == that.name
-			&& this.modifiedTimeStamp == that.modifiedTimeStamp
-			&& this.isFile && that.isFile;
+		final Directory that = (Directory) other;
+		return name == that.name
+				&& modifiedTimeStamp == that.modifiedTimeStamp
+				&& isFile && that.isFile;
 	}
 }
