@@ -8,6 +8,7 @@ import java.net.UnknownHostException;
 import java.util.Scanner;
 
 import commons.AppConfig;
+import commons.Globals;
 import commons.Message;
 
 /**
@@ -24,12 +25,16 @@ public class Client {
 	 * @throws UnknownHostException
 	 * @throws IOException
 	 */
-	public Client() throws UnknownHostException, IOException {
+	public Client(final String fileSystemMode) throws UnknownHostException, IOException {
 		// Initialize configuration
 		new AppConfig("conf");
 
+		//Need to be changed to include DHT
+		final String portCode = (Globals.MDS_MODE.equalsIgnoreCase(fileSystemMode))
+								?Globals.CLIENT_MDS_MASTER_PORT
+								:Globals.CLIENT_GFS_MASTER_PORT;
 		socket = new Socket(AppConfig.getValue("client.masterIp"),
-				Integer.parseInt(AppConfig.getValue("client.masterPort")));
+					Integer.parseInt(AppConfig.getValue(portCode)));		
 		outputStream = new ObjectOutputStream(socket.getOutputStream());
 		inputStream = new ObjectInputStream(socket.getInputStream());
 	}
@@ -72,8 +77,13 @@ public class Client {
 	 */
 	public static void main(final String[] args) {
 		Client client = null;
+		if(args == null || args.length == 0)
+		{
+			System.err.println("Usage: Client <filesystem code i.e GFS/MDS/DHT>");
+			System.exit(0);
+		}
 		try {
-			client = new Client();
+			client = new Client(args[0]);
 		} catch (final UnknownHostException e) {
 			e.printStackTrace();
 		} catch (final IOException e) {

@@ -19,6 +19,8 @@ public class Globals {
 
 	public static final String GFS_SERVER_PORT = "gfs.server.port";
 	public static final String MDS_SERVER_PORT = "mds.server.port";
+	public static final String CLIENT_MDS_MASTER_PORT = "mds.client.masterPort";
+	public static final String CLIENT_GFS_MASTER_PORT = "gfs.client.masterPort";
 
 	public static final String GFS_MODE = "GFS";
 	public static final String MDS_MODE = "MDS";

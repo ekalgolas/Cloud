@@ -75,6 +75,7 @@ public class Worker implements Runnable {
 						directoryOperations = new CephDirectoryOperations();
 						root = Globals.findClosestNode(command.substring(3), partialFilePath);
 					} else {
+						//Need to be changed for the DHT
 						directoryOperations = new GFSDirectoryOperations();
 						root = Globals.gfsMetadataRoot;
 					}

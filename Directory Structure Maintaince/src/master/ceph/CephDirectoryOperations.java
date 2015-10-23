@@ -114,7 +114,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 		while (serverInfo != null) {
 			try {
 				final Socket socket = new Socket(serverInfo.getIpAddress(),
-						Integer.parseInt(AppConfig.getValue("client.masterPort")));
+						Integer.parseInt(AppConfig.getValue(Globals.CLIENT_MDS_MASTER_PORT)));
 				final ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
 				final ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
 				outputStream.writeObject(new Message(command + " " + filePath));
