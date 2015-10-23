@@ -8,6 +8,7 @@ import java.util.List;
 
 import com.sun.media.sound.InvalidDataException;
 
+import commons.CompletionStatusCode;
 import commons.Message;
 import commons.OutputFormatter;
 import commons.dir.Directory;
@@ -148,7 +149,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 	 * @see commons.ICommandOperations#mkdir(master.metadata.Directory, java.lang.String)
 	 */
 	@Override
-	public void mkdir(final Directory root,
+	public Message mkdir(final Directory root,
 			final String path,
 			final String... arguments)
 					throws InvalidPropertiesFormatException {
@@ -164,7 +165,9 @@ public class GFSDirectoryOperations implements ICommandOperations {
 
 		// Create the directory
 		create(root, dirPath, name, false);
-		
+		Message returnMessage = new Message("Directory Creation Succesful");
+		returnMessage.appendCompletionCode(CompletionStatusCode.SUCCESS.name());
+		return returnMessage;
 	}
 
 	/*
