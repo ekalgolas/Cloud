@@ -15,6 +15,7 @@ public class Globals {
 	 * </pre>
 	 */
 	public static Directory	gfsMetadataRoot	= null;
+	public static Directory	gfsMetadataCopy	= null;
 	public static HashMap<String, Directory> subTreePartitionList = null;
 
 	public static final String GFS_SERVER_PORT = "gfs.server.port";
