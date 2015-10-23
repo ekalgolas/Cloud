@@ -14,6 +14,7 @@ public class Message implements Serializable {
 
 	private final StringBuilder builder;
 	private final StringBuilder headerBuilder;
+	private final StringBuilder completionCode;
 
 	/**
 	 * Constructor
@@ -22,8 +23,9 @@ public class Message implements Serializable {
 	 *            Content to initialize the message with
 	 */
 	public Message(final String content) {
-		builder = new StringBuilder(content);
+		builder = new StringBuilder(content);		
 		headerBuilder = new StringBuilder();
+		completionCode = new StringBuilder();
 	}
 	
 	/**
@@ -34,6 +36,13 @@ public class Message implements Serializable {
 	public Message(final String content, final String header) {
 		builder = new StringBuilder(content);
 		headerBuilder = new StringBuilder(header);
+		completionCode = new StringBuilder();
+	}
+	
+	public Message(final String content, final String header, final String completionCode) {
+		builder = new StringBuilder(content);
+		headerBuilder = new StringBuilder(header);
+		this.completionCode = new StringBuilder(completionCode);
 	}
 
 	/**
@@ -70,5 +79,22 @@ public class Message implements Serializable {
 	public String getHeader() {
 		return headerBuilder.toString();
 	}
-		
+	
+	/**
+	 * Append the given text to the code.
+	 * @param header
+	 */
+	public void appendCompletionCode(final String code)
+	{
+		completionCode.append(code);
+	}
+
+	/**
+	 * Get the completion status for a command.
+	 * @return Completion status code
+	 */
+	public StringBuilder getCompletionCode() {
+		return completionCode;
+	}
+			
 }

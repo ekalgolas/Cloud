@@ -13,6 +13,7 @@ import java.util.List;
 
 import commons.AppConfig;
 import commons.CommandsSupported;
+import commons.CompletionStatusCode;
 import commons.Globals;
 import commons.Message;
 import commons.OutputFormatter;
@@ -239,7 +240,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 	 *            Will create file if true, directory otherwise
 	 * @throws InvalidPathException
 	 */
-	private void create(final Directory root, final String currentPath, 
+	private Message create(final Directory root, final String currentPath, 
 			final String name, 
 			final boolean isFile,
 			final String fullPath) throws InvalidPathException 
@@ -269,11 +270,15 @@ public class CephDirectoryOperations implements ICommandOperations {
 						}
 						if (fileExist) 
 						{
-							return; // need to add message explaining the file
-									// already exist
+							return new Message("File already exists",
+												"",
+												CompletionStatusCode.FILE_EXISTS.name());
 						}
 						final Directory file = new Directory(name, isFile, null);
 						directory.getChildren().add(file);
+						return new Message(file.getName()+" created succesfully",
+								directory.getInode().getDataServerInfo().toString(),
+								CompletionStatusCode.SUCCESS.name());
 					} 
 					else 
 					{
@@ -289,17 +294,22 @@ public class CephDirectoryOperations implements ICommandOperations {
 						}
 						if (fileExist) 
 						{
-							return; // need to add message explaining the file
-									// already exist
+							return new Message("Directory already exists",
+									"",
+									CompletionStatusCode.DIR_EXISTS.name());
 						}
 						final Directory dir = new Directory(name, isFile, new ArrayList<Directory>());
 						directory.getChildren().add(dir);
+						return new Message(dir.getName()+" created succesfully",
+								directory.getInode().getDataServerInfo().toString(),
+								CompletionStatusCode.SUCCESS.name());
 					}
 				} 
 				else 
 				{
-					return; // need to add message explaining the path is not a
-							// directory.
+					return new Message("Directory expected",
+							"",
+							CompletionStatusCode.DIR_EXPECTED.name());
 				}
 			} 
 			else if (inode.getInodeNumber() == null && Globals.PARTIAL_PATH_FOUND.equals(resultCode)) 
@@ -307,28 +317,31 @@ public class CephDirectoryOperations implements ICommandOperations {
 				if (inode.getDataServerInfo() != null && 
 						inode.getDataServerInfo().size() > 0) 
 				{
-					remoteExecCommand(CommandsSupported.MKDIR, inode, fullPath, false);
+					return remoteExecCommand(CommandsSupported.MKDIR, inode, fullPath, false);
 				}
 			} 
 			else if (inode.getInodeNumber() != null) 
 			{
-				return; // need to add message explaining the unstable state of
+				return new Message("MetaData in unstable state",
+						"",
+						CompletionStatusCode.UNSTABLE.name()); // need to add message explaining the unstable state of
 						// metadata.
 			} 
 			else 
 			{
-				return; // need to add message explaining the path not found
+				return new Message("Path"+ fullPath +" not found",
+						"",
+						CompletionStatusCode.NOT_FOUND.name());
 						// issue.
 			}
-		} 
-		else 
-		{
-			return; // need to add message explaining the path not found issue.
-		}
+		} 		
+		return new Message("Path"+ fullPath +" not found",
+				"",
+				CompletionStatusCode.NOT_FOUND.name());
 	}
 
 	@Override
-	public void mkdir(final Directory root, 
+	public Message mkdir(final Directory root, 
 			final String path, 
 			final String... arguments)
 			throws InvalidPropertiesFormatException 
@@ -348,8 +361,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 		final String dirPath = path.substring(0, searchablePath.length() - name.length() - 1);
 
 		// Create the directory
-		create(root, dirPath, name, false, path);
-
+		return create(root, dirPath, name, false, path);
 	}
 
 	@Override
