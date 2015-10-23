@@ -9,7 +9,7 @@ import master.metadata.Inode;
 /**
  * Class to represent the directory tree
  */
-public class Directory implements Serializable {
+public class Directory implements Serializable, Cloneable {
 	/**
 	 * Default serial version UID
 	 */
@@ -280,5 +280,11 @@ public class Directory implements Serializable {
 		return name == that.name
 				&& modifiedTimeStamp == that.modifiedTimeStamp
 				&& isFile && that.isFile;
+	}
+	
+	@Override
+	public Object clone() throws CloneNotSupportedException {
+		// TODO Auto-generated method stub
+		return super.clone();
 	}
 }

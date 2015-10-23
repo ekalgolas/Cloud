@@ -164,6 +164,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 
 		// Create the directory
 		create(root, dirPath, name, false);
+		
 	}
 
 	/*
