@@ -192,12 +192,10 @@ public class GFSDirectoryOperations implements ICommandOperations {
 			throw new InvalidPathException(dirPath, "Does not exist");
 		}
 
-		// Create the file
-		final Directory file = new Directory(name, true, null);
 		final List<Directory> contents = directory.getChildren();
 		boolean found = false;
 		for (final Directory child : contents) {
-			if (child.equals(file)) {
+			if (child.getName().equalsIgnoreCase(name)) {
 				// Already present, set modified timestamp to current
 				child.setModifiedTimeStamp(new Date().getTime());
 				found = true;
@@ -206,6 +204,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		}
 		if (!found) {
 			// Not present, add it in the list
+			final Directory file = new Directory(name, true, null);
 			file.setModifiedTimeStamp(new Date().getTime());
 			contents.add(file);
 		}
