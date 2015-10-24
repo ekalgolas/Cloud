@@ -471,7 +471,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 	}
 
 	@Override
-	public void touch(final Directory root, final String path) 
+	public Message touch(final Directory root, final String path) 
 			throws InvalidPropertiesFormatException 
 	{
 		// Get the parent directory and the name of file
@@ -507,7 +507,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 			contents.add(file);
 		}
 		directory.setChildren(contents);
-
+		return null;
 	}
 
 	@Override

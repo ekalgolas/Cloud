@@ -172,7 +172,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 	 * @see commons.ICommandOperations#touch(master.metadata.Directory, java.lang.String)
 	 */
 	@Override
-	public void touch(final Directory root,
+	public Message touch(final Directory root,
 			final String path)
 					throws InvalidPropertiesFormatException {
 		// Check if path is valid
@@ -207,6 +207,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 			contents.add(file);
 		}
 		directory.setChildren(contents);
+		return new Message("Touch Successful");
 	}
 
 	/**

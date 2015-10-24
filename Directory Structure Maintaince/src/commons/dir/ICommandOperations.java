@@ -54,7 +54,7 @@ public interface ICommandOperations {
 	 *            Absolute path of the file to be created
 	 * @throws InvalidPropertiesFormatException
 	 */
-	public void touch(final Directory root,
+	public Message touch(final Directory root,
 			final String path)
 			throws InvalidPropertiesFormatException;
 
