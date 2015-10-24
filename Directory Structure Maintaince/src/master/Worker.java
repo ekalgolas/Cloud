@@ -4,13 +4,17 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.InvalidPropertiesFormatException;
 
 import master.ceph.CephDirectoryOperations;
+import master.dht.DhtDirectoryOperations;
 import master.gfs.GFSDirectoryOperations;
 import master.gfs.GFSMetadataReplicationOperations;
+import master.metadata.MetaDataServerInfo;
 
 import org.apache.log4j.Logger;
 
+import com.sun.media.sound.InvalidDataException;
 import commons.CommandsSupported;
 import commons.Globals;
 import commons.Message;
@@ -82,12 +86,10 @@ public class Worker implements Runnable {
 					} else if (Globals.MDS_MODE.equalsIgnoreCase(listenerType)) {
 						directoryOperations = new CephDirectoryOperations();
 						replicationOperations = null;
-						root = Globals.findClosestNode(command.substring(3), partialFilePath);
+						root = MetaDataServerInfo.findClosestNode(command.substring(3), partialFilePath);
 					} else {
-						directoryOperations = new GFSDirectoryOperations();
-						replicationOperations = new GFSMetadataReplicationOperations();
-						root = Globals.gfsMetadataRoot;
-						replica = Globals.gfsMetadataCopy;
+						directoryOperations = new DhtDirectoryOperations();
+						replicationOperations = null;
 					}
 
 					if (command.startsWith(CommandsSupported.LS.name())) {
@@ -97,7 +99,7 @@ public class Worker implements Runnable {
 						// Command line parameter (directory name) start from index '6' in the received string
 						String argument = command.substring(6);
 						
-						reply = directoryOperations.mkdir(root, argument, partialFilePath.toString(), message.getContent());
+						reply = directoryOperations.mkdir(root, argument, partialFilePath.toString(), message.getHeader());
 						if(replicationOperations != null) {
 							replicationOperations.replicateMkdir(root, replica, argument);
 						}

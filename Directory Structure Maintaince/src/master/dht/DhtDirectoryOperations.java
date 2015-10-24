@@ -12,32 +12,21 @@ import java.nio.file.InvalidPathException;
 import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
 
-public class DhtDirectoryOperations {
+import com.sun.media.sound.InvalidDataException;
+import commons.Globals;
+import commons.Message;
+import commons.dir.Directory;
+import commons.dir.ICommandOperations;
 
-//	public static void main(String[] args) {
-//
-//		DirectoryParser dirop = new DirectoryParser();
-//		HashMap<String, File> filemap = dirop.parsetext();
-//
-//		// DirectoryOperations.ls(filemap, "root/BigData/sparktutorial");
-//
-//		// try {
-//		// DirectoryOperations.rmdirf(filemap, "root/BigData/sparktutorial");
-//		// } catch (InvalidPropertiesFormatException e) {
-//		// System.out.println("error");
-//		// }
-//		// System.out.println(s);
-//	}
-
-	public static String ls(HashMap<String, File> filemap, final String filePath) {
-
-		int N = 3;
+public class DhtDirectoryOperations implements ICommandOperations {
+	public static String ls(final HashMap<String, File> filemap, final String filePath) {
+		final int N = 3;
 		String line;
 		int counter = 0;
 		String pathname = "";
 		File f = null;
 
-		String[] names = filePath.split("/");
+		final String[] names = filePath.split("/");
 
 		if (names.length <= N) {
 			f = filemap.get(filePath);
@@ -64,9 +53,9 @@ public class DhtDirectoryOperations {
 
 		final StringBuilder builder = new StringBuilder("Listing for " + filePath + "\n");
 		String filenameduplicate = "";
-		String name = names[names.length - 1];
+		final String name = names[names.length - 1];
 		try {
-			BufferedReader bufferedReader = new BufferedReader(new FileReader(f));
+			final BufferedReader bufferedReader = new BufferedReader(new FileReader(f));
 
 			while ((line = bufferedReader.readLine()) != null) {
 				if (line.contains(pathname)) {
@@ -77,14 +66,15 @@ public class DhtDirectoryOperations {
 						continue;
 					}
 					String[] filename = new String[20];
-					String filename1 = split[0].substring(split[0].lastIndexOf(name) + name.length() + 1).trim();
+					final String filename1 = split[0].substring(split[0].lastIndexOf(name) + name.length() + 1).trim();
 					if (filename1.contains("/")) {
 						filename = filename1.split("/");
 					} else {
 						filename[0] = filename1;
 					}
-					if (filenameduplicate.equalsIgnoreCase(filename[0]))
+					if (filenameduplicate.equalsIgnoreCase(filename[0])) {
 						continue;
+					}
 					System.out.println(filename[0]);
 					builder.append(filename[0] + "\n");
 					filenameduplicate = filename[0];
@@ -99,9 +89,9 @@ public class DhtDirectoryOperations {
 
 		}
 
-		catch (FileNotFoundException e) {
+		catch (final FileNotFoundException e) {
 			System.out.println("file not found execption");
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			System.out.println("file IO execption");
 		}
 
@@ -113,8 +103,8 @@ public class DhtDirectoryOperations {
 
 		final String accessRights = "drwxrwxr-x";
 		final int size = 4096;
-		float readableTimeStamp = System.currentTimeMillis();
-		int N = 3;
+		final float readableTimeStamp = System.currentTimeMillis();
+		final int N = 3;
 		String pathname = "";
 		File f = null;
 		String[] names = new String[100];
@@ -206,15 +196,15 @@ public class DhtDirectoryOperations {
 			writer.println();
 			writer.close();
 
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			System.out.println("execption");
 		}
 
 	}
 
 	public static void touch(final HashMap<String, File> filemap, final String path){
-		
-		int N = 3;
+
+		final int N = 3;
 		String pathname = "";
 		File f = null;
 		String[] names = new String[100];
@@ -266,9 +256,9 @@ public class DhtDirectoryOperations {
 		int counter =0;
 		String line ="";
 		String currentLine = "";
-		File temp = new File(f.getAbsolutePath() + ".tmp");
+		final File temp = new File(f.getAbsolutePath() + ".tmp");
 		try {
-			
+
 			reader = new BufferedReader(new FileReader(f));
 			writer = new PrintWriter(new BufferedWriter(new FileWriter(temp)));
 
@@ -276,60 +266,60 @@ public class DhtDirectoryOperations {
 				String trimmedLine = currentLine.trim();
 
 				if(trimmedLine.contains(pathname)){
-						if(counter==0){
-							line = trimmedLine;
-							counter++;
-						}
-					
-						if (trimmedLine.contains(pathname+"/"+names[names.length-1])){
-							final String[] split = trimmedLine.split("@");
-							split[3] = Long.toString(System.currentTimeMillis());
-						
-							for(int b=0;b<=3;b++){
-								if(b==3){
-									trimmedLine = trimmedLine.concat(split[b]);
-								}
-						
+					if(counter==0){
+						line = trimmedLine;
+						counter++;
+					}
+
+					if (trimmedLine.contains(pathname+"/"+names[names.length-1])){
+						final String[] split = trimmedLine.split("@");
+						split[3] = Long.toString(System.currentTimeMillis());
+
+						for(int b=0;b<=3;b++){
+							if(b==3){
 								trimmedLine = trimmedLine.concat(split[b]);
-								trimmedLine = trimmedLine.concat("@");
 							}
+
+							trimmedLine = trimmedLine.concat(split[b]);
+							trimmedLine = trimmedLine.concat("@");
 						}
+					}
 				}
 				writer.print(trimmedLine);
 				writer.println();
 				reader.close();
 			}
-					final String[] split = line.split("@");
-					
-					if(split[1].contains("d")){
-						
-						split[0] = split[0].concat("/"+names[names.length-1]);
-							for(int c=0;c<=3;c++){
-								if(c==3){
-									line = line.concat(split[c]);
-								}
-									line = line.concat(split[c]);
-									line = line.concat("@");
-							}
-						writer.print(line);
-						writer.println();
-						writer.close();
+			final String[] split = line.split("@");
+
+			if(split[1].contains("d")){
+
+				split[0] = split[0].concat("/"+names[names.length-1]);
+				for(int c=0;c<=3;c++){
+					if(c==3){
+						line = line.concat(split[c]);
 					}
-					else{
-						writer.close();
-						throw new InvalidPathException(filePath, "cannot create a file inside a file");
-					}
-		} catch (IOException e) {
-			
+					line = line.concat(split[c]);
+					line = line.concat("@");
+				}
+				writer.print(line);
+				writer.println();
+				writer.close();
+			}
+			else{
+				writer.close();
+				throw new InvalidPathException(filePath, "cannot create a file inside a file");
+			}
+		} catch (final IOException e) {
+
 			System.out.println("execption");
 		}
-		
+
 	}
 
 	public static void rmdirf(final HashMap<String, File> filemap, final String filePath)
 			throws InvalidPropertiesFormatException {
 
-		int N = 3;
+		final int N = 3;
 		String pathname = "";
 		File f = null;
 		String[] names = new String[N];
@@ -368,8 +358,8 @@ public class DhtDirectoryOperations {
 		BufferedReader reader;
 		PrintWriter writer;
 		String currentLine;
-		String[] fnames = new String[1000];
-		File temp = new File(f.getAbsolutePath() + ".tmp");
+		final String[] fnames = new String[1000];
+		final File temp = new File(f.getAbsolutePath() + ".tmp");
 		int p = 0;
 
 		try {
@@ -377,13 +367,13 @@ public class DhtDirectoryOperations {
 			writer = new PrintWriter(new BufferedWriter(new FileWriter(temp)));
 
 			while ((currentLine = reader.readLine()) != null) {
-				String trimmedLine = currentLine.trim();
+				final String trimmedLine = currentLine.trim();
 
 				if (trimmedLine.contains(pathname)) {
 					final String[] split = trimmedLine.split("@");
 
 					if (split[0].matches(".*/.*/.*/.*")) {
-						String[] name = split[0].split("/");
+						final String[] name = split[0].split("/");
 						fnames[p] = name[N];
 						p++;
 
@@ -406,7 +396,7 @@ public class DhtDirectoryOperations {
 			f.delete();
 			writer.close();
 			reader.close();
-			boolean successful = temp.renameTo(f);
+			final boolean successful = temp.renameTo(f);
 			if (successful == false) {
 				System.out.println("not succesfully renamed");
 			}
@@ -420,10 +410,62 @@ public class DhtDirectoryOperations {
 
 				rmdirf(filemap, fnames[g]);
 			}
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			System.out.println("execption");
 		}
 
+	}
+
+	@Override
+	public Message ls(final Directory root,
+			final String filePath,
+			final String... arguments)
+					throws InvalidPropertiesFormatException,
+					InvalidDataException {
+		final Message message = new Message(ls(Globals.dhtFileMap, filePath));
+		return message;
+	}
+
+	@Override
+	public Message mkdir(final Directory root,
+			final String path,
+			final String... arguments)
+					throws InvalidPropertiesFormatException {
+		mkdir(Globals.dhtFileMap, path);
+
+		final Message message = new Message("Directory successfully created");
+		return message;
+	}
+
+	@Override
+	public void touch(final Directory root,
+			final String path)
+					throws InvalidPropertiesFormatException {
+		touch(Globals.dhtFileMap, path);
+	}
+
+	@Override
+	public void rmdir(final Directory root,
+			final String path,
+			final String... arguments)
+					throws InvalidPropertiesFormatException {
+		rmdirf(Globals.dhtFileMap, path);
+	}
+
+	@Override
+	public void rm(final Directory root,
+			final String path)
+					throws InvalidPropertiesFormatException {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public Message cd(final Directory root,
+			final String filePath)
+					throws InvalidPropertiesFormatException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

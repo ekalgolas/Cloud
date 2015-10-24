@@ -7,15 +7,27 @@ import java.util.List;
 
 import commons.dir.Directory;
 
-public class GFSMetadataReplicationOperations {
-
-	public void replicateMkdir(final Directory primaryRoot, 
-			final Directory replicaRoot, 
-			final String path) throws InvalidPropertiesFormatException, CloneNotSupportedException {
+public class GFSMetadataReplicationOperations extends GFSDirectoryOperations {
+	/**
+	 * Replicates result of mkdir command
+	 *
+	 * @param primaryRoot
+	 *            Primary root
+	 * @param replicaRoot
+	 *            Replication root
+	 * @param path
+	 *            Path of the directory
+	 * @throws InvalidPropertiesFormatException
+	 * @throws CloneNotSupportedException
+	 */
+	public void replicateMkdir(final Directory primaryRoot,
+			final Directory replicaRoot,
+			final String path)
+					throws InvalidPropertiesFormatException,
+					CloneNotSupportedException {
 		// Check if path is valid
 		if (path.charAt(path.length() - 1) != '/') {
-			throw new InvalidPropertiesFormatException(
-					"Argument invalid: Path should contain a '/' at the end");
+			throw new InvalidPropertiesFormatException("Argument invalid: Path should contain a '/' at the end");
 		}
 
 		// Get the parent directory and the name of directory
@@ -27,7 +39,7 @@ public class GFSMetadataReplicationOperations {
 		if (createdDir == null) {
 			throw new InvalidPathException(path, "Does not exist in primary metadata");
 		}
-		
+
 		final Directory replicaParentDir = search(replicaRoot, dirPath);
 		if (replicaParentDir == null) {
 			throw new InvalidPathException(dirPath, "Does not exist in replica metadata");
@@ -36,13 +48,22 @@ public class GFSMetadataReplicationOperations {
 		final Directory dir = (Directory) createdDir.clone();
 		replicaParentDir.getChildren().add(dir);
 	}
-	
-	public void replicateRmdir(final Directory replicaRoot, 
-			final String path) throws InvalidPropertiesFormatException {
+
+	/**
+	 * Replicates the rmdir command
+	 *
+	 * @param replicaRoot
+	 *            Replication root
+	 * @param path
+	 *            Path of the directory
+	 * @throws InvalidPropertiesFormatException
+	 */
+	public void replicateRmdir(final Directory replicaRoot,
+			final String path)
+					throws InvalidPropertiesFormatException {
 		// Check if path is valid
 		if (path.charAt(path.length() - 1) != '/') {
-			throw new InvalidPropertiesFormatException(
-					"Argument invalid: Path should contain a '/' at the end");
+			throw new InvalidPropertiesFormatException("Argument invalid: Path should contain a '/' at the end");
 		}
 
 		// Get the parent directory and the name of directory
@@ -66,12 +87,27 @@ public class GFSMetadataReplicationOperations {
 				break;
 			}
 		}
+
 		subDirectories.remove(directoryToRemove);
 	}
-	
-	public void replicateTouch(final Directory primaryRoot, 
-			final Directory replicaRoot, 
-			final String path) throws InvalidPropertiesFormatException, CloneNotSupportedException {
+
+	/**
+	 * Replicates result of touch command
+	 *
+	 * @param primaryRoot
+	 *            Primary root
+	 * @param replicaRoot
+	 *            Replication root
+	 * @param path
+	 *            Path of the directory
+	 * @throws InvalidPropertiesFormatException
+	 * @throws CloneNotSupportedException
+	 */
+	public void replicateTouch(final Directory primaryRoot,
+			final Directory replicaRoot,
+			final String path)
+					throws InvalidPropertiesFormatException,
+					CloneNotSupportedException {
 		// Check if path is valid
 		if (path.charAt(path.length() - 1) == '/') {
 			throw new InvalidPropertiesFormatException("Argument invalid: Path should not contain a '/' at the end");
@@ -86,13 +122,13 @@ public class GFSMetadataReplicationOperations {
 		if (touchedFile == null) {
 			throw new InvalidPathException(path, "Does not exist in primary metadata");
 		}
-		
+
 		final Directory replicaParentDirectory = search(replicaRoot, dirPath);
 		if (replicaParentDirectory == null) {
 			throw new InvalidPathException(dirPath, "Does not exist in replica metadata");
 		}
-		
-		List<Directory> contents = replicaParentDirectory.getChildren();
+
+		final List<Directory> contents = replicaParentDirectory.getChildren();
 		boolean found = false;
 		for (final Directory child : contents) {
 			if (child.getName().equals(touchedFile.getName())) {
@@ -102,54 +138,14 @@ public class GFSMetadataReplicationOperations {
 				break;
 			}
 		}
+
 		if (!found) {
 			// Not present, add it in the list
-			Directory replicaFile = (Directory) touchedFile.clone();
+			final Directory replicaFile = (Directory) touchedFile.clone();
 			touchedFile.setModifiedTimeStamp(new Date().getTime());
 			contents.add(replicaFile);
 		}
+
 		replicaParentDirectory.setChildren(contents);
-	}
-	
-	/**
-	 * Performs a tree search from the {@literal root} on the directory structure corresponding to the {@literal filePath}
-	 *
-	 * @param root
-	 *            Root of directory structure
-	 * @param filePath
-	 *            Path to search
-	 * @return Node corresponding to the path, null if not found
-	 */
-	private Directory search(Directory root, final String filePath) {
-		// Get list of paths
-		final String[] paths = filePath.split("/");
-
-		// Find the directory in directory tree
-		for (final String path : paths) {
-			// Match the root
-			boolean found = false;
-			if (root.getName()
-					.equalsIgnoreCase(path)) {
-				found = true;
-			}
-
-			// Check if the path corresponds to any child in this directory
-			for (final Directory child : root.getChildren()) {
-				if (child.getName()
-						.equalsIgnoreCase(path)) {
-					root = child;
-					found = true;
-					break;
-				}
-			}
-
-			// If child was not found, path does not exists
-			if (!found) {
-				return null;
-			}
-		}
-
-		// Return the node where the path was found
-		return root;
 	}
 }

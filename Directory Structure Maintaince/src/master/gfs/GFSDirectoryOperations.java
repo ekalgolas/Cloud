@@ -109,7 +109,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 	 *            Path to search
 	 * @return Node corresponding to the path, null if not found
 	 */
-	private Directory search(Directory root,
+	protected Directory search(Directory root,
 			final String filePath) {
 		// Get list of paths
 		final String[] paths = filePath.split("/");
@@ -118,15 +118,13 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		for (final String path : paths) {
 			// Match the root
 			boolean found = false;
-			if (root.getName()
-					.equalsIgnoreCase(path)) {
+			if (root.getName().equalsIgnoreCase(path)) {
 				found = true;
 			}
 
 			// Check if the path corresponds to any child in this directory
 			for (final Directory child : root.getChildren()) {
-				if (child.getName()
-						.equalsIgnoreCase(path)) {
+				if (child.getName().equalsIgnoreCase(path)) {
 					root = child;
 					found = true;
 					break;
@@ -164,7 +162,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 
 		// Create the directory
 		create(root, dirPath, name, false);
-		Message returnMessage = new Message("Directory Creation Succesful");
+		final Message returnMessage = new Message("Directory Creation Succesful");
 		returnMessage.appendCompletionCode(CompletionStatusCode.SUCCESS.name());
 		return returnMessage;
 	}
@@ -237,8 +235,8 @@ public class GFSDirectoryOperations implements ICommandOperations {
 			throw new InvalidPathException(path, "Path was not found");
 		}
 
-		List<Directory> contents = directory.getChildren();
-		for (Directory child : contents) {
+		final List<Directory> contents = directory.getChildren();
+		for (final Directory child : contents) {
 			if(child.getName().equalsIgnoreCase(name)) {
 				throw new InvalidPathException(path, "Path already present");
 			}

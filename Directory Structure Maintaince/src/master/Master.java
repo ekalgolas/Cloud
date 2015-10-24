@@ -1,14 +1,13 @@
 package master;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
+import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
 import java.util.spi.CurrencyNameProvider;
+
+import master.metadata.MetadataManager;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -16,7 +15,6 @@ import org.apache.log4j.Logger;
 import commons.AppConfig;
 import commons.Globals;
 import commons.dir.Directory;
-import commons.dir.DirectoryParser;
 
 /**
  * <pre>
@@ -31,6 +29,7 @@ import commons.dir.DirectoryParser;
 public class Master {
 	private static ServerSocket	gfsListenerSocket	= null;
 	private static ServerSocket	mdsListenerSocket	= null;
+	private static ServerSocket	dhtListenerSocket	= null;
 	private final static Logger	LOGGER				= Logger.getLogger(Master.class);
 	private static Long currentInodeNumber;
 
@@ -39,24 +38,26 @@ public class Master {
 	 *
 	 * @throws InvalidPropertiesFormatException
 	 */
-	public static void initializeMaster()
-			throws InvalidPropertiesFormatException {
+	public Master() throws InvalidPropertiesFormatException {
 		// Initialize configuration
 		new AppConfig("conf");
 		LOGGER.setLevel(Level.DEBUG);
 
 		// Do nothing if socket already initialized
-		if (gfsListenerSocket != null && mdsListenerSocket != null) {
+		if (gfsListenerSocket != null && mdsListenerSocket != null && dhtListenerSocket != null) {
 			return;
 		}
 
-		// Else, initialize the socket
+		// Else, initialize the sockets
 		try {
 			if (gfsListenerSocket == null) {
 				gfsListenerSocket = new ServerSocket(Integer.parseInt(AppConfig.getValue(Globals.GFS_SERVER_PORT)));
 			}
 			if (mdsListenerSocket == null) {
 				mdsListenerSocket = new ServerSocket(Integer.parseInt(AppConfig.getValue(Globals.MDS_SERVER_PORT)));
+			}
+			if (dhtListenerSocket == null) {
+				dhtListenerSocket = new ServerSocket(Integer.parseInt(AppConfig.getValue(Globals.DHT_SERVER_PORT)));
 			}
 		} catch (final IOException e) {
 			LOGGER.error("", e);
@@ -78,48 +79,6 @@ public class Master {
 	}
 
 	/**
-	 * Create in-memory master.metadata structure
-	 *
-	 * @throws IOException
-	 * @throws ClassNotFoundException
-	 */
-	public static Directory generateMetadata()
-			throws IOException,
-			ClassNotFoundException {
-		final File metadataStore = new File(AppConfig.getValue("server.metadataFile"));
-		Directory directory = null;
-		if (metadataStore.exists()) {
-			// Read the file into an object
-			try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(metadataStore))) {
-				directory = (Directory) inputStream.readObject();
-			}
-		} else {
-			// Parse the directory
-			directory = DirectoryParser.parseText(AppConfig.getValue("server.inputFile"));
-
-			// Serialize and store the master.metadata
-			storeMetadata(directory);
-		}
-
-		return directory;
-	}
-
-	/**
-	 * Serialize the master.metadata and write it into the file
-	 *
-	 * @param directory
-	 *            {@link Directory} object to be written
-	 */
-	public static void storeMetadata(final Directory directory) {
-		final File metadataStore = new File(AppConfig.getValue("server.metadataFile"));
-		try (ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(metadataStore))) {
-			outputStream.writeObject(directory);
-		} catch (final IOException e) {
-			LOGGER.error("", e);
-		}
-	}
-
-	/**
 	 * Master`s main method
 	 *
 	 * @param args
@@ -129,21 +88,22 @@ public class Master {
 	public static void main(final String[] args)
 			throws InvalidPropertiesFormatException {
 		// Initialize master
-		initializeMaster();
+		new Master();
 
 		try {
-			// Generate master.metadata for existing directory structure
-			final Directory directory = generateMetadata();
+			// Generate metadata for existing directory structure
+			final Directory directory = MetadataManager.generateGFSMetadata();
+			final HashMap<String, File> fileMap = MetadataManager.generateDHTMetadata();
 
 			// Set the globals root
 			Globals.gfsMetadataRoot = directory;
-			
+			Globals.dhtFileMap = fileMap;
+
 			// Create metadata replica
-			final Directory replica = generateMetadata();
-						
+			final Directory replica = MetadataManager.generateGFSMetadata();
+
 			// Set global replica
 			Globals.gfsMetadataCopy = replica;
-
 		} catch (ClassNotFoundException | IOException e) {
 			LOGGER.error("", e);
 		}
@@ -157,10 +117,15 @@ public class Master {
 		final Thread mdsListenerThread = new Thread(mdsListener);
 		mdsListenerThread.start();
 
+		final Listener dhtListener = new Listener(dhtListenerSocket, Globals.DHT_MODE);
+		final Thread dhtListenerThread = new Thread(dhtListener);
+		dhtListenerThread.start();
+
 		// Wait for listener thread to finish
 		try {
 			gfsListenerThread.join();
 			mdsListenerThread.join();
+			dhtListenerThread.join();
 		} catch (final InterruptedException e) {
 			Thread.currentThread().interrupt();
 			LOGGER.error("", e);

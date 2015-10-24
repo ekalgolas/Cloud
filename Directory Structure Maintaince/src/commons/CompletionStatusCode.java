@@ -2,8 +2,8 @@ package commons;
 
 /**
  * Contains the completion status codes used in the client response.
- * @author jaykay
  *
+ * @author jaykay
  */
 public enum CompletionStatusCode {
 	SUCCESS,
