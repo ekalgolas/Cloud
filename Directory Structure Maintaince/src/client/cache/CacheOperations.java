@@ -37,9 +37,9 @@ public class CacheOperations implements ICommandOperations {
 	 * @see commons.ICommandOperations#touch(master.metadata.Directory, java.lang.String)
 	 */
 	@Override
-	public void touch(final Directory root, final String path) throws InvalidPropertiesFormatException {
+	public Message touch(final Directory root, final String path) throws InvalidPropertiesFormatException {
 		// TODO Auto-generated method stub
-
+		return null;
 	}
 
 	/*
