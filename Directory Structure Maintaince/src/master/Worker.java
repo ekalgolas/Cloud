@@ -67,7 +67,7 @@ public class Worker implements Runnable {
 			try {
 				// Read the queried command
 				final Message message = (Message) inputStream.readObject();
-				final String command = message.getContent().toUpperCase();
+				final String command = message.getContent();
 				Message reply = null;
 				Directory root = null, replica = null;
 				final StringBuffer partialFilePath = new StringBuffer();

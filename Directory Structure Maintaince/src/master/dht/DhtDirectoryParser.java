@@ -15,6 +15,7 @@ import master.dht.dhtfs.client.DHTFileSystem;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.google.common.io.Files;
 import commons.AppConfig;
 import commons.dir.Directory;
 
@@ -38,8 +39,9 @@ public class DhtDirectoryParser {
 		final Directory directory = new Directory("root", false, new ArrayList<>());
 		levelDirectoryMap.put(0, directory);
 
-		final File root = File.createTempFile("root", ".txt");
-		root.deleteOnExit();
+		final File folder = Files.createTempDir();
+		final File root = new File(folder.getAbsolutePath() + "\root");
+		folder.deleteOnExit();
 
 		final HashMap<String, File> fileMap = new HashMap<>();
 		fileMap.put("root", root);
@@ -96,7 +98,7 @@ public class DhtDirectoryParser {
 						filename = filename.concat(":");
 					}
 
-					levelfile = File.createTempFile(filename, ".txt");
+					levelfile = new File(filename + ".txt");
 					levelfile.deleteOnExit();
 					if (currentLevel > 0) {
 						String ppathName = "";

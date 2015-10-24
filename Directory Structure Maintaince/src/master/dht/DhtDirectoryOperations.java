@@ -13,29 +13,13 @@ import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
 
 import com.sun.media.sound.InvalidDataException;
+import commons.Globals;
 import commons.Message;
 import commons.dir.Directory;
 import commons.dir.ICommandOperations;
 
 public class DhtDirectoryOperations implements ICommandOperations {
-
-	//	public static void main(String[] args) {
-	//
-	//		DirectoryParser dirop = new DirectoryParser();
-	//		HashMap<String, File> filemap = dirop.parsetext();
-	//
-	//		// DirectoryOperations.ls(filemap, "root/BigData/sparktutorial");
-	//
-	//		// try {
-	//		// DirectoryOperations.rmdirf(filemap, "root/BigData/sparktutorial");
-	//		// } catch (InvalidPropertiesFormatException e) {
-	//		// System.out.println("error");
-	//		// }
-	//		// System.out.println(s);
-	//	}
-
 	public static String ls(final HashMap<String, File> filemap, final String filePath) {
-
 		final int N = 3;
 		String line;
 		int counter = 0;
@@ -438,8 +422,8 @@ public class DhtDirectoryOperations implements ICommandOperations {
 			final String... arguments)
 					throws InvalidPropertiesFormatException,
 					InvalidDataException {
-		// TODO Auto-generated method stub
-		return null;
+		final Message message = new Message(ls(Globals.dhtFileMap, filePath));
+		return message;
 	}
 
 	@Override
@@ -447,16 +431,17 @@ public class DhtDirectoryOperations implements ICommandOperations {
 			final String path,
 			final String... arguments)
 					throws InvalidPropertiesFormatException {
-		// TODO Auto-generated method stub
-		return null;
+		mkdir(Globals.dhtFileMap, path);
+
+		final Message message = new Message("Directory successfully created");
+		return message;
 	}
 
 	@Override
 	public void touch(final Directory root,
 			final String path)
 					throws InvalidPropertiesFormatException {
-		// TODO Auto-generated method stub
-
+		touch(Globals.dhtFileMap, path);
 	}
 
 	@Override
@@ -464,8 +449,7 @@ public class DhtDirectoryOperations implements ICommandOperations {
 			final String path,
 			final String... arguments)
 					throws InvalidPropertiesFormatException {
-		// TODO Auto-generated method stub
-
+		rmdirf(Globals.dhtFileMap, path);
 	}
 
 	@Override
