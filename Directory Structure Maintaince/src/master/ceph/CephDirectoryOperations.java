@@ -3,6 +3,7 @@ package master.ceph;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.file.InvalidPathException;
@@ -10,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.InvalidPropertiesFormatException;
 import java.util.List;
+
+import com.sun.xml.internal.ws.api.message.MessageMetadata;
 
 import commons.AppConfig;
 import commons.CommandsSupported;
@@ -19,7 +22,7 @@ import commons.Message;
 import commons.OutputFormatter;
 import commons.dir.Directory;
 import commons.dir.ICommandOperations;
-
+import master.Master;
 import master.metadata.Inode;
 import master.metadata.MetaDataServerInfo;
 
@@ -105,32 +108,27 @@ public class CephDirectoryOperations implements ICommandOperations {
 	 * message.
 	 * 
 	 * @param command
-	 * @param inode
 	 * @param filePath
-	 * @param isWrite
+	 * @param mdsServer
 	 * @return Message containing the result.
 	 */
 	private Message remoteExecCommand(final CommandsSupported command, 
-			final Inode inode, 
 			final String filePath,
-			final boolean isWrite) 
+			final MetaDataServerInfo mdsServer,
+			boolean primaryMessage) 
 	{
-		MetaDataServerInfo serverInfo = getRequiredMdsInfo(inode, isWrite);
-		if (serverInfo == null) {
-			return null;
-		}
-		while (serverInfo != null) {
+		if (mdsServer != null) {
 			try 
 			{
-				final Socket socket = new Socket(serverInfo.getIpAddress(),
+				final Socket socket = new Socket(mdsServer.getIpAddress(),
 						Integer.parseInt(AppConfig.getValue(Globals.CLIENT_MDS_MASTER_PORT)));
 				final ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
 				final ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
-				outputStream.writeObject(new Message(command + " " + filePath));
+				outputStream.writeObject(new Message(command + " " + filePath,primaryMessage?Globals.PRIMARY_MDS:null));
 				outputStream.flush();
 
 				// Wait and read the reply
-				final Message message = (Message) inputStream.readObject();
+				final Message message = (Message) inputStream.readObject();				
 				final String reply = message.getContent();
 				System.out.println(reply);
 				socket.close();
@@ -138,23 +136,22 @@ public class CephDirectoryOperations implements ICommandOperations {
 			} 
 			catch (final UnknownHostException unkhostexp) 
 			{
-				serverInfo.setStatus(Globals.DEAD_STATUS);
+				mdsServer.setStatus(Globals.DEAD_STATUS);
 				System.err.println("Error occured while executing commands");
 				unkhostexp.printStackTrace();
 			} 
 			catch (final IOException ioexp) 
 			{
-				serverInfo.setStatus(Globals.DEAD_STATUS);
+				mdsServer.setStatus(Globals.DEAD_STATUS);
 				System.err.println("Error occured while executing commands");
 				ioexp.printStackTrace();
 			} 
 			catch (final ClassNotFoundException cnfexp) 
 			{
-				serverInfo.setStatus(Globals.DEAD_STATUS);
+				mdsServer.setStatus(Globals.DEAD_STATUS);
 				System.err.println("Error occured while executing commands");
 				cnfexp.printStackTrace();
 			}
-			serverInfo = getRequiredMdsInfo(inode, isWrite);
 		}
 
 		return null;
@@ -203,7 +200,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 			{
 				if (inode.getDataServerInfo() != null && inode.getDataServerInfo().size() > 0) 
 				{
-					final Message message = remoteExecCommand(CommandsSupported.LS, inode, filePath, false);
+					final MetaDataServerInfo mdsServer = getRequiredMdsInfo(inode, false); 
+					final Message message = remoteExecCommand(CommandsSupported.LS, filePath, mdsServer, false);
 					if (message != null) 
 					{
 						return message;
@@ -225,6 +223,48 @@ public class CephDirectoryOperations implements ICommandOperations {
 		}
 		return null;
 	}
+	
+	private Message updateReplicas(final CommandsSupported command,
+			Inode inode,
+			final String fullPath)
+	{
+		boolean finalStatus = true;
+		final StringBuilder errorMessages = new StringBuilder(); 
+		if(inode != null && 
+				inode.getDataServerInfo() != null && 
+				inode.getDataServerInfo().size() > 0)
+		{
+			for(MetaDataServerInfo metaData:inode.getDataServerInfo())
+			{
+				if(Globals.REPLICA_MDS.equals(metaData.getServerType()))
+				{
+					Message replicaMessage = remoteExecCommand(command, fullPath, metaData, true);
+					if(replicaMessage != null)
+					{
+						finalStatus &= (CompletionStatusCode.SUCCESS.name()
+										.equals(replicaMessage.getCompletionCode()));
+						if(!CompletionStatusCode.SUCCESS.name()
+								.equals(replicaMessage.getCompletionCode()))
+						{
+							errorMessages.append(replicaMessage.getContent()+"\n");
+						}
+					}
+					else
+					{
+						finalStatus &= false;
+					}
+				}
+			}
+		}
+		if(finalStatus)
+		{
+			return new Message(fullPath+" created Successfully",
+						"",
+						CompletionStatusCode.SUCCESS.name());
+		}
+		Message finalMessage = new Message(errorMessages.toString(),"",CompletionStatusCode.ERROR.name()); 
+		return finalMessage;
+	}
 
 	/**
 	 * Create a resource in the directory tree
@@ -243,7 +283,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 	private Message create(final Directory root, final String currentPath, 
 			final String name, 
 			final boolean isFile,
-			final String fullPath) throws InvalidPathException 
+			final String fullPath,
+			boolean primaryMessage) throws InvalidPathException 
 	{
 		// Search and get to the directory where we have to create
 		final StringBuffer resultCode = new StringBuffer();
@@ -254,62 +295,120 @@ public class CephDirectoryOperations implements ICommandOperations {
 			final Inode inode = directory.getInode();
 			if (inode.getInodeNumber() != null && Globals.PATH_FOUND.equals(resultCode)) 
 			{
-				if (!directory.isFile()) 
+				try
 				{
-					// Add file if isFile is true
-					if (isFile) 
+					MetaDataServerInfo serverInfo = getRequiredMdsInfo(inode, true);
+					if((primaryMessage) || (serverInfo != null && 
+							InetAddress.getLocalHost().equals(serverInfo.getIpAddress())))
 					{
-						boolean fileExist = false;
-						for (Directory child : directory.getChildren()) 
+						if (!directory.isFile()) 
 						{
-							if (child.getName().equalsIgnoreCase(name) && child.isFile()) 
+							// Add file if isFile is true
+							if (isFile) 
 							{
-								fileExist = true;
-								break;
-							}
-						}
-						if (fileExist) 
-						{
-							return new Message("File already exists",
-												"",
-												CompletionStatusCode.FILE_EXISTS.name());
-						}
-						final Directory file = new Directory(name, isFile, null);
-						directory.getChildren().add(file);
-						return new Message(file.getName()+" created succesfully",
-								directory.getInode().getDataServerInfo().toString(),
-								CompletionStatusCode.SUCCESS.name());
-					} 
-					else 
-					{
-						// Else, add directory here
-						boolean fileExist = false;
-						for (Directory child : directory.getChildren()) 
-						{
-							if (child.getName().equalsIgnoreCase(name) && !child.isFile()) 
+								boolean fileExist = false;
+								for (Directory child : directory.getChildren()) 
+								{
+									if (child.getName().equalsIgnoreCase(name) && child.isFile()) 
+									{
+										fileExist = true;
+										break;
+									}
+								}
+								if (fileExist) 
+								{
+									return new Message("File already exists",
+														"",
+														CompletionStatusCode.FILE_EXISTS.name());
+								}
+								final Directory file = new Directory(name, isFile, null);
+								Long newInodeNumber = Master.getInodeNumber();
+								if(newInodeNumber != -1) // When inode number available
+								{
+									Inode newInode = new Inode();
+									newInode.setInodeNumber(newInodeNumber);
+									newInode.getDataServerInfo().addAll(inode.getDataServerInfo());
+									file.setInode(newInode);
+									directory.getChildren().add(file);
+									Message replicaMessages = updateReplicas(CommandsSupported.MKDIR,inode,fullPath);
+									if(CompletionStatusCode.SUCCESS.name().equals(replicaMessages.getCompletionCode()))
+									{
+										return new Message(file.getName()+" created succesfully",
+												directory.getInode().getDataServerInfo().toString(),
+												CompletionStatusCode.SUCCESS.name());
+									}															
+									return new Message(replicaMessages.getContent(),
+											directory.getInode().getDataServerInfo().toString(),
+											CompletionStatusCode.ERROR.name());
+								}
+								return new Message("Inode Number Exhausted",
+										directory.getInode().getDataServerInfo().toString(),
+										CompletionStatusCode.ERROR.name());
+							} 
+							else 
 							{
-								fileExist = true;
-								break;
-							}
-						}
-						if (fileExist) 
+								// Else, add directory here
+								boolean fileExist = false;
+								for (Directory child : directory.getChildren()) 
+								{
+									if (child.getName().equalsIgnoreCase(name) && !child.isFile()) 
+									{
+										fileExist = true;
+										break;
+									}
+								}
+								if (fileExist) 
+								{
+									return new Message("Directory already exists",
+											"",
+											CompletionStatusCode.DIR_EXISTS.name());
+								}
+								final Directory dir = new Directory(name, isFile, new ArrayList<Directory>());
+								directory.getChildren().add(dir);
+								Long newInodeNumber = Master.getInodeNumber();
+								if(newInodeNumber != -1)// When inode number available
+								{
+									Inode newInode = new Inode();
+									newInode.setInodeNumber(newInodeNumber);
+									newInode.getDataServerInfo().addAll(inode.getDataServerInfo());
+									dir.setInode(newInode);
+									Message replicaMessages = updateReplicas(CommandsSupported.MKDIR,inode,fullPath);
+									if(CompletionStatusCode.SUCCESS.name()
+											.equals(replicaMessages.getCompletionCode()))
+									{
+										return new Message(dir.getName()+" created succesfully",
+												directory.getInode().getDataServerInfo().toString(),
+												CompletionStatusCode.SUCCESS.name());
+									}
+									return new Message(replicaMessages.getContent(),
+											directory.getInode().getDataServerInfo().toString(),
+											CompletionStatusCode.ERROR.name());
+								}
+								return new Message("Inode Number Exhausted",
+										directory.getInode().getDataServerInfo().toString(),
+										CompletionStatusCode.ERROR.name());
+							}							
+						} 
+						else 
 						{
-							return new Message("Directory already exists",
+							return new Message("Directory expected",
 									"",
-									CompletionStatusCode.DIR_EXISTS.name());
+									CompletionStatusCode.DIR_EXPECTED.name());
 						}
-						final Directory dir = new Directory(name, isFile, new ArrayList<Directory>());
-						directory.getChildren().add(dir);
-						return new Message(dir.getName()+" created succesfully",
-								directory.getInode().getDataServerInfo().toString(),
-								CompletionStatusCode.SUCCESS.name());
 					}
-				} 
-				else 
+					else
+					{
+						return remoteExecCommand(CommandsSupported.MKDIR, 
+												fullPath, 
+												serverInfo,
+												false);
+					}
+				}
+				catch(UnknownHostException unexp)
 				{
-					return new Message("Directory expected",
+					return new Message(unexp.getLocalizedMessage(),
 							"",
-							CompletionStatusCode.DIR_EXPECTED.name());
+							CompletionStatusCode.ERROR.name());
 				}
 			} 
 			else if (inode.getInodeNumber() == null && Globals.PARTIAL_PATH_FOUND.equals(resultCode)) 
@@ -317,7 +416,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 				if (inode.getDataServerInfo() != null && 
 						inode.getDataServerInfo().size() > 0) 
 				{
-					return remoteExecCommand(CommandsSupported.MKDIR, inode, fullPath, false);
+					final MetaDataServerInfo mdsServer = getRequiredMdsInfo(inode, true); 
+					return remoteExecCommand(CommandsSupported.MKDIR, fullPath, mdsServer, false);
 				}
 			} 
 			else if (inode.getInodeNumber() != null) 
@@ -359,9 +459,15 @@ public class CephDirectoryOperations implements ICommandOperations {
 		final String[] paths = path.split("/");
 		final String name = paths[paths.length - 2];
 		final String dirPath = path.substring(0, searchablePath.length() - name.length() - 1);
+		
+		boolean primaryMessage = false;
+		if(arguments != null && arguments.length >= 2)
+		{
+			primaryMessage = Globals.PRIMARY_MDS.equals(arguments[1]);
+		}
 
 		// Create the directory
-		return create(root, dirPath, name, false, path);
+		return create(root, dirPath, name, false, path,primaryMessage);
 	}
 
 	@Override

@@ -8,6 +8,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.util.InvalidPropertiesFormatException;
+import java.util.spi.CurrencyNameProvider;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -31,6 +32,7 @@ public class Master {
 	private static ServerSocket	gfsListenerSocket	= null;
 	private static ServerSocket	mdsListenerSocket	= null;
 	private final static Logger	LOGGER				= Logger.getLogger(Master.class);
+	private static Long currentInodeNumber;
 
 	/**
 	 * Setup the listener socket
@@ -59,6 +61,20 @@ public class Master {
 		} catch (final IOException e) {
 			LOGGER.error("", e);
 		}
+				
+		currentInodeNumber = Long.valueOf(AppConfig.getValue("mds.current.inode"));
+	}
+	
+	public static Long getInodeNumber()
+	{
+		Long startInodeNumber = Long.valueOf(AppConfig.getValue("mds.inode.start"));
+		Long endInodeNumber = Long.valueOf(AppConfig.getValue("mds.inode.end"));
+		if((currentInodeNumber <= endInodeNumber) && 
+				(currentInodeNumber >=startInodeNumber))
+		{
+			return currentInodeNumber++;
+		}
+		return new Long(-1);
 	}
 
 	/**
