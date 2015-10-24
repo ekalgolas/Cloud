@@ -1,3 +1,10 @@
 /*sampleInputs*
 /stored_metadata.dat
 /stored_gfs_metadata.dat
+/fsimage
+/history
+/history.bak
+/seq
+meta*
+data*
+id*

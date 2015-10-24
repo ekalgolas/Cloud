@@ -15,6 +15,7 @@ import master.dht.dhtfs.client.DHTFileSystem;
 
 import org.apache.commons.lang3.StringUtils;
 
+import commons.AppConfig;
 import commons.dir.Directory;
 
 /**
@@ -42,9 +43,9 @@ public class DhtDirectoryParser {
 
 		final HashMap<String, File> fileMap = new HashMap<>();
 		fileMap.put("root", root);
-		fileSystem.copyFromLocal(root.getAbsolutePath(), "root");
+		fileSystem.create("root");
 
-		try (final Scanner scanner = new Scanner(new File("/Users/sahith/Desktop/out.txt"))) {
+		try (final Scanner scanner = new Scanner(new File(AppConfig.getValue("server.inputFile")))) {
 			scanner.nextLine();
 			while (scanner.hasNext()) {
 				final String line = scanner.nextLine();
