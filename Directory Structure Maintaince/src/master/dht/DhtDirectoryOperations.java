@@ -254,6 +254,7 @@ public class DhtDirectoryOperations implements ICommandOperations {
 		PrintWriter writer;
 		BufferedReader reader;
 		int counter =0;
+		int counter1 =0;
 		String line ="";
 		String currentLine = "";
 		final File temp = new File(f.getAbsolutePath() + ".tmp");
@@ -272,12 +273,14 @@ public class DhtDirectoryOperations implements ICommandOperations {
 					}
 
 					if (trimmedLine.contains(pathname+"/"+names[names.length-1])){
+						counter1++;
 						final String[] split = trimmedLine.split("@");
 						split[3] = Long.toString(System.currentTimeMillis());
 
 						for(int b=0;b<=3;b++){
 							if(b==3){
 								trimmedLine = trimmedLine.concat(split[b]);
+								break;
 							}
 
 							trimmedLine = trimmedLine.concat(split[b]);
@@ -287,16 +290,21 @@ public class DhtDirectoryOperations implements ICommandOperations {
 				}
 				writer.print(trimmedLine);
 				writer.println();
-				reader.close();
+				writer.flush();
+				
 			}
+			if(counter1 == 0){
 			final String[] split = line.split("@");
 
 			if(split[1].contains("d")){
 
 				split[0] = split[0].concat("/"+names[names.length-1]);
+				split[1] = "-rw-r--r--";
+				split[2] = "0";
 				for(int c=0;c<=3;c++){
 					if(c==3){
 						line = line.concat(split[c]);
+						break;
 					}
 					line = line.concat(split[c]);
 					line = line.concat("@");
@@ -307,8 +315,12 @@ public class DhtDirectoryOperations implements ICommandOperations {
 			}
 			else{
 				writer.close();
+				reader.close();
 				throw new InvalidPathException(filePath, "cannot create a file inside a file");
 			}
+			}
+			reader.close();
+			temp.renameTo(f);
 		} catch (final IOException e) {
 
 			System.out.println("execption");
