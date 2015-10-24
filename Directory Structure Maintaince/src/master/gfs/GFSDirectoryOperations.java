@@ -173,7 +173,8 @@ public class GFSDirectoryOperations implements ICommandOperations {
 	 */
 	@Override
 	public Message touch(final Directory root,
-			final String path)
+			final String path,
+			String... arguments)
 					throws InvalidPropertiesFormatException {
 		// Check if path is valid
 		if (path.charAt(path.length() - 1) == '/') {

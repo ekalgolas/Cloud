@@ -1,5 +1,6 @@
 package master.ceph;
 
+import java.awt.image.ReplicateScaleFilter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -471,19 +472,133 @@ public class CephDirectoryOperations implements ICommandOperations {
 	}
 
 	@Override
-	public Message touch(final Directory root, final String path) 
+	public Message touch(final Directory root, 
+			final String path,
+			String... arguments) 
 			throws InvalidPropertiesFormatException 
 	{
-		// Get the parent directory and the name of file
+		// Get the parent directory and the name of directory
+		String searchablePath;
+		if (arguments != null && arguments.length > 0 && !"/".equals(arguments[0])) 
+		{
+			searchablePath = path.substring(arguments[0].length());
+		} 
+		else 
+		{
+			searchablePath = path;
+		}
 		final String[] paths = path.split("/");
-		final String name = paths[paths.length - 1];
-		final String dirPath = path.substring(0, path.length() - name.length());
+		final String name = paths[paths.length - 2];
+		final String dirPath = path.substring(0, searchablePath.length() - name.length() - 1);
 
 		StringBuffer resultCode = new StringBuffer();
 		final Directory directory = search(root, dirPath, resultCode);
-		if (directory == null) 
+		if(directory != null)
 		{
-			throw new InvalidPathException(dirPath, "Does not exist");
+			Inode inode = directory.getInode();
+			if(inode.getInodeNumber() == null && Globals.PARTIAL_PATH_FOUND.equals(resultCode))
+			{
+				if (inode.getDataServerInfo() != null && 
+						inode.getDataServerInfo().size() > 0) 
+				{
+					final MetaDataServerInfo mdsServer = getRequiredMdsInfo(inode, true); 
+					return remoteExecCommand(CommandsSupported.TOUCH, path, mdsServer, false);
+				}
+			}
+			else if(inode.getInodeNumber() != null && Globals.PATH_FOUND.equals(resultCode))
+			{
+				// Create the file
+				final Directory file = new Directory(name, true, null);
+				final List<Directory> contents = directory.getChildren();
+				boolean found = false;
+				Directory touchFile = null; 
+				for (final Directory child : contents) 
+				{
+					if (child.equals(file)) 
+					{
+						// Already present, set modified timestamp to current
+						touchFile = child;
+						found = true;
+						break;
+					}
+				}
+				if(found)
+				{
+					MetaDataServerInfo metaData = getRequiredMdsInfo(inode, true);
+					try
+					{
+						if(metaData != null && 
+								InetAddress.getLocalHost().equals(metaData.getIpAddress()))
+						{
+							if(touchFile != null)
+							{
+								touchFile.setModifiedTimeStamp(new Date().getTime());
+								if(inode.getDataServerInfo() != null &&
+										inode.getDataServerInfo().size()>1)
+								{
+									Message finalMessage = updateReplicas(CommandsSupported.TOUCH, 
+											inode, path);
+									if(finalMessage != null && 
+											CompletionStatusCode.SUCCESS.name()
+											.equals(finalMessage.getCompletionCode()))
+									{
+										return new Message("Touch successful",
+												inode.getDataServerInfo().toString(),
+												CompletionStatusCode.SUCCESS.name()
+												);
+									}
+									else
+									{
+										return new Message(finalMessage.getContent(),
+												inode.getDataServerInfo().toString(),
+												CompletionStatusCode.ERROR.name()
+												);
+									}
+								}
+								else
+									return new Message("Touch successful",
+											inode.getDataServerInfo().toString(),
+											CompletionStatusCode.SUCCESS.name()
+											);
+							}
+							else
+							{
+								return new Message("System in unstable state",
+										inode.getDataServerInfo().toString(),
+										CompletionStatusCode.UNSTABLE.name()
+										);
+							}
+						}
+						else
+						{							
+							return remoteExecCommand(CommandsSupported.TOUCH, 
+									path, metaData, false);
+						}
+					}
+					catch(UnknownHostException unexp)
+					{
+						return new Message(unexp.getLocalizedMessage(),
+								inode.getDataServerInfo().toString(),
+								CompletionStatusCode.ERROR.name()
+								);
+					}
+				}
+			}
+			else if (inode.getInodeNumber() != null) 
+			{
+				return new Message("MetaData in unstable state",
+						"",
+						CompletionStatusCode.UNSTABLE.name()); // need to add message explaining the unstable state of
+						// metadata.
+			} 
+			else 
+			{
+				return new Message("Path"+ path +" not found",
+						"",
+						CompletionStatusCode.NOT_FOUND.name());
+						// issue.
+			}
+			
 		}
 
 		// Create the file

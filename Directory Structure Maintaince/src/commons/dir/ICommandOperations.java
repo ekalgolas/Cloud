@@ -55,7 +55,8 @@ public interface ICommandOperations {
 	 * @throws InvalidPropertiesFormatException
 	 */
 	public Message touch(final Directory root,
-			final String path)
+			final String path,
+			String... arguments)
 			throws InvalidPropertiesFormatException;
 
 	/**

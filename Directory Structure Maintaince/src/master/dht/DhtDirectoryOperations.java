@@ -439,7 +439,8 @@ public class DhtDirectoryOperations implements ICommandOperations {
 
 	@Override
 	public Message touch(final Directory root,
-			final String path)
+			final String path,
+			String... arguments)
 					throws InvalidPropertiesFormatException {
 		touch(Globals.dhtFileMap, path);
 		return new Message("Touch Successful");
