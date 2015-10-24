@@ -7,7 +7,6 @@ import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 
 import com.sun.media.sound.InvalidDataException;
-
 import commons.CompletionStatusCode;
 import commons.Message;
 import commons.OutputFormatter;
@@ -193,12 +192,10 @@ public class GFSDirectoryOperations implements ICommandOperations {
 			throw new InvalidPathException(dirPath, "Does not exist");
 		}
 
-		// Create the file
-		final Directory file = new Directory(name, true, null);
 		final List<Directory> contents = directory.getChildren();
 		boolean found = false;
 		for (final Directory child : contents) {
-			if (child.equals(file)) {
+			if (child.getName().equalsIgnoreCase(name)) {
 				// Already present, set modified timestamp to current
 				child.setModifiedTimeStamp(new Date().getTime());
 				found = true;
@@ -207,6 +204,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		}
 		if (!found) {
 			// Not present, add it in the list
+			final Directory file = new Directory(name, true, null);
 			file.setModifiedTimeStamp(new Date().getTime());
 			contents.add(file);
 		}
@@ -239,16 +237,21 @@ public class GFSDirectoryOperations implements ICommandOperations {
 			throw new InvalidPathException(path, "Path was not found");
 		}
 
+		List<Directory> contents = directory.getChildren();
+		for (Directory child : contents) {
+			if(child.getName().equalsIgnoreCase(name)) {
+				throw new InvalidPathException(path, "Path already present");
+			}
+		}
+
 		// Add file if isFile is true
 		if (isFile) {
 			final Directory file = new Directory(name, isFile, null);
-			directory.getChildren()
-			.add(file);
+			contents.add(file);
 		} else {
 			// Else, add directory here
 			final Directory dir = new Directory(name, isFile, new ArrayList<Directory>());
-			directory.getChildren()
-			.add(dir);
+			contents.add(dir);
 		}
 	}
 
