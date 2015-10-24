@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
+import java.util.spi.CurrencyNameProvider;
 
 import master.metadata.MetadataManager;
 
@@ -30,6 +31,7 @@ public class Master {
 	private static ServerSocket	mdsListenerSocket	= null;
 	private static ServerSocket	dhtListenerSocket	= null;
 	private final static Logger	LOGGER				= Logger.getLogger(Master.class);
+	private static Long currentInodeNumber;
 
 	/**
 	 * Setup the listener socket
@@ -60,6 +62,20 @@ public class Master {
 		} catch (final IOException e) {
 			LOGGER.error("", e);
 		}
+				
+		currentInodeNumber = Long.valueOf(AppConfig.getValue("mds.current.inode"));
+	}
+	
+	public static Long getInodeNumber()
+	{
+		Long startInodeNumber = Long.valueOf(AppConfig.getValue("mds.inode.start"));
+		Long endInodeNumber = Long.valueOf(AppConfig.getValue("mds.inode.end"));
+		if((currentInodeNumber <= endInodeNumber) && 
+				(currentInodeNumber >=startInodeNumber))
+		{
+			return currentInodeNumber++;
+		}
+		return new Long(-1);
 	}
 
 	/**
