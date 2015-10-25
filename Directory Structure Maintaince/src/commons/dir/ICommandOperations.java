@@ -70,7 +70,7 @@ public interface ICommandOperations {
 	 *            Arguments to the command
 	 * @throws InvalidPropertiesFormatException
 	 */
-	public void rmdir(final Directory root,
+	public Message rmdir(final Directory root,
 			final String path,
 			String... arguments)
 			throws InvalidPropertiesFormatException;

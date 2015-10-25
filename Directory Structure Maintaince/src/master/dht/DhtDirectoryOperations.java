@@ -459,11 +459,12 @@ public class DhtDirectoryOperations implements ICommandOperations {
 	}
 
 	@Override
-	public void rmdir(final Directory root,
+	public Message rmdir(final Directory root,
 			final String path,
 			final String... arguments)
 					throws InvalidPropertiesFormatException {
 		rmdirf(Globals.dhtFileMap, path);
+		return new Message("rmdir Successful");
 	}
 
 	@Override

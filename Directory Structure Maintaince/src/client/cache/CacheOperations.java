@@ -47,9 +47,9 @@ public class CacheOperations implements ICommandOperations {
 	 * @see commons.ICommandOperations#rmdir(master.metadata.Directory, java.lang.String, java.lang.String[])
 	 */
 	@Override
-	public void rmdir(final Directory root, final String path, final String... arguments) throws InvalidPropertiesFormatException {
+	public Message rmdir(final Directory root, final String path, final String... arguments) throws InvalidPropertiesFormatException {
 		// TODO Auto-generated method stub
-
+		return null;
 	}
 
 	/*

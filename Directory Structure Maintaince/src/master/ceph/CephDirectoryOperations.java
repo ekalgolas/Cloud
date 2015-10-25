@@ -585,7 +585,15 @@ public class CephDirectoryOperations implements ICommandOperations {
 								InetAddress.getLocalHost()
 								.equals(metaData.getIpAddress())))
 						{
-							Long newInodeNumber = Master.getInodeNumber();
+							Long newInodeNumber;
+							if(primaryMessage)
+							{
+								newInodeNumber = inodeNumber;
+							}
+							else
+							{
+								newInodeNumber = Master.getInodeNumber();
+							}
 							if(newInodeNumber != -1)
 							{
 								Inode newInode = new Inode();
@@ -649,36 +657,16 @@ public class CephDirectoryOperations implements ICommandOperations {
 			}
 			
 		}
-
-		// Create the file
-		final Directory file = new Directory(name, true, null);
-		final List<Directory> contents = directory.getChildren();
-		boolean found = false;
-		for (final Directory child : contents) 
-		{
-			if (child.equals(file)) 
-			{
-				// Already present, set modified timestamp to current
-				child.setModifiedTimeStamp(new Date().getTime());
-				found = true;
-				break;
-			}
-		}
-		if (!found) 
-		{
-			// Not present, add it in the list
-			file.setModifiedTimeStamp(new Date().getTime());
-			contents.add(file);
-		}
-		directory.setChildren(contents);
-		return null;
+		return new Message("Touch Failed",
+				"",
+				CompletionStatusCode.ERROR.name());
 	}
 
 	@Override
-	public void rmdir(final Directory root, final String path, final String... arguments)
+	public Message rmdir(final Directory root, final String path, final String... arguments)
 			throws InvalidPropertiesFormatException {
 		// TODO Auto-generated method stub
-
+		return null;
 	}
 
 	@Override
