@@ -37,4 +37,7 @@ public class Globals {
 	public static final String					PATH_NOT_FOUND			= "PNF";
 	public static final String					PARTIAL_PATH_FOUND		= "PPF";
 	public static final String					PATH_FOUND				= "PF";
+	
+	public static final String 					OVERALL_INITIATOR_MDS	= "MDS1";
+	public static final String 					MDS_SERVER_ID_START		= "MDS";
 }
