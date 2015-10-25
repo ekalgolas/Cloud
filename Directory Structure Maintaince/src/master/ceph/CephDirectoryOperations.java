@@ -560,6 +560,9 @@ public class CephDirectoryOperations implements ICommandOperations {
 								InetAddress.getLocalHost().equals(metaData.getIpAddress())))
 						{
 							touchFile.setModifiedTimeStamp(new Date().getTime());
+							Long operationcounter = touchFile.getOperationCounter();
+							operationcounter++;
+							touchFile.setOperationCounter(operationcounter);
 							if((!primaryMessage) && inode.getDataServerInfo() != null &&
 									inode.getDataServerInfo().size()>1)
 							{

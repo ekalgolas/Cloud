@@ -1,6 +1,7 @@
 package master.metadata;
 
 import java.io.Serializable;
+import java.util.HashMap;
 
 import commons.Globals;
 import commons.dir.Directory;
@@ -124,10 +125,10 @@ public class MetaDataServerInfo implements Serializable {
 	 * @return closest directory.
 	 */
 	public static Directory findClosestNode(final String filePath,
-			final StringBuffer matchedPath) {
+			final StringBuffer matchedPath, final HashMap<String, Directory> parititionMap) {
 		int maxLevel = 0;
 		String maxMatchPath = "";
-		for (final String node : Globals.subTreePartitionList.keySet()) {
+		for (final String node : parititionMap.keySet()) {
 			// Get level for this node
 			int currentLevel = 0, i = 0;
 			while (i < node.length() && i < filePath.length()) {
@@ -150,6 +151,6 @@ public class MetaDataServerInfo implements Serializable {
 		}
 
 		matchedPath.append(maxMatchPath);
-		return Globals.subTreePartitionList.get(maxMatchPath);
+		return parititionMap.get(maxMatchPath);
 	}
 }

@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import master.dht.DhtDirectoryParser;
@@ -109,5 +110,81 @@ public class MetadataManager {
 		} catch (final IOException e) {
 			LOGGER.error("", e);
 		}
+	}
+	
+	/**
+	 * Generate the partitioned metadata required for the initial run of CEPH filesystem.
+	 */
+	public static void generateOverallCephPartition()
+	{
+		final Directory root = DirectoryParser.parseText(AppConfig.getValue("server.inputFile"));
+		
+		HashMap<String, Directory> pathMap = new HashMap<String, Directory>();
+
+		HashMap<String,ArrayList<String>> mdsToPathMapping = new HashMap<>();
+		String mdsParititionSetting = AppConfig.getValue("mds.partition.config");
+		String[] mdsPartitions = mdsParititionSetting.split(":");
+		ArrayList<String> paths = new ArrayList<String>();
+		for(String paritition:mdsPartitions)
+		{
+			String[] mdsPathSplit = paritition.split("#");
+			if(mdsToPathMapping.containsKey(mdsPathSplit[0]))
+			{
+				mdsToPathMapping.get(mdsPathSplit[0]).add(mdsPathSplit[1]);
+			}
+			else
+			{
+				ArrayList<String> mdsPaths = new ArrayList<>();
+				mdsPaths.add(mdsPathSplit[1]);
+				mdsToPathMapping.put(mdsPathSplit[0], mdsPaths);
+			}
+			paths.add(mdsPathSplit[1]);			
+		}
+				
+		ArrayList<Directory> cutDirs = new ArrayList<Directory>();						
+
+		for (String path : paths) {			
+			StringBuffer partition = new StringBuffer();
+			Directory currentDirNode = MetaDataServerInfo.findClosestNode(path, partition, pathMap);
+			if(currentDirNode == null)
+				currentDirNode = root;
+			System.out.println(partition);
+			Directory parentDirNode = null;
+			String[] pathElem = path.split("/");
+			for(int i = 1; i < pathElem.length; i++) {
+				for (Directory dir : currentDirNode.getChildren()) {
+					if(dir.getName().equalsIgnoreCase(pathElem[i])) {
+						parentDirNode = currentDirNode;
+						currentDirNode = dir;
+						break;
+					}
+				}
+			}
+			cutDirs.add(currentDirNode);
+			pathMap.put(path, currentDirNode);
+			parentDirNode.getChildren().remove(currentDirNode);
+		}		
+		
+		cutDirs.add(root);
+		pathMap.put("root", root);
+		ArrayList<String> rootPathList = new ArrayList<>();
+		rootPathList.add("root");
+		mdsToPathMapping.put("MDS1",rootPathList);
+		
+		HashMap<String, HashMap<String,Directory>> mdsPartitionDetails = new HashMap<>();
+		
+		for(String mdsName:mdsToPathMapping.keySet())
+		{
+			if(!mdsPartitionDetails.containsKey(mdsName))
+			{
+				mdsPartitionDetails.put(mdsName, new HashMap<>());
+			}
+			for(String pathName:mdsToPathMapping.get(mdsName))
+			{
+				mdsPartitionDetails.get(mdsName).put(pathName, pathMap.get(pathName));
+			}
+		}
+		
+		System.out.println(mdsPartitionDetails.toString());
 	}
 }
