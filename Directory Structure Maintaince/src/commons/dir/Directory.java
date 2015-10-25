@@ -267,7 +267,7 @@ public class Directory implements Serializable, Cloneable {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(name, isFile, modifiedTimeStamp);
+		return Objects.hash(name, isFile);
 	}
 
 	@Override
@@ -278,8 +278,7 @@ public class Directory implements Serializable, Cloneable {
 
 		final Directory that = (Directory) other;
 		return name == that.name
-				&& modifiedTimeStamp == that.modifiedTimeStamp
-				&& isFile && that.isFile;
+			&& isFile == that.isFile;
 	}
 	
 	@Override
