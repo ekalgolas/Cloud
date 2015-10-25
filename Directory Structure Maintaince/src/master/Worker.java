@@ -86,7 +86,8 @@ public class Worker implements Runnable {
 					} else if (Globals.MDS_MODE.equalsIgnoreCase(listenerType)) {
 						directoryOperations = new CephDirectoryOperations();
 						replicationOperations = null;
-						root = MetaDataServerInfo.findClosestNode(command.substring(3), partialFilePath);
+						root = MetaDataServerInfo.findClosestNode(command.substring(3), 
+								partialFilePath, Globals.subTreePartitionList);
 					} else {
 						directoryOperations = new DhtDirectoryOperations();
 						replicationOperations = null;
@@ -127,11 +128,13 @@ public class Worker implements Runnable {
 						// Command line parameter (directory name) start from index '6' in the received string
 						String argument = command.substring(6);
 						
-						directoryOperations.rmdir(root, argument);
+						reply = directoryOperations.rmdir(root, argument,
+								partialFilePath.toString(),
+								message.getHeader());
 						if(replicationOperations != null) {
 							replicationOperations.replicateRmdir(replica, argument);
 						}
-						reply = new Message("Directory deleted successfully");
+//						reply = new Message("Directory deleted successfully");
 
 						LOGGER.debug("Directory structure after " + command);
 						LOGGER.debug("\n" + root.toString());
