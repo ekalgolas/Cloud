@@ -8,12 +8,9 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.InvalidPropertiesFormatException;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 
 import commons.AppConfig;
 import commons.CommandsSupported;
@@ -294,7 +291,15 @@ public class CephDirectoryOperations implements ICommandOperations {
 	{
 		// Search and get to the directory where we have to create
 		final StringBuffer resultCode = new StringBuffer();
-		final Directory directory = search(root, currentPath, resultCode);
+		final Directory directory;
+		if(Globals.subTreePartitionList.containsKey(fullPath))
+		{
+			directory = Globals.subTreePartitionList.get(fullPath);
+		}
+		else
+		{
+			directory = search(root, currentPath, resultCode);
+		}
 
 		if (directory != null) 
 		{
@@ -495,7 +500,15 @@ public class CephDirectoryOperations implements ICommandOperations {
 		}
 
 		StringBuffer resultCode = new StringBuffer();
-		final Directory directory = search(root, dirPath, resultCode);
+		final Directory directory;
+		if(Globals.subTreePartitionList.containsKey(path))
+		{
+			directory = Globals.subTreePartitionList.get(path);
+		}
+		else
+		{
+			directory = search(root, dirPath, resultCode);
+		}
 		if(directory != null)
 		{
 			Inode inode = directory.getInode();
@@ -515,19 +528,32 @@ public class CephDirectoryOperations implements ICommandOperations {
 				final List<Directory> contents = directory.getChildren();
 				boolean found = false;
 				Directory touchFile = null; 
-				for (final Directory child : contents) 
+				if(directory.equals(file))
 				{
-					if (child.equals(file)) 
+					touchFile = directory;
+					found = true;
+				}
+				else
+				{
+					for (final Directory child : contents) 
 					{
-						// Already present, set modified timestamp to current
-						touchFile = child;
-						found = true;
-						break;
+						if (child.equals(file)) 
+						{
+							// Already present, set modified timestamp to current
+							touchFile = child;
+							found = true;
+							break;
+						}
 					}
 				}
 				if(found && touchFile != null)
 				{
 					MetaDataServerInfo metaData = getRequiredMdsInfo(touchFile.getInode(), true);
+					if(touchFile.getInode().getInodeNumber() == null)
+					{
+						return remoteExecCommand(CommandsSupported.TOUCH, 
+								path, metaData, false, null);
+					}					
 					try
 					{
 						if((primaryMessage) || (metaData != null && 
@@ -661,12 +687,203 @@ public class CephDirectoryOperations implements ICommandOperations {
 				"",
 				CompletionStatusCode.ERROR.name());
 	}
+	
+	private Message removeNode(final Directory root, 
+			final String currentPath,
+			final String name, 
+			final boolean isFile,
+			final String fullPath,
+			boolean primaryMessage
+			)
+	{
+		// Search and get to the directory where we have to create
+		final StringBuffer resultCode = new StringBuffer();
+		final Directory directory;
+		if(Globals.subTreePartitionList.containsKey(fullPath))
+		{
+			directory = Globals.subTreePartitionList.get(fullPath);
+			if(directory.isEmptyDirectory())
+			{
+				Inode inode = directory.getInode();
+				MetaDataServerInfo metadata = getRequiredMdsInfo(inode, true);
+				try
+				{
+					if((primaryMessage) || (metadata != null && 
+							InetAddress.getLocalHost().equals(metadata.getIpAddress())))
+					{
+						Globals.subTreePartitionList.remove(fullPath);
+						if(primaryMessage)
+						{
+							return new Message(name+" removed successfully",
+									"",
+									CompletionStatusCode.SUCCESS.name());
+						}
+						Message finalMessage = updateReplicas(CommandsSupported.RMDIR, 
+								inode, fullPath, null);
+						if(CompletionStatusCode.SUCCESS.name()
+								.equals(finalMessage.getCompletionCode()))
+						{
+							return new Message(name+" removed successfully",
+									"",
+									CompletionStatusCode.SUCCESS.name());
+						}
+						return new Message(finalMessage.getContent(),
+								inode.getDataServerInfo().toString(),
+								CompletionStatusCode.ERROR.name());
+					}
+					else
+					{
+						return remoteExecCommand(CommandsSupported.RMDIR, 
+								fullPath, metadata, primaryMessage, null);
+					}
+				}
+				catch(UnknownHostException unexp)
+				{
+					return new Message(unexp.getLocalizedMessage(),
+							"",
+							CompletionStatusCode.ERROR.name());
+				}
+			}
+			return new Message(name+" not empty",
+					directory.getInode().getDataServerInfo().toString(),
+					CompletionStatusCode.NOT_EMPTY.name());
+		}
+		else
+		{
+			directory = search(root, currentPath, resultCode);
+			
+			if(directory != null)
+			{
+				Inode inode = directory.getInode();
+				if(inode.getInodeNumber() == null && Globals.PARTIAL_PATH_FOUND.equals(resultCode))
+				{
+					if (inode.getDataServerInfo() != null && 
+							inode.getDataServerInfo().size() > 0) 
+					{
+						final MetaDataServerInfo mdsServer = getRequiredMdsInfo(inode, true); 
+						return remoteExecCommand(CommandsSupported.RMDIR, fullPath, mdsServer, false, null);
+					}
+				}
+				else if(inode.getInodeNumber() != null && Globals.PATH_FOUND.equals(resultCode))
+				{
+					Directory removeDirectory = null;
+					boolean found = false;
+					for(Directory child:directory.getChildren())
+					{
+						if(child.getName().equals(name) && !child.isFile())
+						{
+							removeDirectory = child;
+							found = true;
+							break;
+						}
+					}
+					if(found && removeDirectory != null)
+					{
+						if(removeDirectory.isEmptyDirectory())
+						{
+							MetaDataServerInfo metaData = getRequiredMdsInfo(removeDirectory.getInode(), true);
+							if(removeDirectory.getInode().getInodeNumber() == null)
+							{
+								return remoteExecCommand(CommandsSupported.RMDIR, 
+										fullPath, metaData, false, null);
+							}
+							try
+							{
+								if((primaryMessage) ||(metaData != null &&
+										InetAddress.getLocalHost()
+										.equals(metaData.getIpAddress())))
+								{
+									directory.getChildren().remove(removeDirectory);
+									if(primaryMessage)
+									{
+										return new Message(name+" removed successfully",
+												"",
+												CompletionStatusCode.SUCCESS.name());
+									}
+									Message finalMessage = updateReplicas(CommandsSupported.RMDIR, 
+											removeDirectory.getInode(), fullPath, null);
+									if(CompletionStatusCode.SUCCESS.name()
+											.equals(finalMessage.getCompletionCode()))
+									{
+										return new Message(name+" removed successfully",
+												"",
+												CompletionStatusCode.SUCCESS.name());
+									}
+									return new Message(finalMessage.getContent(),
+											"",
+											CompletionStatusCode.ERROR.name());
+								}
+								else
+								{
+									return remoteExecCommand(CommandsSupported.RMDIR, 
+											fullPath, metaData, false, null);
+								}
+							}
+							catch(UnknownHostException unexp)
+							{
+								return new Message(unexp.getLocalizedMessage(),
+										"",
+										CompletionStatusCode.ERROR.name());
+							}
+						}
+						return new Message(name+" not empty",
+								"",
+								CompletionStatusCode.NOT_EMPTY.name());
+					}
+					return new Message(fullPath+" path not found",
+							"",
+							CompletionStatusCode.NOT_FOUND.name());
+				}
+				else if (inode.getInodeNumber() != null) 
+				{
+					return new Message("MetaData in unstable state",
+							"",
+							CompletionStatusCode.UNSTABLE.name()); // need to add message explaining the unstable state of
+							// metadata.
+				} 
+				else 
+				{
+					return new Message("Path"+ fullPath +" not found",
+							"",
+							CompletionStatusCode.NOT_FOUND.name());
+							// issue.
+				}
+			}
+			else
+			{
+				return new Message(fullPath+ " not found",
+						"",
+						CompletionStatusCode.NOT_FOUND.name());
+			}
+		}
+		
+		return null;
+	}
 
 	@Override
 	public Message rmdir(final Directory root, final String path, final String... arguments)
 			throws InvalidPropertiesFormatException {
-		// TODO Auto-generated method stub
-		return null;
+		// Get the parent directory and the name of directory
+		String searchablePath;
+		if (arguments != null && arguments.length > 0 && !"/".equals(arguments[0])) 
+		{
+			searchablePath = path.substring(arguments[0].length());
+		} 
+		else 
+		{
+			searchablePath = path;
+		}
+		final String[] paths = path.split("/");
+		final String name = paths[paths.length - 2];
+		final String dirPath = path.substring(0, searchablePath.length() - name.length() - 1);
+		
+		boolean primaryMessage = false;		
+		if(arguments != null && arguments.length >= 2)
+		{			
+			primaryMessage = Globals.PRIMARY_MDS.equals(arguments[1]);			
+		}
+					
+		return removeNode(root, dirPath, name, false, path, primaryMessage);
 	}
 
 	@Override

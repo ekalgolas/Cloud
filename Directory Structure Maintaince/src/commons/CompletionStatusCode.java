@@ -12,5 +12,6 @@ public enum CompletionStatusCode {
 	FILE_EXISTS,
 	DIR_EXISTS,
 	DIR_EXPECTED,
-	UNSTABLE
+	UNSTABLE,
+	NOT_EMPTY
 }
