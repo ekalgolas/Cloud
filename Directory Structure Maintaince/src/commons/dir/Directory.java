@@ -278,7 +278,7 @@ public class Directory implements Serializable, Cloneable {
 
 		final Directory that = (Directory) other;
 		return name == that.name
-				&& isFile && that.isFile;
+			&& isFile == that.isFile;
 	}
 	
 	@Override

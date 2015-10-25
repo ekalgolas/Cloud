@@ -7,6 +7,7 @@ import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 
 import com.sun.media.sound.InvalidDataException;
+
 import commons.CompletionStatusCode;
 import commons.Message;
 import commons.OutputFormatter;
@@ -17,6 +18,10 @@ import commons.dir.ICommandOperations;
  * Class to implement various directory master.metadata operations
  */
 public class GFSDirectoryOperations implements ICommandOperations {
+
+	private static final String DEFAULT_ACCESS_RIGHTS	= "-rw-rw-r--";
+	private static final long DEFAULT_SIZE				= 0L;
+
 	/*
 	 * (non-Javadoc)
 	 * @see commons.ICommandOperations#ls(master.metadata.Directory, java.lang.String, java.lang.String[])
@@ -202,8 +207,8 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		}
 		if (!found) {
 			// Not present, add it in the list
-			final Directory file = new Directory(name, true, null);
-			file.setModifiedTimeStamp(new Date().getTime());
+			final Directory file = new Directory(name, true, null,
+					new Date().getTime(), DEFAULT_ACCESS_RIGHTS, DEFAULT_SIZE);
 			contents.add(file);
 		}
 		directory.setChildren(contents);
@@ -245,11 +250,14 @@ public class GFSDirectoryOperations implements ICommandOperations {
 
 		// Add file if isFile is true
 		if (isFile) {
-			final Directory file = new Directory(name, isFile, null);
+			final Directory file = new Directory(name, isFile, null,
+					new Date().getTime(), DEFAULT_ACCESS_RIGHTS, DEFAULT_SIZE);
 			contents.add(file);
 		} else {
 			// Else, add directory here
-			final Directory dir = new Directory(name, isFile, new ArrayList<Directory>());
+			final Directory dir = new Directory(name, isFile,
+					new ArrayList<Directory>(), new Date().getTime(),
+					DEFAULT_ACCESS_RIGHTS, DEFAULT_SIZE);
 			contents.add(dir);
 		}
 	}
