@@ -37,7 +37,7 @@ public class CacheOperations implements ICommandOperations {
 	 * @see commons.ICommandOperations#touch(master.metadata.Directory, java.lang.String)
 	 */
 	@Override
-	public Message touch(final Directory root, final String path) throws InvalidPropertiesFormatException {
+	public Message touch(final Directory root, final String path, String... arguments) throws InvalidPropertiesFormatException {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -47,9 +47,9 @@ public class CacheOperations implements ICommandOperations {
 	 * @see commons.ICommandOperations#rmdir(master.metadata.Directory, java.lang.String, java.lang.String[])
 	 */
 	@Override
-	public void rmdir(final Directory root, final String path, final String... arguments) throws InvalidPropertiesFormatException {
+	public Message rmdir(final Directory root, final String path, final String... arguments) throws InvalidPropertiesFormatException {
 		// TODO Auto-generated method stub
-
+		return null;
 	}
 
 	/*

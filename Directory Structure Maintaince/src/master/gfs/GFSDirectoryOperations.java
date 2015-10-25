@@ -178,7 +178,8 @@ public class GFSDirectoryOperations implements ICommandOperations {
 	 */
 	@Override
 	public Message touch(final Directory root,
-			final String path)
+			final String path,
+			String... arguments)
 					throws InvalidPropertiesFormatException {
 		// Check if path is valid
 		if (path.charAt(path.length() - 1) == '/') {
@@ -267,7 +268,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 	 * @see commons.ICommandOperations#rmdir(master.metadata.Directory, java.lang.String, java.lang.String[])
 	 */
 	@Override
-	public void rmdir(final Directory root,
+	public Message rmdir(final Directory root,
 			final String path,
 			final String... arguments)
 					throws InvalidPropertiesFormatException {
@@ -283,6 +284,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		final String dirPath = path.substring(0, path.length() - name.length() - 1);
 
 		remove(root, dirPath, name, false);
+		return new Message("rmdir Successful");
 	}
 
 	/**

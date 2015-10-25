@@ -99,7 +99,9 @@ public class Worker implements Runnable {
 						// Command line parameter (directory name) start from index '6' in the received string
 						String argument = command.substring(6);
 						
-						reply = directoryOperations.mkdir(root, argument, partialFilePath.toString(), message.getHeader());
+						reply = directoryOperations.mkdir(root, argument, 
+								partialFilePath.toString(), 
+								message.getHeader());
 						if(replicationOperations != null) {
 							replicationOperations.replicateMkdir(root, replica, argument);
 						}
@@ -111,11 +113,13 @@ public class Worker implements Runnable {
 						// Command line parameter (directory name) start from index '6' in the received string
 						String argument = command.substring(6);
 						
-						directoryOperations.touch(root, argument);
+						reply = directoryOperations.touch(root, argument, 
+								partialFilePath.toString(), 
+								message.getHeader());
 						if(replicationOperations != null) {
 							replicationOperations.replicateTouch(root, replica, argument);
 						}
-						reply = new Message("File created successfully");
+//						reply = new Message("File created successfully");
 
 						LOGGER.debug("Directory structure after " + command);
 						LOGGER.debug("\n" + root.toString());
