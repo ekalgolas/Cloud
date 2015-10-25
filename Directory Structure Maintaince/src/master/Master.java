@@ -2,7 +2,12 @@ package master;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
 import java.util.spi.CurrencyNameProvider;
@@ -32,6 +37,7 @@ public class Master {
 	private static ServerSocket	dhtListenerSocket	= null;
 	private final static Logger	LOGGER				= Logger.getLogger(Master.class);
 	private static Long currentInodeNumber;
+	private static String mdsServerId;
 
 	/**
 	 * Setup the listener socket
@@ -59,6 +65,7 @@ public class Master {
 			if (dhtListenerSocket == null) {
 				dhtListenerSocket = new ServerSocket(Integer.parseInt(AppConfig.getValue(Globals.DHT_SERVER_PORT)));
 			}
+			mdsServerId = AppConfig.getValue("mds.server.id");
 		} catch (final IOException e) {
 			LOGGER.error("", e);
 		}
@@ -66,6 +73,19 @@ public class Master {
 		currentInodeNumber = Long.valueOf(AppConfig.getValue("mds.current.inode"));
 	}
 	
+	/**
+	 * Get the server id for the mds.
+	 * @return mds server id
+	 */
+	public static String getMdsServerId()
+	{
+		return mdsServerId;
+	}
+	
+	/**
+	 * Get the current inode number for a new node.
+	 * @return current inode number
+	 */
 	public static Long getInodeNumber()
 	{
 		Long startInodeNumber = Long.valueOf(AppConfig.getValue("mds.inode.start"));
@@ -76,6 +96,23 @@ public class Master {
 			return currentInodeNumber++;
 		}
 		return new Long(-1);
+	}
+	
+	private static void sendToMDS(final String mdsServerId)
+	{
+		try
+		{
+			Socket initalSetupListener = new Socket(AppConfig.getValue("mds."+mdsServerId+".ip"), 
+					Integer.parseInt(AppConfig.getValue("mds.initial.port")));
+			ObjectOutputStream outputStream = new ObjectOutputStream(initalSetupListener.getOutputStream());
+			outputStream.writeObject(MetadataManager.deserializeObject(mdsServerId+".img"));
+			outputStream.flush();
+			initalSetupListener.close();
+		}
+		catch(IOException ioexp)
+		{
+			ioexp.printStackTrace();
+		}
 	}
 
 	/**
@@ -104,6 +141,46 @@ public class Master {
 
 			// Set global replica
 			Globals.gfsMetadataCopy = replica;
+			
+			if(Globals.OVERALL_INITIATOR_MDS.equals(mdsServerId))
+			{
+				MetadataManager.generateOverallCephPartition();
+				sendToMDS("MDS2");
+				sendToMDS("MDS3");
+				Globals.subTreePartitionList = (HashMap<String,Directory>) MetadataManager.deserializeObject("MDS1.img");
+				MetadataManager.populateInodeDetails();
+				MetadataManager.serializeObject(Globals.subTreePartitionList, mdsServerId);
+				sendToMDS("REP1");
+				sendToMDS("REP2");
+			}
+			else if(mdsServerId.startsWith(Globals.MDS_SERVER_ID_START))
+			{
+				ServerSocket initialReplicaLoad = new ServerSocket(Integer.parseInt(AppConfig.getValue("mds.initial.port")));
+				Socket primarySocket = initialReplicaLoad.accept();
+				ObjectInputStream inputStream = new ObjectInputStream(
+						primarySocket.getInputStream());
+				Globals.subTreePartitionList = (HashMap<String,Directory>)inputStream.readObject();
+				initialReplicaLoad.close();
+				MetadataManager.populateInodeDetails();
+				MetadataManager.serializeObject(Globals.subTreePartitionList, mdsServerId);
+				final HashMap<String, String> clusterMap = new HashMap<>();
+				final HashMap<String, ArrayList<String>> primaryToReplicaMap = new HashMap<>();
+				MetadataManager.parseClusterMapDetails(clusterMap, primaryToReplicaMap);
+				for(String replicaName:	primaryToReplicaMap.get(mdsServerId))
+				{
+					sendToMDS(replicaName);
+				}
+			}
+			else
+			{
+				ServerSocket initialReplicaLoad = new ServerSocket(Integer.parseInt(AppConfig.getValue("mds.initial.port")));
+				Socket primarySocket = initialReplicaLoad.accept();
+				ObjectInputStream inputStream = new ObjectInputStream(
+						primarySocket.getInputStream());
+				Globals.subTreePartitionList = (HashMap<String,Directory>)inputStream.readObject();
+				initialReplicaLoad.close();
+			}
+			
 		} catch (ClassNotFoundException | IOException e) {
 			LOGGER.error("", e);
 		}

@@ -9,11 +9,13 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import master.Master;
 import master.dht.DhtDirectoryParser;
 
 import org.apache.log4j.Logger;
 
 import commons.AppConfig;
+import commons.Globals;
 import commons.dir.Directory;
 import commons.dir.DirectoryParser;
 
@@ -112,6 +114,120 @@ public class MetadataManager {
 		}
 	}
 	
+	public static void serializeObject(final HashMap<String,Directory> partitionList,
+			final String dataFileName)
+	{
+		try
+		{
+			 FileOutputStream fileOut = new FileOutputStream("data/"+dataFileName+".img");
+		     ObjectOutputStream out = new ObjectOutputStream(fileOut);
+		     out.writeObject(partitionList);
+		     out.close();
+		     fileOut.close();
+		     System.out.println("Serialized "+dataFileName);
+		}
+		catch(IOException ioexp)
+		{
+			ioexp.printStackTrace();
+		}
+	}
+	
+	public static Object deserializeObject(final String dataFileName)
+	{
+		HashMap<String, Directory> mdsRoots = null;
+	      try
+	      {
+	         FileInputStream fileIn = new FileInputStream("data/"+dataFileName);
+	         ObjectInputStream in = new ObjectInputStream(fileIn);
+	         mdsRoots = (HashMap<String, Directory>) in.readObject();
+	         in.close();
+	         fileIn.close();
+	      }catch(IOException i)
+	      {
+	         i.printStackTrace();
+	         return null;
+	      }catch(ClassNotFoundException c)
+	      {
+	         System.out.println("Object class not found");
+	         c.printStackTrace();
+	         return null;
+	      }
+	      return mdsRoots;
+	}
+	
+	private static void traverseAndAssignInode(final Directory root,
+			final HashMap<String, String> clusterMap,
+			final HashMap<String, ArrayList<String>> primaryToReplicaMap)
+	{
+		if(root != null)
+		{
+			Inode inode = root.getInode();
+			if(inode != null && inode.getInodeNumber() == -1)
+			{
+				inode.setInodeNumber(null);
+				return;
+			}
+			else if(inode == null)
+			{
+				inode = new Inode();
+				inode.setInodeNumber(Master.getInodeNumber());
+				ArrayList<MetaDataServerInfo> metaDataList = new ArrayList<>();
+				MetaDataServerInfo primaryMds = new MetaDataServerInfo();
+				primaryMds.setServerName(Master.getMdsServerId());
+				primaryMds.setIpAddress(clusterMap.get(Master.getMdsServerId()));
+				primaryMds.setServerType(Globals.PRIMARY_MDS);
+				primaryMds.setStatus(Globals.ALIVE_STATUS);
+				metaDataList.add(primaryMds);
+				for(String replicaName:primaryToReplicaMap.get(primaryMds.getServerName()))
+				{
+					MetaDataServerInfo replicaServer = new MetaDataServerInfo();
+					replicaServer.setServerName(replicaName);
+					replicaServer.setIpAddress(clusterMap.get(replicaName));
+					replicaServer.setServerType(Globals.REPLICA_MDS);
+					replicaServer.setStatus(Globals.ALIVE_STATUS);
+					metaDataList.add(replicaServer);
+				}				
+				inode.getDataServerInfo().addAll(metaDataList);
+			}
+			for(Directory child:root.getChildren())
+			{
+				traverseAndAssignInode(child, clusterMap, primaryToReplicaMap);
+			}
+		}
+	}
+	
+	public static void populateInodeDetails()
+	{
+		final HashMap<String, String> clusterMap = new HashMap<>();
+		final HashMap<String, ArrayList<String>> primaryToReplicaMap = new HashMap<>();
+		parseClusterMapDetails(clusterMap, primaryToReplicaMap);
+		
+		for(String path:Globals.subTreePartitionList.keySet())
+		{
+			traverseAndAssignInode(Globals.subTreePartitionList.get(path), 
+					clusterMap, primaryToReplicaMap);
+		}
+	}
+	
+	public static void parseClusterMapDetails(final HashMap<String, String> clusterMap,
+			final HashMap<String, ArrayList<String>> primaryToReplicaMap)
+	{		
+		final String clusterString = AppConfig.getValue("mds.replica.info");
+		String[] replicaSplit = clusterString.split("#");
+		for(String pair:replicaSplit)
+		{
+			String[] pairValues = pair.split(":");
+			clusterMap.put(pairValues[0], AppConfig.getValue("mds."+pairValues[0]+".ip"));
+			ArrayList<String> replicaList = new ArrayList<>();
+			for(String replicas:pairValues[1].split(","))
+			{
+				replicaList.add(replicas);
+				clusterMap.put(replicas, AppConfig.getValue("mds."+replicas+".ip"));
+			}
+			primaryToReplicaMap.put(pairValues[0], replicaList);
+		}
+	}
+	
 	/**
 	 * Generate the partitioned metadata required for the initial run of CEPH filesystem.
 	 */
@@ -119,25 +235,20 @@ public class MetadataManager {
 	{
 		final Directory root = DirectoryParser.parseText(AppConfig.getValue("server.inputFile"));
 		
+		final HashMap<String, String> clusterMap = new HashMap<>();
+		final HashMap<String, ArrayList<String>> primaryToReplicaMap = new HashMap<>();
+		parseClusterMapDetails(clusterMap, primaryToReplicaMap);
+		
 		HashMap<String, Directory> pathMap = new HashMap<String, Directory>();
 
-		HashMap<String,ArrayList<String>> mdsToPathMapping = new HashMap<>();
+		HashMap<String,String> pathtoMdsMapping = new HashMap<>();
 		String mdsParititionSetting = AppConfig.getValue("mds.partition.config");
 		String[] mdsPartitions = mdsParititionSetting.split(":");
 		ArrayList<String> paths = new ArrayList<String>();
 		for(String paritition:mdsPartitions)
 		{
-			String[] mdsPathSplit = paritition.split("#");
-			if(mdsToPathMapping.containsKey(mdsPathSplit[0]))
-			{
-				mdsToPathMapping.get(mdsPathSplit[0]).add(mdsPathSplit[1]);
-			}
-			else
-			{
-				ArrayList<String> mdsPaths = new ArrayList<>();
-				mdsPaths.add(mdsPathSplit[1]);
-				mdsToPathMapping.put(mdsPathSplit[0], mdsPaths);
-			}
+			String[] mdsPathSplit = paritition.split("#");			
+			pathtoMdsMapping.put(mdsPathSplit[1], mdsPathSplit[0]);			
 			paths.add(mdsPathSplit[1]);			
 		}
 				
@@ -148,7 +259,6 @@ public class MetadataManager {
 			Directory currentDirNode = MetaDataServerInfo.findClosestNode(path, partition, pathMap);
 			if(currentDirNode == null)
 				currentDirNode = root;
-			System.out.println(partition);
 			Directory parentDirNode = null;
 			String[] pathElem = path.split("/");
 			for(int i = 1; i < pathElem.length; i++) {
@@ -163,28 +273,50 @@ public class MetadataManager {
 			cutDirs.add(currentDirNode);
 			pathMap.put(path, currentDirNode);
 			parentDirNode.getChildren().remove(currentDirNode);
+			Directory childPointer = new Directory(currentDirNode.getName(),					
+					currentDirNode.isFile(), null);
+			Inode childInode = new Inode();
+			ArrayList<MetaDataServerInfo> metaDataList = new ArrayList<>();
+			MetaDataServerInfo primaryMds = new MetaDataServerInfo();
+			primaryMds.setServerName(pathtoMdsMapping.get(path));
+			primaryMds.setIpAddress(clusterMap.get(pathtoMdsMapping.get(path)));
+			primaryMds.setServerType(Globals.PRIMARY_MDS);
+			primaryMds.setStatus(Globals.ALIVE_STATUS);
+			metaDataList.add(primaryMds);
+			for(String replicaName:primaryToReplicaMap.get(primaryMds.getServerName()))
+			{
+				MetaDataServerInfo replicaServer = new MetaDataServerInfo();
+				replicaServer.setServerName(replicaName);
+				replicaServer.setIpAddress(clusterMap.get(replicaName));
+				replicaServer.setServerType(Globals.REPLICA_MDS);
+				replicaServer.setStatus(Globals.ALIVE_STATUS);
+				metaDataList.add(replicaServer);
+			}
+			childInode.setInodeNumber(new Long(-1));
+			childInode.getDataServerInfo().addAll(metaDataList);
+			childPointer.setInode(childInode);
+			parentDirNode.getChildren().add(childPointer);
 		}		
 		
 		cutDirs.add(root);
-		pathMap.put("root", root);
-		ArrayList<String> rootPathList = new ArrayList<>();
-		rootPathList.add("root");
-		mdsToPathMapping.put("MDS1",rootPathList);
+		pathMap.put("root", root);		
+		pathtoMdsMapping.put("root","MDS1");
 		
 		HashMap<String, HashMap<String,Directory>> mdsPartitionDetails = new HashMap<>();
 		
-		for(String mdsName:mdsToPathMapping.keySet())
+		for(String pathName:pathtoMdsMapping.keySet())
 		{
-			if(!mdsPartitionDetails.containsKey(mdsName))
+			if(!mdsPartitionDetails.containsKey(pathtoMdsMapping.get(pathName)))
 			{
-				mdsPartitionDetails.put(mdsName, new HashMap<>());
-			}
-			for(String pathName:mdsToPathMapping.get(mdsName))
-			{
-				mdsPartitionDetails.get(mdsName).put(pathName, pathMap.get(pathName));
-			}
+				mdsPartitionDetails.put(pathtoMdsMapping.get(pathName), new HashMap<>());
+			}			
+			mdsPartitionDetails.get(pathtoMdsMapping.get(pathName))
+			.put(pathName, pathMap.get(pathName));			
 		}
 		
-		System.out.println(mdsPartitionDetails.toString());
+		for(String mds:mdsPartitionDetails.keySet())
+		{
+			serializeObject(mdsPartitionDetails.get(mds), mds);
+		}		
 	}
 }
