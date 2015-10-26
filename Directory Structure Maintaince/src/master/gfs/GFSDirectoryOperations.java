@@ -122,13 +122,13 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		for (final String path : paths) {
 			// Match the root
 			boolean found = false;
-			if (root.getName().equalsIgnoreCase(path)) {
+			if (root.getName().equals(path)) {
 				found = true;
 			}
 
 			// Check if the path corresponds to any child in this directory
 			for (final Directory child : root.getChildren()) {
-				if (child.getName().equalsIgnoreCase(path)) {
+				if (child.getName().equals(path)) {
 					root = child;
 					found = true;
 					break;
@@ -243,7 +243,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 
 		final List<Directory> contents = directory.getChildren();
 		for (final Directory child : contents) {
-			if(child.getName().equalsIgnoreCase(name)) {
+			if(child.getName().equals(name)) {
 				throw new InvalidPathException(path, "Path already present");
 			}
 		}
@@ -314,7 +314,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		Directory directoryToRemove = null;
 		final List<Directory> subDirectories = directory.getChildren();
 		for (final Directory childDirectory : subDirectories) {
-			if (childDirectory.getName() == name) {
+			if (childDirectory.getName().equals(name)) {
 				if (childDirectory.isFile() != isFile) {
 					final String message = isFile ? "Provided argument is a file, directory expected" : "Provided argument is a directory, file expected";
 					throw new IllegalArgumentException(message);
