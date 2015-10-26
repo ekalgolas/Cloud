@@ -484,8 +484,8 @@ public class DhtDirectoryOperations implements ICommandOperations {
 			final int index) {
 		String path;
 		if (names.length <= CUT_LEVEL) {
-			pathname.append(filePath);
-			path = pathname.toString().replace("/", "+") + ".txt";
+			pathname.append("root");
+			path = pathname.toString() + ".txt";
 		} else {
 			for (int i = CUT_LEVEL - 1; i >= 0; i--) {
 				if (i <= index % CUT_LEVEL) {
