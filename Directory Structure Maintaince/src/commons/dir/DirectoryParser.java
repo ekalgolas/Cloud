@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 
 /**
  * <pre>
@@ -19,16 +20,18 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class DirectoryParser {
 	/**
-	 * Constants based on the output format of 
+	 * Constants based on the output format of
 	 * 'tree -F -R -p --timefmt "%s" --du --noreport' command
 	 */
-	private static final int ACCESS_RIGHT_ENDINDEX 	= 10;
-	private static final int SIZE_STARTINDEX 		= 10;
+	protected static final int						ACCESS_RIGHT_ENDINDEX	= 10;
+	protected static final int						SIZE_STARTINDEX			= 10;
 
 	/**
 	 * Mapping for directory and level of hierarchy
 	 */
-	private static HashMap<Integer, Directory>	levelDirectoryMap	= new HashMap<>();
+	private static HashMap<Integer, Directory>	levelDirectoryMap		= new HashMap<>();
+
+	private final static Logger						LOGGER					= Logger.getLogger(DirectoryParser.class);
 
 	/**
 	 * Parses a text file and creates the directory structure
@@ -56,8 +59,8 @@ public class DirectoryParser {
 				}
 
 				// Calculate current level
-				int currentLevel = StringUtils.countMatches(line, "├") 
-						+ StringUtils.countMatches(line, "└") 
+				int currentLevel = StringUtils.countMatches(line, "├")
+						+ StringUtils.countMatches(line, "└")
 						+ StringUtils.countMatches(line, "│");
 				if (line.startsWith(" ")) {
 					currentLevel++;
@@ -77,11 +80,11 @@ public class DirectoryParser {
 				}
 
 				// Extract other info from first part of the split
-				String details = split[0].substring(StringUtils.lastIndexOf(split[0], "[") + 1);
-				String accessRights = details.substring(0, ACCESS_RIGHT_ENDINDEX);
-				int sizeEndIndex = details.lastIndexOf(" ");
-				String readableTimeStamp = details.substring(sizeEndIndex).trim();
-				String size = details.substring(SIZE_STARTINDEX, sizeEndIndex).trim();
+				final String details = split[0].substring(StringUtils.lastIndexOf(split[0], "[") + 1);
+				final String accessRights = details.substring(0, ACCESS_RIGHT_ENDINDEX);
+				final int sizeEndIndex = details.lastIndexOf(" ");
+				final String readableTimeStamp = details.substring(sizeEndIndex).trim();
+				final String size = details.substring(SIZE_STARTINDEX, sizeEndIndex).trim();
 
 				// Create a new directory object
 				final Directory dir = new Directory(name, isFile, new ArrayList<>(),
@@ -95,7 +98,7 @@ public class DirectoryParser {
 				parent.getChildren().add(dir);
 			}
 		} catch (final FileNotFoundException e) {
-			e.printStackTrace();
+			LOGGER.error("", e);
 		}
 
 		// Return the directory structure

@@ -67,12 +67,10 @@ public class Worker implements Runnable {
 			try {
 				// Read the queried command
 				final Message message = (Message) inputStream.readObject();
-				final String command = message.getContent().toUpperCase();
+				final String command = message.getContent();
 				Message reply = null;
-				Directory root = null;
-				Directory replica = null;
+				Directory root = null, replica = null;
 				final StringBuffer partialFilePath = new StringBuffer();
-
 				try {
 					final ICommandOperations directoryOperations;
 					final GFSMetadataReplicationOperations replicationOperations;
@@ -93,58 +91,7 @@ public class Worker implements Runnable {
 						replicationOperations = null;
 					}
 
-					if (command.startsWith(CommandsSupported.LS.name())) {
-						// Command line parameter (directory name) start from index '3' in the received string
-						reply = directoryOperations.ls(root, command.substring(3), partialFilePath.toString());
-					} else if (command.startsWith(CommandsSupported.MKDIR.name())) {
-						// Command line parameter (directory name) start from index '6' in the received string
-						String argument = command.substring(6);
-						
-						reply = directoryOperations.mkdir(root, argument, 
-								partialFilePath.toString(), 
-								message.getHeader());
-						if(replicationOperations != null) {
-							replicationOperations.replicateMkdir(root, replica, argument);
-						}
-						//reply = new Message("Directory created successfully");
-
-						LOGGER.debug("Directory structure after " + command);
-						LOGGER.debug("\n" + root.toString());
-					} else if (command.startsWith(CommandsSupported.TOUCH.name())) {
-						// Command line parameter (directory name) start from index '6' in the received string
-						String argument = command.substring(6);
-						
-						reply = directoryOperations.touch(root, argument, 
-								partialFilePath.toString(), 
-								message.getHeader());
-						if(replicationOperations != null) {
-							replicationOperations.replicateTouch(root, replica, argument);
-						}
-//						reply = new Message("File created successfully");
-
-						LOGGER.debug("Directory structure after " + command);
-						LOGGER.debug("\n" + root.toString());
-					} else if (command.startsWith(CommandsSupported.RMDIR.name())) {
-						// Command line parameter (directory name) start from index '6' in the received string
-						String argument = command.substring(6);
-						
-						reply = directoryOperations.rmdir(root, argument,
-								partialFilePath.toString(),
-								message.getHeader());
-						if(replicationOperations != null) {
-							replicationOperations.replicateRmdir(replica, argument);
-						}
-//						reply = new Message("Directory deleted successfully");
-
-						LOGGER.debug("Directory structure after " + command);
-						LOGGER.debug("\n" + root.toString());
-					} else if (command.startsWith(CommandsSupported.EXIT.name())) {
-						// Close the connection
-						isRunning = false;
-					} else {
-						// Else, invalid command
-						reply = new Message("Invalid command: " + command);
-					}
+					reply = executeCommand(command, root, replica, partialFilePath, directoryOperations, replicationOperations);
 				} catch (final Exception e) {
 					// If any command threw errors, propagate the error to the client
 					reply = new Message(e.getMessage());
@@ -156,6 +103,101 @@ public class Worker implements Runnable {
 			} catch (final IOException | ClassNotFoundException e) {
 				LOGGER.error("", e);
 			}
+		}
+	}
+
+	/**
+	 * Figures out which command to execute
+	 *
+	 * @param command
+	 *            Command as string
+	 * @param root
+	 *            Root of directory structure
+	 * @param replica
+	 *            Root of replication structure
+	 * @param partialFilePath
+	 *            Partial file path from Ceph
+	 * @param directoryOperations
+	 *            Object for the operations of the directory solution
+	 * @param replicationOperations
+	 *            Object for the operations of the replication solution
+	 * @return Message as the result
+	 * @throws InvalidPropertiesFormatException
+	 * @throws InvalidDataException
+	 * @throws CloneNotSupportedException
+	 */
+	private Message executeCommand(final String command,
+			final Directory root,
+			final Directory replica,
+			final StringBuffer partialFilePath,
+			final ICommandOperations directoryOperations,
+			final GFSMetadataReplicationOperations replicationOperations)
+			throws InvalidPropertiesFormatException,
+			InvalidDataException,
+			CloneNotSupportedException {
+		Message reply = null;
+		if (command.startsWith(CommandsSupported.LS.name())) {
+			// Command line parameter (directory name) start from index '3' in the received string
+			reply = directoryOperations.ls(root, command.substring(3), partialFilePath.toString());
+		} else if (command.startsWith(CommandsSupported.MKDIR.name())) {
+			// Command line parameter (directory name) start from index '6' in the received string
+			final String argument = command.substring(6);
+
+			reply = directoryOperations.mkdir(root, argument, partialFilePath.toString());
+			if (replicationOperations != null) {
+				replicationOperations.replicateMkdir(root, replica, argument);
+				reply.appendContent(" with replication");
+			}
+
+			logState(command, root);
+		} else if (command.startsWith(CommandsSupported.TOUCH.name())) {
+			// Command line parameter (directory name) start from index '6' in the received string
+			final String argument = command.substring(6);
+
+			directoryOperations.touch(root, argument);
+			reply = new Message("File created successfully");
+			if (replicationOperations != null) {
+				replicationOperations.replicateTouch(root, replica, argument);
+				reply.appendContent(" with replication");
+			}
+
+			logState(command, root);
+		} else if (command.startsWith(CommandsSupported.RMDIR.name())) {
+			// Command line parameter (directory name) start from index '6' in the received string
+			final String argument = command.substring(6);
+
+			directoryOperations.rmdir(root, argument);
+			reply = new Message("Directory deleted successfully");
+			if (replicationOperations != null) {
+				replicationOperations.replicateRmdir(replica, argument);
+				reply.appendContent(" with replication");
+			}
+
+			logState(command, root);
+		} else if (command.startsWith(CommandsSupported.EXIT.name())) {
+			// Close the connection
+			isRunning = false;
+		} else {
+			// Else, invalid command
+			reply = new Message("Invalid command: " + command);
+		}
+
+		return reply;
+	}
+
+	/**
+	 * Logs the directory structure
+	 *
+	 * @param command
+	 *            Command that changed structure
+	 * @param root
+	 *            Root of the directory structure
+	 */
+	private void logState(final String command,
+			final Directory root) {
+		if (root != null) {
+			LOGGER.debug("Directory structure after " + command);
+			LOGGER.debug("\n" + root.toString());
 		}
 	}
 }

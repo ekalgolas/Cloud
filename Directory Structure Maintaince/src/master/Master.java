@@ -2,7 +2,6 @@ package master;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
@@ -10,7 +9,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
-import java.util.spi.CurrencyNameProvider;
 
 import master.metadata.MetadataManager;
 
@@ -88,10 +86,10 @@ public class Master {
 	 */
 	public static Long getInodeNumber()
 	{
-		Long startInodeNumber = Long.valueOf(AppConfig.getValue("mds.inode.start"));
-		Long endInodeNumber = Long.valueOf(AppConfig.getValue("mds.inode.end"));
-		if((currentInodeNumber <= endInodeNumber) && 
-				(currentInodeNumber >=startInodeNumber))
+		final Long startInodeNumber = Long.valueOf(AppConfig.getValue("mds.inode.start"));
+		final Long endInodeNumber = Long.valueOf(AppConfig.getValue("mds.inode.end"));
+		if(currentInodeNumber <= endInodeNumber && 
+				currentInodeNumber >=startInodeNumber)
 		{
 			return currentInodeNumber++;
 		}
@@ -102,14 +100,14 @@ public class Master {
 	{
 		try
 		{
-			Socket initalSetupListener = new Socket(AppConfig.getValue("mds."+mdsServerId+".ip"), 
+			final Socket initalSetupListener = new Socket(AppConfig.getValue("mds."+mdsServerId+".ip"), 
 					Integer.parseInt(AppConfig.getValue("mds.initial.port")));
-			ObjectOutputStream outputStream = new ObjectOutputStream(initalSetupListener.getOutputStream());
+			final ObjectOutputStream outputStream = new ObjectOutputStream(initalSetupListener.getOutputStream());
 			outputStream.writeObject(MetadataManager.deserializeObject(mdsServerId+".img"));
 			outputStream.flush();
 			initalSetupListener.close();
 		}
-		catch(IOException ioexp)
+		catch(final IOException ioexp)
 		{
 			ioexp.printStackTrace();
 		}
@@ -155,9 +153,9 @@ public class Master {
 			}
 			else if(mdsServerId.startsWith(Globals.MDS_SERVER_ID_START))
 			{
-				ServerSocket initialReplicaLoad = new ServerSocket(Integer.parseInt(AppConfig.getValue("mds.initial.port")));
-				Socket primarySocket = initialReplicaLoad.accept();
-				ObjectInputStream inputStream = new ObjectInputStream(
+				final ServerSocket initialReplicaLoad = new ServerSocket(Integer.parseInt(AppConfig.getValue("mds.initial.port")));
+				final Socket primarySocket = initialReplicaLoad.accept();
+				final ObjectInputStream inputStream = new ObjectInputStream(
 						primarySocket.getInputStream());
 				Globals.subTreePartitionList = (HashMap<String,Directory>)inputStream.readObject();
 				initialReplicaLoad.close();
@@ -166,16 +164,16 @@ public class Master {
 				final HashMap<String, String> clusterMap = new HashMap<>();
 				final HashMap<String, ArrayList<String>> primaryToReplicaMap = new HashMap<>();
 				MetadataManager.parseClusterMapDetails(clusterMap, primaryToReplicaMap);
-				for(String replicaName:	primaryToReplicaMap.get(mdsServerId))
+				for(final String replicaName:	primaryToReplicaMap.get(mdsServerId))
 				{
 					sendToMDS(replicaName);
 				}
 			}
 			else
 			{
-				ServerSocket initialReplicaLoad = new ServerSocket(Integer.parseInt(AppConfig.getValue("mds.initial.port")));
-				Socket primarySocket = initialReplicaLoad.accept();
-				ObjectInputStream inputStream = new ObjectInputStream(
+				final ServerSocket initialReplicaLoad = new ServerSocket(Integer.parseInt(AppConfig.getValue("mds.initial.port")));
+				final Socket primarySocket = initialReplicaLoad.accept();
+				final ObjectInputStream inputStream = new ObjectInputStream(
 						primarySocket.getInputStream());
 				Globals.subTreePartitionList = (HashMap<String,Directory>)inputStream.readObject();
 				initialReplicaLoad.close();
