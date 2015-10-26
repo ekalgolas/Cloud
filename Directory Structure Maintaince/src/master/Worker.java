@@ -102,6 +102,8 @@ public class Worker implements Runnable {
 					// If any command threw errors, propagate the error to the client
 					reply = new Message(e.getMessage()+" error occurred");
 				}
+				
+				System.out.println(reply.toString());
 
 				// Write reply to the socket output stream
 				outputStream.writeObject(reply);
