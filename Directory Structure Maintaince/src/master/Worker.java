@@ -69,7 +69,8 @@ public class Worker implements Runnable {
 				final Message message = (Message) inputStream.readObject();
 				final String command = message.getContent();
 				Message reply = null;
-				Directory root = null, replica = null;
+				Directory root = null;
+				Directory replica = null;
 				final StringBuffer partialFilePath = new StringBuffer();
 				try {
 					final ICommandOperations directoryOperations;
@@ -84,17 +85,22 @@ public class Worker implements Runnable {
 					} else if (Globals.MDS_MODE.equalsIgnoreCase(listenerType)) {
 						directoryOperations = new CephDirectoryOperations();
 						replicationOperations = null;
-						root = MetaDataServerInfo.findClosestNode(command.substring(3), 
+						String[] commandParse = command.split(" ");	
+						root = MetaDataServerInfo.findClosestNode(command
+								.substring(commandParse[0].length()+1), 
 								partialFilePath, Globals.subTreePartitionList);
 					} else {
 						directoryOperations = new DhtDirectoryOperations();
 						replicationOperations = null;
 					}
 
-					reply = executeCommand(command, root, replica, partialFilePath, directoryOperations, replicationOperations);
+					reply = executeCommand(command, 
+							root, replica, partialFilePath, 
+							directoryOperations, replicationOperations, 
+							message);
 				} catch (final Exception e) {
 					// If any command threw errors, propagate the error to the client
-					reply = new Message(e.getMessage());
+					reply = new Message(e.getMessage()+" error occurred");
 				}
 
 				// Write reply to the socket output stream
@@ -131,46 +137,49 @@ public class Worker implements Runnable {
 			final Directory replica,
 			final StringBuffer partialFilePath,
 			final ICommandOperations directoryOperations,
-			final GFSMetadataReplicationOperations replicationOperations)
+			final GFSMetadataReplicationOperations replicationOperations,
+			final Message message)
 			throws InvalidPropertiesFormatException,
 			InvalidDataException,
 			CloneNotSupportedException {
 		Message reply = null;
 		if (command.startsWith(CommandsSupported.LS.name())) {
 			// Command line parameter (directory name) start from index '3' in the received string
-			reply = directoryOperations.ls(root, command.substring(3), partialFilePath.toString());
+			reply = directoryOperations.ls(root, command.substring(3), 
+					partialFilePath.toString());
 		} else if (command.startsWith(CommandsSupported.MKDIR.name())) {
 			// Command line parameter (directory name) start from index '6' in the received string
-			final String argument = command.substring(6);
-
-			reply = directoryOperations.mkdir(root, argument, partialFilePath.toString());
-			if (replicationOperations != null) {
+			String argument = command.substring(6);
+			
+			reply = directoryOperations.mkdir(root, argument, 
+					partialFilePath.toString(), 
+					message.getHeader());
+			if(replicationOperations != null) {
 				replicationOperations.replicateMkdir(root, replica, argument);
-				reply.appendContent(" with replication");
 			}
 
 			logState(command, root);
 		} else if (command.startsWith(CommandsSupported.TOUCH.name())) {
 			// Command line parameter (directory name) start from index '6' in the received string
-			final String argument = command.substring(6);
-
-			directoryOperations.touch(root, argument);
-			reply = new Message("File created successfully");
-			if (replicationOperations != null) {
+			String argument = command.substring(6);
+			
+			reply = directoryOperations.touch(root, argument, 
+					partialFilePath.toString(), 
+					message.getHeader());
+			if(replicationOperations != null) {
 				replicationOperations.replicateTouch(root, replica, argument);
-				reply.appendContent(" with replication");
 			}
 
 			logState(command, root);
 		} else if (command.startsWith(CommandsSupported.RMDIR.name())) {
 			// Command line parameter (directory name) start from index '6' in the received string
-			final String argument = command.substring(6);
-
-			directoryOperations.rmdir(root, argument);
-			reply = new Message("Directory deleted successfully");
-			if (replicationOperations != null) {
+			String argument = command.substring(6);
+			
+			reply = directoryOperations.rmdir(root, argument,
+					partialFilePath.toString(),
+					message.getHeader());
+			if(replicationOperations != null) {
 				replicationOperations.replicateRmdir(replica, argument);
-				reply.appendContent(" with replication");
 			}
 
 			logState(command, root);

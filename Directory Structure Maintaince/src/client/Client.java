@@ -54,6 +54,8 @@ public class Client {
 			while (scanner.hasNext()) {
 				final String command = scanner.nextLine();
 
+				if("EXIT".equals(command))
+					break;
 				// Send command to master
 				outputStream.writeObject(new Message(command));
 				outputStream.flush();

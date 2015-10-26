@@ -1,6 +1,5 @@
 package master;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -80,6 +79,11 @@ public class Master {
 		return mdsServerId;
 	}
 	
+	public static String getMdsServerIpAddress()
+	{
+		return AppConfig.getValue("mds."+mdsServerId+".ip");
+	}
+	
 	/**
 	 * Get the current inode number for a new node.
 	 * @return current inode number
@@ -96,14 +100,15 @@ public class Master {
 		return new Long(-1);
 	}
 	
-	private static void sendToMDS(final String mdsServerId)
+	private static void sendToMDS(final String mdsServerId, final String fileName)
 	{
 		try
 		{
+			System.out.println("Connecting to "+AppConfig.getValue("mds."+mdsServerId+".ip"));
 			final Socket initalSetupListener = new Socket(AppConfig.getValue("mds."+mdsServerId+".ip"), 
 					Integer.parseInt(AppConfig.getValue("mds.initial.port")));
 			final ObjectOutputStream outputStream = new ObjectOutputStream(initalSetupListener.getOutputStream());
-			outputStream.writeObject(MetadataManager.deserializeObject(mdsServerId+".img"));
+			outputStream.writeObject(MetadataManager.deserializeObject(fileName+".img"));
 			outputStream.flush();
 			initalSetupListener.close();
 		}
@@ -125,14 +130,16 @@ public class Master {
 		// Initialize master
 		new Master();
 
-		try {
+		try {			
+			LOGGER.debug("Master Started");
+			System.out.println("Master Started");
 			// Generate metadata for existing directory structure
 			final Directory directory = MetadataManager.generateGFSMetadata();
-			final HashMap<String, File> fileMap = MetadataManager.generateDHTMetadata();
+//			final HashMap<String, File> fileMap = MetadataManager.generateDHTMetadata();
 
 			// Set the globals root
 			Globals.gfsMetadataRoot = directory;
-			Globals.dhtFileMap = fileMap;
+//			Globals.dhtFileMap = fileMap;
 
 			// Create metadata replica
 			final Directory replica = MetadataManager.generateGFSMetadata();
@@ -140,16 +147,28 @@ public class Master {
 			// Set global replica
 			Globals.gfsMetadataCopy = replica;
 			
+			LOGGER.debug("Generating MDS Metadata");
+			System.out.println("Generating MDS Metadata");
 			if(Globals.OVERALL_INITIATOR_MDS.equals(mdsServerId))
 			{
+				LOGGER.debug("Initial MDS");
+				System.out.println("Initial MDS");
 				MetadataManager.generateOverallCephPartition();
-				sendToMDS("MDS2");
-				sendToMDS("MDS3");
+				sendToMDS("MDS2","MDS2");
+				sendToMDS("MDS3","MDS3");
 				Globals.subTreePartitionList = (HashMap<String,Directory>) MetadataManager.deserializeObject("MDS1.img");
 				MetadataManager.populateInodeDetails();
 				MetadataManager.serializeObject(Globals.subTreePartitionList, mdsServerId);
-				sendToMDS("REP1");
-				sendToMDS("REP2");
+				final HashMap<String, String> clusterMap = new HashMap<>();
+				final HashMap<String, ArrayList<String>> primaryToReplicaMap = new HashMap<>();
+				MetadataManager.parseClusterMapDetails(clusterMap, primaryToReplicaMap);
+				if(primaryToReplicaMap.get(mdsServerId) != null)
+				{
+					for(String replicaName:	primaryToReplicaMap.get(mdsServerId))
+					{
+						sendToMDS(replicaName,mdsServerId);
+					}
+				}
 			}
 			else if(mdsServerId.startsWith(Globals.MDS_SERVER_ID_START))
 			{
@@ -164,9 +183,12 @@ public class Master {
 				final HashMap<String, String> clusterMap = new HashMap<>();
 				final HashMap<String, ArrayList<String>> primaryToReplicaMap = new HashMap<>();
 				MetadataManager.parseClusterMapDetails(clusterMap, primaryToReplicaMap);
-				for(final String replicaName:	primaryToReplicaMap.get(mdsServerId))
+				if(primaryToReplicaMap.get(mdsServerId) != null)
 				{
-					sendToMDS(replicaName);
+					for(String replicaName:	primaryToReplicaMap.get(mdsServerId))
+					{
+						sendToMDS(replicaName,mdsServerId);
+					}
 				}
 			}
 			else
@@ -180,6 +202,7 @@ public class Master {
 			}
 			
 		} catch (ClassNotFoundException | IOException e) {
+//			System.out.println(e.getLocalizedMessage());
 			LOGGER.error("", e);
 		}
 
