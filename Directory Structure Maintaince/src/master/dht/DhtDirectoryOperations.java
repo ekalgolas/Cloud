@@ -274,6 +274,7 @@ public class DhtDirectoryOperations implements ICommandOperations {
 			}
 			if (counter1 == 0) {
 				final String[] split = line.split("@");
+				line = "";
 				if (split[1].contains("d")) {
 					split[0] = split[0].concat("/" + names[names.length - 1]);
 					split[1] = "-rw-r--r--";
@@ -304,7 +305,7 @@ public class DhtDirectoryOperations implements ICommandOperations {
 		}
 
 		try {
-			fileSystem.rmdir(file.getName(), false);
+			fileSystem.delete(file.getName());
 			fileSystem.copyFromLocal(temp.getAbsolutePath(), file.getName());
 		} catch (final IOException e) {
 			throw new InvalidPropertiesFormatException("Failed to update metadata in DHT");
