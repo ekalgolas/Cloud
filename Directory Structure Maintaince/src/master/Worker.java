@@ -67,7 +67,8 @@ public class Worker implements Runnable {
 			try {
 				// Read the queried command
 				final Message message = (Message) inputStream.readObject();
-				final String command = message.getContent().toUpperCase();
+				final String command = message.getContent();
+//				System.out.println(command);
 				Message reply = null;
 				Directory root = null;
 				Directory replica = null;
@@ -86,8 +87,14 @@ public class Worker implements Runnable {
 					} else if (Globals.MDS_MODE.equalsIgnoreCase(listenerType)) {
 						directoryOperations = new CephDirectoryOperations();
 						replicationOperations = null;
-						root = MetaDataServerInfo.findClosestNode(command.substring(3), 
+						String[] commandParse = command.split(" ");	
+//						System.out.println("Action command:"+ commandParse[0]+"#");
+//						System.out.println("command:"+command);
+//						System.out.println("command size:"+commandParse[0].length()+1);
+						root = MetaDataServerInfo.findClosestNode(command
+								.substring(commandParse[0].length()+1), 
 								partialFilePath, Globals.subTreePartitionList);
+//						System.out.println("parsed partial path: "+partialFilePath);
 					} else {
 						directoryOperations = new DhtDirectoryOperations();
 						replicationOperations = null;
@@ -147,7 +154,9 @@ public class Worker implements Runnable {
 					}
 				} catch (final Exception e) {
 					// If any command threw errors, propagate the error to the client
-					reply = new Message(e.getMessage());
+//					e.printStackTrace();
+//					System.out.println(e.toString());
+					reply = new Message(e.getMessage()+" error occurred");
 				}
 
 				// Write reply to the socket output stream

@@ -126,7 +126,7 @@ public class MetaDataServerInfo implements Serializable {
 	 */
 	public static Directory findClosestNode(final String filePath,
 			final StringBuffer matchedPath, final HashMap<String, Directory> parititionMap) {
-		int maxLevel = 0;
+		int maxLevel = -1;
 		String maxMatchPath = "";
 		for (final String node : parititionMap.keySet()) {
 			// Get level for this node

@@ -124,7 +124,7 @@ public class MetadataManager {
 		     out.writeObject(partitionList);
 		     out.close();
 		     fileOut.close();
-		     System.out.println("Serialized "+dataFileName);
+//		     System.out.println("Serialized "+dataFileName);
 		}
 		catch(IOException ioexp)
 		{
@@ -161,6 +161,7 @@ public class MetadataManager {
 	{
 		if(root != null)
 		{
+			Long operationCounter = root.getOperationCounter();
 			Inode inode = root.getInode();
 			if(inode != null && inode.getInodeNumber() == -1)
 			{
@@ -178,16 +179,20 @@ public class MetadataManager {
 				primaryMds.setServerType(Globals.PRIMARY_MDS);
 				primaryMds.setStatus(Globals.ALIVE_STATUS);
 				metaDataList.add(primaryMds);
-				for(String replicaName:primaryToReplicaMap.get(primaryMds.getServerName()))
+				if(primaryToReplicaMap.get(primaryMds.getServerName()) != null)
 				{
-					MetaDataServerInfo replicaServer = new MetaDataServerInfo();
-					replicaServer.setServerName(replicaName);
-					replicaServer.setIpAddress(clusterMap.get(replicaName));
-					replicaServer.setServerType(Globals.REPLICA_MDS);
-					replicaServer.setStatus(Globals.ALIVE_STATUS);
-					metaDataList.add(replicaServer);
-				}				
+					for(String replicaName:primaryToReplicaMap.get(primaryMds.getServerName()))
+					{
+						MetaDataServerInfo replicaServer = new MetaDataServerInfo();
+						replicaServer.setServerName(replicaName);
+						replicaServer.setIpAddress(clusterMap.get(replicaName));
+						replicaServer.setServerType(Globals.REPLICA_MDS);
+						replicaServer.setStatus(Globals.ALIVE_STATUS);
+						metaDataList.add(replicaServer);
+					}				
+				}
 				inode.getDataServerInfo().addAll(metaDataList);
+				root.setInode(inode);
 			}
 			for(Directory child:root.getChildren())
 			{
@@ -218,13 +223,16 @@ public class MetadataManager {
 		{
 			String[] pairValues = pair.split(":");
 			clusterMap.put(pairValues[0], AppConfig.getValue("mds."+pairValues[0]+".ip"));
-			ArrayList<String> replicaList = new ArrayList<>();
-			for(String replicas:pairValues[1].split(","))
+			if(pairValues.length > 1)
 			{
-				replicaList.add(replicas);
-				clusterMap.put(replicas, AppConfig.getValue("mds."+replicas+".ip"));
+				ArrayList<String> replicaList = new ArrayList<>();
+				for(String replicas:pairValues[1].split(","))
+				{
+					replicaList.add(replicas);
+					clusterMap.put(replicas, AppConfig.getValue("mds."+replicas+".ip"));
+				}
+				primaryToReplicaMap.put(pairValues[0], replicaList);
 			}
-			primaryToReplicaMap.put(pairValues[0], replicaList);
 		}
 	}
 	
@@ -283,14 +291,17 @@ public class MetadataManager {
 			primaryMds.setServerType(Globals.PRIMARY_MDS);
 			primaryMds.setStatus(Globals.ALIVE_STATUS);
 			metaDataList.add(primaryMds);
-			for(String replicaName:primaryToReplicaMap.get(primaryMds.getServerName()))
+			if(primaryToReplicaMap.get(primaryMds.getServerName()) != null)
 			{
-				MetaDataServerInfo replicaServer = new MetaDataServerInfo();
-				replicaServer.setServerName(replicaName);
-				replicaServer.setIpAddress(clusterMap.get(replicaName));
-				replicaServer.setServerType(Globals.REPLICA_MDS);
-				replicaServer.setStatus(Globals.ALIVE_STATUS);
-				metaDataList.add(replicaServer);
+				for(String replicaName:primaryToReplicaMap.get(primaryMds.getServerName()))
+				{
+					MetaDataServerInfo replicaServer = new MetaDataServerInfo();
+					replicaServer.setServerName(replicaName);
+					replicaServer.setIpAddress(clusterMap.get(replicaName));
+					replicaServer.setServerType(Globals.REPLICA_MDS);
+					replicaServer.setStatus(Globals.ALIVE_STATUS);
+					metaDataList.add(replicaServer);
+				}
 			}
 			childInode.setInodeNumber(new Long(-1));
 			childInode.getDataServerInfo().addAll(metaDataList);
