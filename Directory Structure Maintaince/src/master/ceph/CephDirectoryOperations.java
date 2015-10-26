@@ -509,10 +509,10 @@ public class CephDirectoryOperations implements ICommandOperations {
 		if(arguments != null && arguments.length >= 2)
 		{
 			String[] primaryMessagesContent = arguments[1].split(":");
-			primaryMessage = Globals.PRIMARY_MDS.equals(primaryMessagesContent[0]);
+			primaryMessage = Globals.PRIMARY_MDS.equals(primaryMessagesContent[0].trim());
 			if(primaryMessagesContent.length > 1)
 			{
-				inodeNumber = Long.valueOf(primaryMessagesContent[1]);
+				inodeNumber = Long.valueOf(primaryMessagesContent[1].trim());
 			}
 		}
 //		System.out.println("inodeNumber:"+ inodeNumber);
@@ -551,10 +551,10 @@ public class CephDirectoryOperations implements ICommandOperations {
 		if(arguments != null && arguments.length >= 2)
 		{
 			String[] primaryMessagesContent = arguments[1].split(":");
-			primaryMessage = Globals.PRIMARY_MDS.equals(primaryMessagesContent[0]);
+			primaryMessage = Globals.PRIMARY_MDS.equals(primaryMessagesContent[0].trim());
 			if(primaryMessagesContent.length > 1)
 			{
-				inodeNumber = Long.valueOf(primaryMessagesContent[1]);
+				inodeNumber = Long.valueOf(primaryMessagesContent[1].trim());
 			}
 		}
 
@@ -976,7 +976,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 		boolean primaryMessage = false;		
 		if(arguments != null && arguments.length >= 2)
 		{			
-			primaryMessage = Globals.PRIMARY_MDS.equals(arguments[1]);			
+			primaryMessage = Globals.PRIMARY_MDS.equals(arguments[1].trim());			
 		}
 					
 		return removeNode(root, dirPath, name, false, path, primaryMessage);
