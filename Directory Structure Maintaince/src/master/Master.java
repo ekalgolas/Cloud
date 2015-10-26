@@ -136,11 +136,11 @@ public class Master {
 			System.out.println("Master Started");
 			// Generate metadata for existing directory structure
 			final Directory directory = MetadataManager.generateGFSMetadata();
-			final HashMap<String, File> fileMap = MetadataManager.generateDHTMetadata();
+//			final HashMap<String, File> fileMap = MetadataManager.generateDHTMetadata();
 
 			// Set the globals root
 			Globals.gfsMetadataRoot = directory;
-			Globals.dhtFileMap = fileMap;
+//			Globals.dhtFileMap = fileMap;
 
 			// Create metadata replica
 			final Directory replica = MetadataManager.generateGFSMetadata();
