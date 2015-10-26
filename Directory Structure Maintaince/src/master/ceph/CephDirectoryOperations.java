@@ -174,6 +174,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 	@Override
 	public Message ls(final Directory root, final String filePath, final String... arguments)
 			throws InvalidPropertiesFormatException {
+		System.out.println("Calling ls");
 		try
 		{
 			final StringBuffer resultCode = new StringBuffer();
@@ -185,8 +186,19 @@ public class CephDirectoryOperations implements ICommandOperations {
 			} else {
 				searchablePath = filePath;
 			}
-//			System.out.println("searchablePath:"+searchablePath);			
-			final Directory node = search(root, searchablePath, resultCode);
+			final Directory node;
+			
+			if(searchablePath != null && 
+					!"/".equals(searchablePath.trim()) && 
+					!"".equals(searchablePath.trim()))
+			{
+				node = search(root, searchablePath, resultCode);
+			}
+			else
+			{
+				node = root;
+				resultCode.append(Globals.PATH_FOUND);
+			}
 	
 			if (node != null) 
 			{
@@ -221,7 +233,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 					return result;
 				} 
 				else if (inode.getInodeNumber() == null && 
-						Globals.PARTIAL_PATH_FOUND.equals(resultcodeValue)) 
+						(Globals.PARTIAL_PATH_FOUND.equals(resultcodeValue)||
+								Globals.PATH_FOUND.equals(resultcodeValue))) 
 				{
 //					System.out.println("Forwarding ls to another MDS");
 					if (inode.getDataServerInfo() != null && inode.getDataServerInfo().size() > 0) 
@@ -280,9 +293,11 @@ public class CephDirectoryOperations implements ICommandOperations {
 					if(replicaMessage != null)
 					{
 						finalStatus &= (CompletionStatusCode.SUCCESS.name()
-										.equals(replicaMessage.getCompletionCode()));
+										.equals(replicaMessage.getCompletionCode()
+												.toString().trim()));
 						if(!CompletionStatusCode.SUCCESS.name()
-								.equals(replicaMessage.getCompletionCode()))
+								.equals(replicaMessage.getCompletionCode()
+										.toString().trim()))
 						{
 							errorMessages.append(replicaMessage.getContent()+"\n");
 						}
@@ -334,7 +349,17 @@ public class CephDirectoryOperations implements ICommandOperations {
 		}
 		else
 		{
-			directory = search(root, currentPath, resultCode);
+			if(currentPath != null && 
+					!"/".equals(currentPath.trim()) && 
+					!"".equals(currentPath.trim()))
+			{
+				directory = search(root, currentPath, resultCode);
+			}
+			else
+			{
+				directory = root;
+				resultCode.append(Globals.PATH_FOUND);
+			}
 		}
 		
 //		System.out.println("Create => "+directory);
@@ -407,7 +432,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 										fullPath,
 										newInodeNumber);
 								if(CompletionStatusCode.SUCCESS.name()
-										.equals(replicaMessages.getCompletionCode().toString().trim()))
+										.equals(replicaMessages.getCompletionCode()
+												.toString().trim()))
 								{
 									return new Message(node.getName()+" created succesfully",
 											directory.getInode().getDataServerInfo().toString(),
@@ -445,7 +471,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 				}
 			} 
 			else if (inode.getInodeNumber() == null && 
-					Globals.PARTIAL_PATH_FOUND.equals(resultcodeValue)) 
+					(Globals.PARTIAL_PATH_FOUND.equals(resultcodeValue) || 
+							Globals.PATH_FOUND.equals(resultcodeValue))) 
 			{
 //				System.out.println("Forwarding mkdir to another MDS");
 				if (inode.getDataServerInfo() != null && 
@@ -485,6 +512,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 			final String... arguments)
 			throws InvalidPropertiesFormatException 
 	{
+		System.out.println("Calling mkdir");
 		// Get the parent directory and the name of directory
 		String searchablePath;
 		if (arguments != null && 
@@ -527,6 +555,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 			String... arguments) 
 			throws InvalidPropertiesFormatException 
 	{
+		System.out.println("Calling touch");
 		// Get the parent directory and the name of directory
 		String searchablePath;
 		if (arguments != null && 
@@ -566,7 +595,17 @@ public class CephDirectoryOperations implements ICommandOperations {
 		}
 		else
 		{
-			directory = search(root, dirPath, resultCode);
+			if(dirPath != null && 
+					!"/".equals(dirPath.trim()) && 
+					!"".equals(dirPath.trim()))
+			{
+				directory = search(root, dirPath, resultCode);
+			}
+			else
+			{
+				directory = root;
+				resultCode.append(Globals.PATH_FOUND);
+			}
 		}
 		if(directory != null)
 		{
@@ -576,7 +615,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 //			System.out.println(inode.getInodeNumber() == null);
 			String resultcodeValue = resultCode.toString().trim();
 			if(inode.getInodeNumber() == null && 
-					Globals.PARTIAL_PATH_FOUND.equals(resultcodeValue))
+					(Globals.PARTIAL_PATH_FOUND.equals(resultcodeValue) || 
+							Globals.PATH_FOUND.equals(resultcodeValue)))
 			{
 //				System.out.println("Forwarding touch to another MDS");
 				if (inode.getDataServerInfo() != null && 
@@ -638,7 +678,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 										inode, path, null);
 								if(finalMessage != null && 
 										CompletionStatusCode.SUCCESS.name()
-										.equals(finalMessage.getCompletionCode().toString().trim()))
+										.equals(finalMessage.getCompletionCode()
+												.toString().trim()))
 								{
 									return new Message("Touch successful",
 											inode.getDataServerInfo().toString(),
@@ -707,7 +748,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 								Message replicaMessages = updateReplicas(CommandsSupported.TOUCH,
 										inode,path, newInodeNumber);
 								if(CompletionStatusCode.SUCCESS.name()
-										.equals(replicaMessages.getCompletionCode().toString().trim()))
+										.equals(replicaMessages.getCompletionCode()
+												.toString().trim()))
 								{
 									return new Message(file.getName()+" created succesfully",
 											directory.getInode().getDataServerInfo().toString(),
@@ -772,6 +814,9 @@ public class CephDirectoryOperations implements ICommandOperations {
 		// Search and get to the directory where we have to create
 		final StringBuffer resultCode = new StringBuffer();
 		final Directory directory;
+		System.out.println("Keys:"+Arrays.toString(Globals.subTreePartitionList.keySet().toArray()));
+		System.out.println("fullPath:"+fullPath);
+		
 		if(Globals.subTreePartitionList.containsKey(fullPath))
 		{
 			directory = Globals.subTreePartitionList.get(fullPath);
@@ -826,18 +871,30 @@ public class CephDirectoryOperations implements ICommandOperations {
 		}
 		else
 		{
-			directory = search(root, currentPath, resultCode);
+			
+			if(currentPath != null && 
+					!"/".equals(currentPath.trim()) && 
+					!"".equals(currentPath.trim()))
+			{
+				directory = search(root, currentPath, resultCode);
+			}
+			else
+			{
+				directory = root;
+				resultCode.append(Globals.PATH_FOUND);
+			}
 			
 			if(directory != null)
 			{
 				Inode inode = directory.getInode();
-//				System.out.println("inode:"+inode);
-//				System.out.println("resultCode:"+resultCode);
+				System.out.println("inode:"+inode);
+				System.out.println("resultCode:"+resultCode);
 				
 				String resultcodeValue = resultCode.toString().trim();
 				
 				if(inode.getInodeNumber() == null && 
-						Globals.PARTIAL_PATH_FOUND.equals(resultcodeValue))
+						(Globals.PARTIAL_PATH_FOUND.equals(resultcodeValue) || 
+								(Globals.PATH_FOUND.equals(resultcodeValue))))
 				{
 //					System.out.println("Forwarding rmdir to another MDS");
 					if (inode.getDataServerInfo() != null && 
@@ -932,7 +989,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 				else 
 				{
 //					System.out.println("Inside Path Not Found");
-					return new Message("Path"+ fullPath +" not found",
+					return new Message("Path "+ fullPath +" not found",
 							"",
 							CompletionStatusCode.NOT_FOUND.name());
 							// issue.
@@ -952,6 +1009,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 	@Override
 	public Message rmdir(final Directory root, final String path, final String... arguments)
 			throws InvalidPropertiesFormatException {
+		System.out.println("Calling Rmdir");
 		// Get the parent directory and the name of directory
 		String searchablePath;
 		if (arguments != null && 
@@ -973,10 +1031,11 @@ public class CephDirectoryOperations implements ICommandOperations {
 //		System.out.println("dirPath:"+dirPath);
 //		System.out.println("name:"+name);
 		
-		boolean primaryMessage = false;		
+		boolean primaryMessage = false;
 		if(arguments != null && arguments.length >= 2)
 		{			
-			primaryMessage = Globals.PRIMARY_MDS.equals(arguments[1].trim());			
+			String[] primaryMessagesContent = arguments[1].split(":");
+			primaryMessage = Globals.PRIMARY_MDS.equals(primaryMessagesContent[0].trim());
 		}
 					
 		return removeNode(root, dirPath, name, false, path, primaryMessage);

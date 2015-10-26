@@ -68,6 +68,7 @@ public class Worker implements Runnable {
 				// Read the queried command
 				final Message message = (Message) inputStream.readObject();
 				final String command = message.getContent();
+				System.out.println("command:"+command);
 				Message reply = null;
 				Directory root = null;
 				Directory replica = null;
