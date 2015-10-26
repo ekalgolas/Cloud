@@ -50,9 +50,9 @@ public class Client {
 		int number = 0;
 
 		// Read commands
-		try (Scanner scanner = new Scanner(new File(inputFileName))) {
+		try (Scanner scanner = new Scanner(System.in)) {
 			while (scanner.hasNext()) {
-				final String command = scanner.nextLine();
+				final String command = scanner.nextLine();				
 
 				if("EXIT".equals(command))
 					break;
