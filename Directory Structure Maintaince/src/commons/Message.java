@@ -96,5 +96,11 @@ public class Message implements Serializable {
 	public StringBuilder getCompletionCode() {
 		return completionCode;
 	}
+
+	@Override
+	public String toString() {
+		return "Message [builder=" + builder + ", headerBuilder=" + headerBuilder + ", completionCode=" + completionCode
+				+ "]";
+	}		
 			
 }

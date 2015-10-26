@@ -48,14 +48,14 @@ public class CephDirectoryOperations implements ICommandOperations {
 		// Get list of paths
 		final String[] paths = filePathBuf.toString().split("/");
 		int countLevel = 0;
-		System.out.println("filepath:"+filePath);
+//		System.out.println("filepath:"+filePath);
 		// Find the directory in directory tree
 		for (final String path : paths) {
 			// Match the root
 			boolean found = false;
 			if (root.getName()
 					.equalsIgnoreCase(path)) {
-				System.out.println("matched node:"+root.getName());
+//				System.out.println("matched node:"+root.getName());
 				found = true;
 				countLevel++;
 			}
@@ -66,7 +66,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 				for (final Directory child : root.getChildren()) {					
 					if (child.getName()
 							.equalsIgnoreCase(path)) {
-						System.out.println("Child Name:"+child.getName());
+//						System.out.println("Child Name:"+child.getName());
 						root = child;
 						found = true;					
 						Long operationCounter = child.getOperationCounter();
@@ -145,7 +145,6 @@ public class CephDirectoryOperations implements ICommandOperations {
 				// Wait and read the reply
 				final Message message = (Message) inputStream.readObject();				
 				final String reply = message.getContent();
-				System.out.println(reply);
 				socket.close();
 				return message;
 			} 
@@ -297,7 +296,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 		}
 		if(finalStatus)
 		{
-			return new Message(fullPath+" created Successfully",
+			return new Message(fullPath+ " " +command.name() +"  Successfully",
 						"",
 						CompletionStatusCode.SUCCESS.name());
 		}
@@ -343,8 +342,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 		if (directory != null) 
 		{
 			final Inode inode = directory.getInode();
-			System.out.println("inode:"+inode);
-			System.out.println("resultCode:"+resultCode);
+//			System.out.println("inode:"+inode);
+//			System.out.println("resultCode:"+resultCode);
 			String resultcodeValue = resultCode.toString().trim();
 			if (inode.getInodeNumber() != null && 
 					Globals.PATH_FOUND.equals(resultcodeValue)) 
@@ -408,7 +407,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 										fullPath,
 										newInodeNumber);
 								if(CompletionStatusCode.SUCCESS.name()
-										.equals(replicaMessages.getCompletionCode()))
+										.equals(replicaMessages.getCompletionCode().toString().trim()))
 								{
 									return new Message(node.getName()+" created succesfully",
 											directory.getInode().getDataServerInfo().toString(),
@@ -584,7 +583,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 						inode.getDataServerInfo().size() > 0) 
 				{
 					final MetaDataServerInfo mdsServer = getRequiredMdsInfo(inode, true); 
-					System.out.println("Metadata Server:"+mdsServer);
+//					System.out.println("Metadata Server:"+mdsServer);
 					return remoteExecCommand(CommandsSupported.TOUCH, path, mdsServer, false, null);
 				}
 			}
@@ -639,7 +638,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 										inode, path, null);
 								if(finalMessage != null && 
 										CompletionStatusCode.SUCCESS.name()
-										.equals(finalMessage.getCompletionCode()))
+										.equals(finalMessage.getCompletionCode().toString().trim()))
 								{
 									return new Message("Touch successful",
 											inode.getDataServerInfo().toString(),
@@ -708,7 +707,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 								Message replicaMessages = updateReplicas(CommandsSupported.TOUCH,
 										inode,path, newInodeNumber);
 								if(CompletionStatusCode.SUCCESS.name()
-										.equals(replicaMessages.getCompletionCode()))
+										.equals(replicaMessages.getCompletionCode().toString().trim()))
 								{
 									return new Message(file.getName()+" created succesfully",
 											directory.getInode().getDataServerInfo().toString(),
@@ -797,7 +796,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 						Message finalMessage = updateReplicas(CommandsSupported.RMDIR, 
 								inode, fullPath, null);
 						if(CompletionStatusCode.SUCCESS.name()
-								.equals(finalMessage.getCompletionCode()))
+								.equals(finalMessage.getCompletionCode()
+										.toString().trim()))
 						{
 							return new Message(name+" removed successfully",
 									"",
@@ -889,7 +889,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 									Message finalMessage = updateReplicas(CommandsSupported.RMDIR, 
 											removeDirectory.getInode(), fullPath, null);
 									if(CompletionStatusCode.SUCCESS.name()
-											.equals(finalMessage.getCompletionCode()))
+											.equals(finalMessage.getCompletionCode()
+													.toString().trim()))
 									{
 										return new Message(name+" removed successfully",
 												"",
