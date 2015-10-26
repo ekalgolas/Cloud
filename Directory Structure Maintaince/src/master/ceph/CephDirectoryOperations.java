@@ -54,7 +54,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 			// Match the root
 			boolean found = false;
 			if (root.getName()
-					.equalsIgnoreCase(path)) {
+					.equals(path)) {
 //				System.out.println("matched node:"+root.getName());
 				found = true;
 				countLevel++;
@@ -65,7 +65,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 				// Check if the path corresponds to any child in this directory
 				for (final Directory child : root.getChildren()) {					
 					if (child.getName()
-							.equalsIgnoreCase(path)) {
+							.equals(path)) {
 //						System.out.println("Child Name:"+child.getName());
 						root = child;
 						found = true;					
@@ -248,7 +248,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 						}
 					}
 				} 
-				else if (inode.getInodeNumber() != null) 
+				else if (inode.getInodeNumber() != null && 
+						!Globals.PARTIAL_PATH_FOUND.equals(resultcodeValue)) 
 				{
 //					System.out.println("Inside Unstable");
 					return new Message(filePath + " is in an instable state");
