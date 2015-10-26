@@ -7,7 +7,6 @@ import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 
 import com.sun.media.sound.InvalidDataException;
-
 import commons.CompletionStatusCode;
 import commons.Message;
 import commons.OutputFormatter;
@@ -162,7 +161,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 
 		// Get the parent directory and the name of directory
 		final String[] paths = path.split("/");
-		final String name = paths[paths.length - 2];
+		final String name = paths[paths.length - 1];
 		final String dirPath = path.substring(0, path.length() - name.length() - 1);
 
 		// Create the directory
@@ -179,7 +178,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 	@Override
 	public Message touch(final Directory root,
 			final String path,
-			String... arguments)
+			final String... arguments)
 					throws InvalidPropertiesFormatException {
 		// Check if path is valid
 		if (path.charAt(path.length() - 1) == '/') {
@@ -280,7 +279,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 
 		// Get the parent directory and the name of directory
 		final String[] paths = path.split("/");
-		final String name = paths[paths.length - 2];
+		final String name = paths[paths.length - 1];
 		final String dirPath = path.substring(0, path.length() - name.length() - 1);
 
 		remove(root, dirPath, name, false);

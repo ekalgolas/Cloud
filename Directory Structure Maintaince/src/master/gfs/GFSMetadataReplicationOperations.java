@@ -32,7 +32,7 @@ public class GFSMetadataReplicationOperations extends GFSDirectoryOperations {
 
 		// Get the parent directory and the name of directory
 		final String[] paths = path.split("/");
-		final String name = paths[paths.length - 2];
+		final String name = paths[paths.length - 1];
 		final String dirPath = path.substring(0, path.length() - name.length() - 1);
 
 		final Directory createdDir = search(primaryRoot, path);
@@ -68,7 +68,7 @@ public class GFSMetadataReplicationOperations extends GFSDirectoryOperations {
 
 		// Get the parent directory and the name of directory
 		final String[] paths = path.split("/");
-		final String name = paths[paths.length - 2];
+		final String name = paths[paths.length - 1];
 		final String dirPath = path.substring(0, path.length() - name.length() - 1);
 
 		// Search and get to the directory where we want to remove
