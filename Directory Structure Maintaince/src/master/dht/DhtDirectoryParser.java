@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.google.common.io.Files;
+
 import commons.AppConfig;
 import commons.dir.Directory;
 import commons.dir.DirectoryParser;
@@ -93,18 +94,16 @@ public class DhtDirectoryParser extends DirectoryParser {
 				}
 
 				// Extract other info from first part of the split
-				final String details = split[0].substring(StringUtils.lastIndexOf(split[0], "[") + 1);
-				final String accessRights = details.substring(0, ACCESS_RIGHT_ENDINDEX);
-				final int sizeEndIndex = details.lastIndexOf(" ");
-				final String readableTimeStamp = details.substring(sizeEndIndex).trim();
-				final String size = details.substring(SIZE_STARTINDEX, sizeEndIndex).trim();
+				final String details = split[0].substring(StringUtils.lastIndexOf(split[0], "[") + 1).trim();
+                final String[] detail = details.split(" ");
+                final String size = detail[0].trim();
+                final String readableTimeStamp = detail[1].trim();
 
 				// Create a new directory object handling spaces
 				final Directory directory = new Directory(name.replace(" ", "-"),
 						isFile,
 						new ArrayList<>(),
 						Long.parseLong(readableTimeStamp),
-						accessRights,
 						Long.parseLong(size));
 
 				// Put current directory to current level
@@ -217,7 +216,6 @@ public class DhtDirectoryParser extends DirectoryParser {
 			final File file) {
 		try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file, true)))) {
 			out.print(path);
-			out.print("@" + directory.getAccessRights());
 			out.print("@" + directory.getSize());
 			out.print("@" + directory.getModifiedTimeStamp());
 			out.println();

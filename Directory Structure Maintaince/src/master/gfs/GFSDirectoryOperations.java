@@ -18,7 +18,6 @@ import commons.dir.ICommandOperations;
  */
 public class GFSDirectoryOperations implements ICommandOperations {
 
-	private static final String DEFAULT_ACCESS_RIGHTS	= "-rw-rw-r--";
 	private static final long DEFAULT_SIZE				= 0L;
 
 	/*
@@ -208,7 +207,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		if (!found) {
 			// Not present, add it in the list
 			final Directory file = new Directory(name, true, null,
-					new Date().getTime(), DEFAULT_ACCESS_RIGHTS, DEFAULT_SIZE);
+					new Date().getTime(), DEFAULT_SIZE);
 			contents.add(file);
 		}
 		directory.setChildren(contents);
@@ -251,13 +250,13 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		// Add file if isFile is true
 		if (isFile) {
 			final Directory file = new Directory(name, isFile, null,
-					new Date().getTime(), DEFAULT_ACCESS_RIGHTS, DEFAULT_SIZE);
+					new Date().getTime(), DEFAULT_SIZE);
 			contents.add(file);
 		} else {
 			// Else, add directory here
 			final Directory dir = new Directory(name, isFile,
 					new ArrayList<Directory>(), new Date().getTime(),
-					DEFAULT_ACCESS_RIGHTS, DEFAULT_SIZE);
+					DEFAULT_SIZE);
 			contents.add(dir);
 		}
 	}

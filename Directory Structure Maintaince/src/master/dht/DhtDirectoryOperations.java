@@ -133,7 +133,7 @@ public class DhtDirectoryOperations implements ICommandOperations {
 	public static void mkdir(final HashMap<String, File> filemap,
 			final String path)
 					throws InvalidPropertiesFormatException {
-		final Directory directory = new Directory("", false, null, System.currentTimeMillis(), "drwxrwxr-x", (long) 4096);
+		final Directory directory = new Directory("", false, null, System.currentTimeMillis(), (long) 4096);
 		File file = null;
 		final List<String> names = new ArrayList<String>();
 		final String filePath = getFilePath(path, names);
@@ -568,7 +568,6 @@ public class DhtDirectoryOperations implements ICommandOperations {
 			final File file) {
 		try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file, true)))) {
 			out.print(path);
-			out.print("@" + directory.getAccessRights());
 			out.print("@" + directory.getSize());
 			out.print("@" + directory.getModifiedTimeStamp());
 			out.println();

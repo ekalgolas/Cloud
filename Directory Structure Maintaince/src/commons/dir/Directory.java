@@ -36,11 +36,6 @@ public class Directory implements Serializable, Cloneable {
 	private Long 			modifiedTimeStamp;
 
 	/**
-	 * Access rights in 10 character string format
-	 */
-	private String 			accessRights;
-
-	/**
 	 * Size of a directory which is cumulative size of all the files and directories inside
 	 * or individual size in case of a file
 	 */
@@ -83,18 +78,15 @@ public class Directory implements Serializable, Cloneable {
 	 *            List of sub-directories
 	 * @param modifiedDateTime
 	 *            Modification date and time in human readable format
-	 * @param accessRights
-	 *            Access string of 10 character format
 	 * @param size
 	 *            Size of the directory (cumulative size for directory) or a file
 	 */
 	public Directory(final String name, final boolean isFile, final List<Directory> children,
-			final long modifiedTimeStamp, final String accessRights, final Long size) {
+			final long modifiedTimeStamp, final Long size) {
 		this.name = name;
 		this.isFile = isFile;
 		this.children = children;
 		this.modifiedTimeStamp = modifiedTimeStamp;
-		this.accessRights = accessRights;
 		this.size = size;
 	}
 
@@ -203,20 +195,6 @@ public class Directory implements Serializable, Cloneable {
 	 */
 	public void setModifiedTimeStamp(final Long modifiedTimeStamp) {
 		this.modifiedTimeStamp = modifiedTimeStamp;
-	}
-
-	/**
-	 * @return the accessRights
-	 */
-	public String getAccessRights() {
-		return accessRights;
-	}
-
-	/**
-	 * @param accessRights the accessRights to set
-	 */
-	public void setAccessRights(final String accessRights) {
-		this.accessRights = accessRights;
 	}
 
 	/**
