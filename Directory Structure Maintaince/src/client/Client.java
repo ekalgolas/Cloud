@@ -50,7 +50,7 @@ public class Client {
 		int number = 0;
 
 		// Read commands
-		try (Scanner scanner = new Scanner(System.in)) {
+		try (Scanner scanner = new Scanner(new File(inputFileName))) {
 			while (scanner.hasNext()) {
 				final String command = scanner.nextLine();				
 
