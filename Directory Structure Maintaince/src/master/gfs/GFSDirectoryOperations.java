@@ -48,7 +48,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 			throw new InvalidDataException("Directory is empty");
 		}
 
-		// Try read locking the directory
+		// Try acquiring read lock on the directory
         root.getReadLock().lock();
 
 		// If we reach here, it means valid directory was found
@@ -61,6 +61,9 @@ public class GFSDirectoryOperations implements ICommandOperations {
 			final String type = child.isFile() ? "File" : "Directory";
 			output.addRow(type, child.getName());
 		}
+
+		//Release the read lock
+		root.getReadLock().unlock();
 
 		// Return the representation
 		return new Message("\n" + output.toString());
@@ -133,6 +136,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 			// Check if the path corresponds to any child in this directory
 			for (final Directory child : root.getChildren()) {
 				if (child.getName().equals(path)) {
+				    // Try acquiring read lock on the parent
 				    if(i != paths.length - 1) {
 				        child.getReadLock().lock();
 				    }
@@ -182,6 +186,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
             for (final Directory child : root.getChildren()) {
                 if (child.getName().equals(path)) {
                     if(i != paths.length - 1) {
+                        // Release the read lock on the parent
                         child.getReadLock().unlock();
                     }
                     root = child;
@@ -250,6 +255,9 @@ public class GFSDirectoryOperations implements ICommandOperations {
 			throw new InvalidPathException(dirPath, "Does not exist");
 		}
 
+		// Try acquiring write lock on the directory
+		directory.getWriteLock().lock();
+
 		final List<Directory> contents = directory.getChildren();
 		boolean found = false;
 		for (final Directory child : contents) {
@@ -267,6 +275,10 @@ public class GFSDirectoryOperations implements ICommandOperations {
 			contents.add(file);
 		}
 		directory.setChildren(contents);
+		
+		// Release write lock
+		directory.getWriteLock().unlock();
+
 		return new Message("Touch Successful");
 	}
 
@@ -303,7 +315,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 			}
 		}
 
-		// Try write locking the directory
+		// Try acquiring write lock on the directory
         directory.getWriteLock().lock();
 
 		// Add file if isFile is true
@@ -372,7 +384,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 			throw new InvalidPathException(path, "Path was not found");
 		}
 		
-		// Try write locking the directory
+		// Try acquiring write lock on the directory
         directory.getWriteLock().lock();
 
 		Directory directoryToRemove = null;
