@@ -1,5 +1,6 @@
 package client;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -49,7 +50,7 @@ public class Client {
 		int number = 0;
 
 		// Read commands
-		try (Scanner scanner = new Scanner(System.in)) {
+		try (Scanner scanner = new Scanner(new File(inputFileName))) {
 			while (scanner.hasNext()) {
 				final String command = scanner.nextLine();				
 
