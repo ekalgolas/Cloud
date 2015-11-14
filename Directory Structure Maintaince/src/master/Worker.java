@@ -15,6 +15,8 @@ import master.metadata.MetaDataServerInfo;
 import org.apache.log4j.Logger;
 
 import com.sun.media.sound.InvalidDataException;
+
+import commons.AppWatch;
 import commons.CommandsSupported;
 import commons.Globals;
 import commons.Message;
@@ -29,12 +31,13 @@ import commons.dir.ICommandOperations;
  * </pre>
  */
 public class Worker implements Runnable {
-	public volatile boolean		isRunning	= true;
-	private final static Logger	LOGGER		= Logger.getLogger(Worker.class);
-	private final String		listenerType;
-	private final Socket		workerSocket;
-	private ObjectInputStream	inputStream;
-	private ObjectOutputStream	outputStream;
+    private static final AppWatch   APPWATCH    = new AppWatch();
+    private final static Logger     LOGGER      = Logger.getLogger(Worker.class);
+	public volatile boolean        isRunning	= true;
+	private final String           listenerType;
+	private final Socket           workerSocket;
+	private ObjectInputStream      inputStream;
+	private ObjectOutputStream     outputStream;
 
 	/**
 	 * Constructor
@@ -95,10 +98,12 @@ public class Worker implements Runnable {
 						replicationOperations = null;
 					}
 
+			        APPWATCH.startWatch("Command execution started...");
 					reply = executeCommand(command, 
 							root, replica, partialFilePath, 
 							directoryOperations, replicationOperations, 
 							message);
+					APPWATCH.stopAndLogTime("Command execution completed...");
 				} catch (final Exception e) {
 					// If any command threw errors, propagate the error to the client
 					reply = new Message(e.getMessage()+" error occurred");
