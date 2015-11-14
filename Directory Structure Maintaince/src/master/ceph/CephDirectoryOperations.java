@@ -573,8 +573,9 @@ public class CephDirectoryOperations implements ICommandOperations {
 		final String name = paths[paths.length - 1];
 		final String dirPath = searchablePath.substring(0, searchablePath.length() - name.length() - 1);
 		
-//		System.out.println("dirPath:"+dirPath);
-//		System.out.println("name:"+name);
+		System.out.println("dirPath:"+dirPath);
+		System.out.println("name:"+name);
+		System.out.println(Arrays.toString(arguments));
 		
 		boolean primaryMessage = false;
 		Long inodeNumber = null;
@@ -582,8 +583,12 @@ public class CephDirectoryOperations implements ICommandOperations {
 		{
 			String[] primaryMessagesContent = arguments[1].split(":");
 			primaryMessage = Globals.PRIMARY_MDS.equals(primaryMessagesContent[0].trim());
-			if(primaryMessagesContent.length > 1)
+//			System.out.println("Crossed reading primary");
+			System.out.println(Arrays.toString(primaryMessagesContent));
+			if(primaryMessagesContent.length > 1 && 
+					(primaryMessagesContent[1] != null && !"null".equals(primaryMessagesContent[1].trim())))
 			{
+//				System.out.println("Inside primary null");
 				inodeNumber = Long.valueOf(primaryMessagesContent[1].trim());
 			}
 		}
@@ -592,6 +597,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 		final Directory directory;
 		if(Globals.subTreePartitionList.containsKey(path))
 		{
+			System.out.println("getting from list");
 			directory = Globals.subTreePartitionList.get(path);
 		}
 		else
@@ -600,10 +606,13 @@ public class CephDirectoryOperations implements ICommandOperations {
 					!"/".equals(dirPath.trim()) && 
 					!"".equals(dirPath.trim()))
 			{
+				System.out.println("Calling SEarch");
 				directory = search(root, dirPath, resultCode);
+				System.out.println("Search over");
 			}
 			else
 			{
+				System.out.println("Assigning Root");
 				directory = root;
 				resultCode.append(Globals.PATH_FOUND);
 			}
@@ -611,8 +620,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 		if(directory != null)
 		{
 			Inode inode = directory.getInode();
-//			System.out.println("inode:"+inode);
-//			System.out.println("resultCode:"+resultCode);
+			System.out.println("inode:"+inode);
+			System.out.println("resultCode:"+resultCode);
 //			System.out.println(inode.getInodeNumber() == null);
 			String resultcodeValue = resultCode.toString().trim();
 			if(inode.getInodeNumber() == null && 
@@ -637,7 +646,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 				final List<Directory> contents = directory.getChildren();
 				boolean found = false;
 				Directory touchFile = null; 
-				if(directory.equals(file))
+				if(directory.getName().equals(file.getName().trim()))
 				{
 					touchFile = directory;
 					found = true;
@@ -646,7 +655,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 				{
 					for (final Directory child : contents) 
 					{
-						if (child.equals(file)) 
+						if (child.getName().equals(file.getName().trim())) 
 						{
 							// Already present, set modified timestamp to current
 							touchFile = child;
