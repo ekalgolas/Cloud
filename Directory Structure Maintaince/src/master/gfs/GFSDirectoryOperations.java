@@ -48,6 +48,9 @@ public class GFSDirectoryOperations implements ICommandOperations {
 			throw new InvalidDataException("Directory is empty");
 		}
 
+		// Try read locking the directory
+        root.getReadLock().lock();
+
 		// If we reach here, it means valid directory was found
 		// Compute output
 		final OutputFormatter output = new OutputFormatter();
@@ -118,7 +121,9 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		final String[] paths = filePath.split("/");
 
 		// Find the directory in directory tree
-		for (final String path : paths) {
+		for (int i = 0; i < paths.length; i++) {
+		    
+		    final String path = paths[i];
 			// Match the root
 			boolean found = false;
 			if (root.getName().equals(path)) {
@@ -128,6 +133,9 @@ public class GFSDirectoryOperations implements ICommandOperations {
 			// Check if the path corresponds to any child in this directory
 			for (final Directory child : root.getChildren()) {
 				if (child.getName().equals(path)) {
+				    if(i != paths.length - 1) {
+				        child.getReadLock().lock();
+				    }
 					root = child;
 					found = true;
 					break;
@@ -143,6 +151,54 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		// Return the node where the path was found
 		return root;
 	}
+
+
+	/**
+     * Performs a tree search from the {@literal root} on the directory structure corresponding to the {@literal filePath}
+     * and releases all the read locks
+     * @param root
+     *            Root of directory structure
+     * @param filePath
+     *            Path to search
+     * @return Node corresponding to the path, null if not found
+     */
+	@Override
+    public Directory releaseParentReadLocks(Directory root,
+            final String filePath) {
+        // Get list of paths
+        final String[] paths = filePath.split("/");
+
+        // Find the directory in directory tree
+        for (int i = 0; i < paths.length; i++) {
+            
+            final String path = paths[i];
+            // Match the root
+            boolean found = false;
+            if (root.getName().equals(path)) {
+                found = true;
+            }
+
+            // Check if the path corresponds to any child in this directory
+            for (final Directory child : root.getChildren()) {
+                if (child.getName().equals(path)) {
+                    if(i != paths.length - 1) {
+                        child.getReadLock().unlock();
+                    }
+                    root = child;
+                    found = true;
+                    break;
+                }
+            }
+
+            // If child was not found, path does not exists
+            if (!found) {
+                return null;
+            }
+        }
+
+        // Return the node where the path was found
+        return root;
+    }
 
 	/*
 	 * (non-Javadoc)
@@ -234,7 +290,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 					throws InvalidPathException {
 		// Search and get to the directory where we have to create
 		final Directory directory = search(root, path);
-
+		
 		// If path was not found, throw exception
 		if (directory == null) {
 			throw new InvalidPathException(path, "Path was not found");
@@ -246,6 +302,9 @@ public class GFSDirectoryOperations implements ICommandOperations {
 				throw new InvalidPathException(path, "Path already present");
 			}
 		}
+
+		// Try write locking the directory
+        directory.getWriteLock().lock();
 
 		// Add file if isFile is true
 		if (isFile) {
@@ -259,6 +318,9 @@ public class GFSDirectoryOperations implements ICommandOperations {
 					DEFAULT_SIZE);
 			contents.add(dir);
 		}
+		
+		// Release the lock
+		directory.getWriteLock().unlock();
 	}
 
 	/*
@@ -309,12 +371,17 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		if (directory == null) {
 			throw new InvalidPathException(path, "Path was not found");
 		}
+		
+		// Try write locking the directory
+        directory.getWriteLock().lock();
 
 		Directory directoryToRemove = null;
 		final List<Directory> subDirectories = directory.getChildren();
 		for (final Directory childDirectory : subDirectories) {
 			if (childDirectory.getName().equals(name)) {
 				if (childDirectory.isFile() != isFile) {
+			        // Release the lock
+			        directory.getWriteLock().unlock();
 					final String message = isFile ? "Provided argument is a file, directory expected" : "Provided argument is a directory, file expected";
 					throw new IllegalArgumentException(message);
 				} else {
@@ -330,6 +397,9 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		 */
 
 		subDirectories.remove(directoryToRemove);
+		
+		// Release the lock
+		directory.getWriteLock().unlock();
 	}
 
 	/*

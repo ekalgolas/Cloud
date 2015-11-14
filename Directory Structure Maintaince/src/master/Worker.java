@@ -151,54 +151,65 @@ public class Worker implements Runnable {
 			InvalidDataException,
 			CloneNotSupportedException {
 		Message reply = null;
-		if (command.startsWith(CommandsSupported.LS.name())) {
-			// Command line parameter (directory name) start from index '3' in the received string
-			reply = directoryOperations.ls(root, command.substring(3), 
-					partialFilePath.toString());
-		} else if (command.startsWith(CommandsSupported.MKDIR.name())) {
-			// Command line parameter (directory name) start from index '6' in the received string
-			String argument = command.substring(6);
-			
-			reply = directoryOperations.mkdir(root, argument, 
-					partialFilePath.toString(), 
-					message.getHeader());
-			if(replicationOperations != null) {
-				replicationOperations.replicateMkdir(root, replica, argument);
-			}
+		String argument = "";
+        try {
+            if (command.startsWith(CommandsSupported.LS.name())) {
+                // Command line parameter (directory name) start from index '3'
+                // in the received string
+                argument = command.substring(3);
 
-			logState(command, root);
-		} else if (command.startsWith(CommandsSupported.TOUCH.name())) {
-			// Command line parameter (directory name) start from index '6' in the received string
-			String argument = command.substring(6);
-			
-			reply = directoryOperations.touch(root, argument, 
-					partialFilePath.toString(), 
-					message.getHeader());
-			if(replicationOperations != null) {
-				replicationOperations.replicateTouch(root, replica, argument);
-			}
+                reply = directoryOperations.ls(root, argument,
+                        partialFilePath.toString());
+            } else if (command.startsWith(CommandsSupported.MKDIR.name())) {
+                // Command line parameter (directory name) start from index '6'
+                // in the received string
+                argument = command.substring(6);
 
-			logState(command, root);
-		} else if (command.startsWith(CommandsSupported.RMDIR.name())) {
-			// Command line parameter (directory name) start from index '6' in the received string
-			String argument = command.substring(6);
-			
-			reply = directoryOperations.rmdir(root, argument,
-					partialFilePath.toString(),
-					message.getHeader());
-			if(replicationOperations != null) {
-				replicationOperations.replicateRmdir(replica, argument);
-			}
+                reply = directoryOperations.mkdir(root, argument,
+                        partialFilePath.toString(), message.getHeader());
+                if (replicationOperations != null) {
+                    replicationOperations.replicateMkdir(root, replica,
+                            argument);
+                }
 
-			logState(command, root);
-		} else if (command.startsWith(CommandsSupported.EXIT.name())) {
-			// Close the connection
-			isRunning = false;
-		} else {
-			// Else, invalid command
-			reply = new Message("Invalid command: " + command);
-		}
+                logState(command, root);
+            } else if (command.startsWith(CommandsSupported.TOUCH.name())) {
+                // Command line parameter (directory name) start from index '6'
+                // in the received string
+                argument = command.substring(6);
 
+                reply = directoryOperations.touch(root, argument,
+                        partialFilePath.toString(), message.getHeader());
+                if (replicationOperations != null) {
+                    replicationOperations.replicateTouch(root, replica,
+                            argument);
+                }
+
+                logState(command, root);
+            } else if (command.startsWith(CommandsSupported.RMDIR.name())) {
+                // Command line parameter (directory name) start from index '6'
+                // in the received string
+                argument = command.substring(6);
+
+                reply = directoryOperations.rmdir(root, argument,
+                        partialFilePath.toString(), message.getHeader());
+                if (replicationOperations != null) {
+                    replicationOperations.replicateRmdir(replica, argument);
+                }
+
+                logState(command, root);
+            } else if (command.startsWith(CommandsSupported.EXIT.name())) {
+                // Close the connection
+                isRunning = false;
+            } else {
+                // Else, invalid command
+                reply = new Message("Invalid command: " + command);
+            }
+        } finally {
+            directoryOperations.releaseParentReadLocks(root, argument);
+        }
+
+		
 		return reply;
 	}
 

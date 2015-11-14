@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 
 import com.google.common.io.Files;
 import com.sun.media.sound.InvalidDataException;
+
 import commons.AppConfig;
 import commons.Globals;
 import commons.Message;
@@ -576,4 +577,10 @@ public class DhtDirectoryOperations implements ICommandOperations {
 			LOGGER.error("File not retreived", e);
 		}
 	}
+
+    @Override
+    public Directory releaseParentReadLocks(Directory root, String filePath) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

@@ -3,6 +3,12 @@ package commons.dir;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import master.metadata.Inode;
 
@@ -50,6 +56,26 @@ public class Directory implements Serializable, Cloneable {
 	 * Counter to keep track of the # of access to this directory.
 	 */
 	private long 			operationCounter;
+
+	/**
+	 * Reentrant ReadWriteLock for the directory;
+	 */
+	private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+	
+	/**
+	 * Read lock on the directory
+	 */
+	private ReadLock readLock = lock.readLock();
+
+	/**
+     * Write lock on the directory
+     */
+	private WriteLock writeLock = lock.writeLock();
+
+	/**
+	 * Tracking number of concurrent readers
+	 */
+	private AtomicInteger readers = new AtomicInteger(0);
 
 	/**
 	 * Constructor
@@ -264,4 +290,19 @@ public class Directory implements Serializable, Cloneable {
 		// TODO Auto-generated method stub
 		return super.clone();
 	}
+
+    /**
+     * @return the readLock
+     */
+    public ReadLock getReadLock() {
+        return readLock;
+    }
+
+    /**
+     * @return the writeLock
+     */
+    public WriteLock getWriteLock() {
+        return writeLock;
+    }
+
 }
