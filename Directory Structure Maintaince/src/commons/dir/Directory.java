@@ -58,24 +58,19 @@ public class Directory implements Serializable, Cloneable {
 	private long 			operationCounter;
 
 	/**
-	 * Reentrant ReadWriteLock for the directory;
+	 * Reentrant Lock for the directory;
 	 */
-	private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+	private ReentrantReadWriteLock lock;
 	
 	/**
 	 * Read lock on the directory
 	 */
-	private ReadLock readLock = lock.readLock();
+	private ReadLock readLock;
 
 	/**
      * Write lock on the directory
      */
-	private WriteLock writeLock = lock.writeLock();
-
-	/**
-	 * Tracking number of concurrent readers
-	 */
-	private AtomicInteger readers = new AtomicInteger(0);
+	private WriteLock writeLock;
 
 	/**
 	 * Constructor
@@ -91,6 +86,7 @@ public class Directory implements Serializable, Cloneable {
 		this.name = name;
 		this.isFile = isFile;
 		this.children = children;
+		setupLocks();
 	}
 
 	/**
@@ -114,6 +110,16 @@ public class Directory implements Serializable, Cloneable {
 		this.children = children;
 		this.modifiedTimeStamp = modifiedTimeStamp;
 		this.size = size;
+		setupLocks();
+	}
+
+	/**
+	 * Initialize read and write lock objects
+	 */
+	private void setupLocks() {
+	    lock = new ReentrantReadWriteLock();
+	    readLock = lock.readLock();
+	    writeLock = lock.writeLock();
 	}
 
 	/*
