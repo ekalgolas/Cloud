@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 
 import com.google.common.io.Files;
 import com.sun.media.sound.InvalidDataException;
+
 import commons.AppConfig;
 import commons.Globals;
 import commons.Message;
@@ -133,7 +134,7 @@ public class DhtDirectoryOperations implements ICommandOperations {
 	public static void mkdir(final HashMap<String, File> filemap,
 			final String path)
 					throws InvalidPropertiesFormatException {
-		final Directory directory = new Directory("", false, null, System.currentTimeMillis(), "drwxrwxr-x", (long) 4096);
+		final Directory directory = new Directory("", false, null, System.currentTimeMillis(), (long) 4096);
 		File file = null;
 		final List<String> names = new ArrayList<String>();
 		final String filePath = getFilePath(path, names);
@@ -568,7 +569,6 @@ public class DhtDirectoryOperations implements ICommandOperations {
 			final File file) {
 		try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file, true)))) {
 			out.print(path);
-			out.print("@" + directory.getAccessRights());
 			out.print("@" + directory.getSize());
 			out.print("@" + directory.getModifiedTimeStamp());
 			out.println();
@@ -577,4 +577,10 @@ public class DhtDirectoryOperations implements ICommandOperations {
 			LOGGER.error("File not retreived", e);
 		}
 	}
+
+    @Override
+    public Directory releaseParentReadLocks(Directory root, String filePath) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

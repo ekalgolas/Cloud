@@ -15,6 +15,7 @@ import master.metadata.MetaDataServerInfo;
 import org.apache.log4j.Logger;
 
 import com.sun.media.sound.InvalidDataException;
+import commons.AppWatch;
 import commons.CommandsSupported;
 import commons.Globals;
 import commons.Message;
@@ -29,12 +30,13 @@ import commons.dir.ICommandOperations;
  * </pre>
  */
 public class Worker implements Runnable {
-	public volatile boolean		isRunning	= true;
-	private final static Logger	LOGGER		= Logger.getLogger(Worker.class);
-	private final String		listenerType;
-	private final Socket		workerSocket;
-	private ObjectInputStream	inputStream;
-	private ObjectOutputStream	outputStream;
+	private static final AppWatch   APPWATCH    = new AppWatch();
+	private final static Logger     LOGGER      = Logger.getLogger(Worker.class);
+	public volatile boolean        isRunning	= true;
+	private final String           listenerType;
+	private final Socket           workerSocket;
+	private ObjectInputStream      inputStream;
+	private ObjectOutputStream     outputStream;
 
 	/**
 	 * Constructor
@@ -86,24 +88,28 @@ public class Worker implements Runnable {
 					} else if (Globals.MDS_MODE.equalsIgnoreCase(listenerType)) {
 						directoryOperations = new CephDirectoryOperations();
 						replicationOperations = null;
-						String[] commandParse = command.split(" ");	
+						final String[] commandParse = command.split(" ");
 						root = MetaDataServerInfo.findClosestNode(command
-								.substring(commandParse[0].length()+1), 
+								.substring(commandParse[0].length()+1),
 								partialFilePath, Globals.subTreePartitionList);
 					} else {
 						directoryOperations = new DhtDirectoryOperations();
 						replicationOperations = null;
 					}
 
-					reply = executeCommand(command, 
-							root, replica, partialFilePath, 
-							directoryOperations, replicationOperations, 
+					APPWATCH.startWatch("Command execution started...");
+					reply = executeCommand(command,
+							root, replica, partialFilePath,
+							directoryOperations, replicationOperations,
 							message);
+
+					final String performance = APPWATCH.stopAndLogTime("Command execution completed");
+					reply.appendContent(performance);
 				} catch (final Exception e) {
 					// If any command threw errors, propagate the error to the client
 					reply = new Message(e.getMessage()+" error occurred");
 				}
-				
+
 				System.out.println(reply.toString());
 
 				// Write reply to the socket output stream
@@ -142,57 +148,68 @@ public class Worker implements Runnable {
 			final ICommandOperations directoryOperations,
 			final GFSMetadataReplicationOperations replicationOperations,
 			final Message message)
-			throws InvalidPropertiesFormatException,
-			InvalidDataException,
-			CloneNotSupportedException {
+					throws InvalidPropertiesFormatException,
+					InvalidDataException,
+					CloneNotSupportedException {
 		Message reply = null;
-		if (command.startsWith(CommandsSupported.LS.name())) {
-			// Command line parameter (directory name) start from index '3' in the received string
-			reply = directoryOperations.ls(root, command.substring(3), 
-					partialFilePath.toString());
-		} else if (command.startsWith(CommandsSupported.MKDIR.name())) {
-			// Command line parameter (directory name) start from index '6' in the received string
-			String argument = command.substring(6);
-			
-			reply = directoryOperations.mkdir(root, argument, 
-					partialFilePath.toString(), 
-					message.getHeader());
-			if(replicationOperations != null) {
-				replicationOperations.replicateMkdir(root, replica, argument);
-			}
+		String argument = "";
+		try {
+			if (command.startsWith(CommandsSupported.LS.name())) {
+				// Command line parameter (directory name) start from index '3'
+				// in the received string
+				argument = command.substring(3);
 
-			logState(command, root);
-		} else if (command.startsWith(CommandsSupported.TOUCH.name())) {
-			// Command line parameter (directory name) start from index '6' in the received string
-			String argument = command.substring(6);
-			
-			reply = directoryOperations.touch(root, argument, 
-					partialFilePath.toString(), 
-					message.getHeader());
-			if(replicationOperations != null) {
-				replicationOperations.replicateTouch(root, replica, argument);
-			}
+				reply = directoryOperations.ls(root, argument,
+						partialFilePath.toString());
+			} else if (command.startsWith(CommandsSupported.MKDIR.name())) {
+				// Command line parameter (directory name) start from index '6'
+				// in the received string
+				argument = command.substring(6);
 
-			logState(command, root);
-		} else if (command.startsWith(CommandsSupported.RMDIR.name())) {
-			// Command line parameter (directory name) start from index '6' in the received string
-			String argument = command.substring(6);
-			
-			reply = directoryOperations.rmdir(root, argument,
-					partialFilePath.toString(),
-					message.getHeader());
-			if(replicationOperations != null) {
-				replicationOperations.replicateRmdir(replica, argument);
-			}
+				reply = directoryOperations.mkdir(root, argument,
+						partialFilePath.toString(), message.getHeader());
+				if (replicationOperations != null) {
+					replicationOperations.replicateMkdir(root, replica,
+							argument);
+				}
 
-			logState(command, root);
-		} else if (command.startsWith(CommandsSupported.EXIT.name())) {
-			// Close the connection
-			isRunning = false;
-		} else {
-			// Else, invalid command
-			reply = new Message("Invalid command: " + command);
+				logState(command, root);
+			} else if (command.startsWith(CommandsSupported.TOUCH.name())) {
+				// Command line parameter (directory name) start from index '6'
+				// in the received string
+				argument = command.substring(6);
+
+				reply = directoryOperations.touch(root, argument,
+						partialFilePath.toString(), message.getHeader());
+				if (replicationOperations != null) {
+					replicationOperations.replicateTouch(root, replica,
+							argument);
+				}
+
+				logState(command, root);
+			} else if (command.startsWith(CommandsSupported.RMDIR.name())) {
+				// Command line parameter (directory name) start from index '6'
+				// in the received string
+				argument = command.substring(6);
+
+				reply = directoryOperations.rmdir(root, argument,
+						partialFilePath.toString(), message.getHeader());
+				if (replicationOperations != null) {
+					replicationOperations.replicateRmdir(replica, argument);
+				}
+
+				logState(command, root);
+			} else if (command.startsWith(CommandsSupported.EXIT.name())) {
+				// Close the connection
+				isRunning = false;
+			} else {
+				// Else, invalid command
+				reply = new Message("Invalid command: " + command);
+			}
+		} finally {
+			directoryOperations.releaseParentReadLocks(root, argument);
 		}
+
 
 		return reply;
 	}

@@ -27,7 +27,7 @@ public class CacheOperations implements ICommandOperations {
 	 * @see commons.ICommandOperations#mkdir(master.metadata.Directory, java.lang.String)
 	 */
 	@Override
-	public Message mkdir(final Directory root, final String path, String... arguments) throws InvalidPropertiesFormatException {
+	public Message mkdir(final Directory root, final String path, final String... arguments) throws InvalidPropertiesFormatException {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -37,7 +37,7 @@ public class CacheOperations implements ICommandOperations {
 	 * @see commons.ICommandOperations#touch(master.metadata.Directory, java.lang.String)
 	 */
 	@Override
-	public Message touch(final Directory root, final String path, String... arguments) throws InvalidPropertiesFormatException {
+	public Message touch(final Directory root, final String path, final String... arguments) throws InvalidPropertiesFormatException {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -80,6 +80,13 @@ public class CacheOperations implements ICommandOperations {
 	 * @return Current directory name as string
 	 */
 	public String pwd(final Directory root) {
+		return null;
+	}
+
+	@Override
+	public Directory releaseParentReadLocks(final Directory root,
+			final String filePath) {
+		// TODO Auto-generated method stub
 		return null;
 	}
 }

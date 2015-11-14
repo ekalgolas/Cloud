@@ -103,4 +103,16 @@ public interface ICommandOperations {
 	public Message cd(Directory root,
 			final String filePath)
 			throws InvalidPropertiesFormatException;
+	
+	/**
+     * Performs a tree search from the {@literal root} on the directory structure corresponding to the {@literal filePath}
+     * and releases all the read locks
+     * @param root
+     *            Root of directory structure
+     * @param filePath
+     *            Path to search
+     * @return Node corresponding to the path, null if not found
+     */
+    public Directory releaseParentReadLocks(Directory root,
+            final String filePath);
 }
