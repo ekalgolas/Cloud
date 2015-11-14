@@ -1,612 +1,693 @@
-Fall 2015
-├── [-rw-rw-r--      198852 1443563302]  AcademicCalendarFall2015.pdf
-├── [drwxrwxr-x    22161867 1443921137]  AOS/
-│   ├── [-rw-rw-r--        3016 1443670856]  grade.sh
-│   ├── [-rw-rw-r--         344 1443670856]  grading-output.txt
-│   ├── [-rw-rw-rw-         625 1442265401]  launcher.sh
-│   ├── [drwxrwxr-x     9313786 1443629435]  Lectures/
-│   │   ├── [-rw-rw-r--      627887 1443629410]  commit.pptx
-│   │   ├── [-rw-rw-r--     1468140 1441076550]  Commit Protocols.pdf
-│   │   ├── [-rw-rw-r--     2712828 1441076532]  foundations-animated.pdf
-│   │   ├── [-rw-rw-r--      233027 1441076542]  foundations-nonanimated.pdf
-│   │   ├── [-rw-rw-r--      140545 1443629435]  mutex-handout(1).pdf
-│   │   └── [-rw-rw-r--     4127263 1443629399]  mutex-slides.pdf
-│   ├── [-rw-rw-r--     8305617 1442890880]  New Doc 2.pdf
-│   ├── [drwxrwxr-x      167138 1443919360]  Project1/
-│   │   ├── [-rw-rw-r--         715 1442266664]  cleanup.sh
-│   │   ├── [-rw-rw-rw-         618 1443480288]  cleanup_utd.sh
-│   │   ├── [-rw-rw-r--         531 1441340898]  config(2).txt
-│   │   ├── [-rw-rw-r--        2918 1442266714]  config.txt
-│   │   ├── [-rw-rw-rw-        2918 1442961994]  config_utd.txt
-│   │   ├── [-rw-rw-r--        3016 1443670856]  grade.sh
-│   │   ├── [-rw-rw-r--         344 1443670856]  grading-output.txt
-│   │   ├── [-rw-rw-r--       28160 1441340931]  keygen(1).doc
-│   │   ├── [drwxrwxr-x       55462 1443919294]  kkj140030/
-│   │   │   ├── [-rw-rw-r--        4018 1443919127]  AppConfigurations.class
-│   │   │   ├── [-rw-rw-r--        5065 1443919119]  AppConfigurations.java
-│   │   │   ├── [-rw-rw-rw-         432 1443919264]  cleanup.sh
-│   │   │   ├── [-rw-rw-rw-        2923 1443725225]  config.txt
-│   │   │   ├── [-rw-rw-r--        2672 1443919127]  Globals.class
-│   │   │   ├── [-rw-rw-r--        2133 1443919119]  Globals.java
-│   │   │   ├── [-rw-rw-rw-         490 1443919277]  launcher.sh
-│   │   │   ├── [-rw-rw-r--        6526 1443919128]  Node.class
-│   │   │   ├── [-rw-rw-r--        1163 1443919127]  NodeInfo.class
-│   │   │   ├── [-rw-rw-r--         992 1443919119]  NodeInfo.java
-│   │   │   ├── [-rw-rw-r--        7210 1443919119]  Node.java
-│   │   │   ├── [-rw-rw-r--         995 1443919244]  README
-│   │   │   ├── [-rw-rw-r--        2109 1443919128]  TcpListener.class
-│   │   │   ├── [-rw-rw-r--        2692 1443919119]  TcpListener.java
-│   │   │   ├── [-rw-rw-r--        1748 1443919128]  TcpReceiver.class
-│   │   │   ├── [-rw-rw-r--        2160 1443919119]  TcpReceiver.java
-│   │   │   ├── [-rw-rw-r--         780 1443919128]  TcpSender.class
-│   │   │   ├── [-rw-rw-r--         978 1443919119]  TcpSender.java
-│   │   │   ├── [-rw-rw-r--        1910 1443919127]  Token.class
-│   │   │   ├── [-rw-rw-r--        2461 1443919119]  Token.java
-│   │   │   ├── [-rw-rw-r--        1126 1443919127]  Tokens.class
-│   │   │   └── [-rw-rw-r--         783 1443919119]  Tokens.java
-│   │   ├── [-rw-rw-r--       25720 1443919360]  kkj140030.zip
-│   │   ├── [-rw-rw-r--         628 1442265453]  launcher.sh
-│   │   ├── [-rw-rw-rw-         801 1443480288]  launcher_utd.sh
-│   │   ├── [-rw-rw-r--        1286 1442265528]  NOT-THIS-YEARS-CONFIG.txt
-│   │   ├── [-rw-rw-r--       33202 1441936395]  project1(8).pdf
-│   │   ├── [-rw-rw-r--        1628 1443492887]  README
-│   │   ├── [-rw-rw-r--        1431 1441340916]  runScript(3).sh
-│   │   ├── [-rw-rw-r--        1431 1442265460]  runScript.sh
-│   │   ├── [-rw-rw-r--        2233 1442792881]  sampleoutput.txt
-│   │   └── [-rw-rw-r--           0 1443724342]  setup.sh
-│   ├── [drwxrwxr-x     3953668 1441683261]  Research Papers/
-│   │   ├── [-rw-rw-r--     2915176 1441683261]  birman-schiper-stephenson.pdf
-│   │   ├── [-rw-rw-r--      854562 1441683224]  lamport-clocks.pdf
-│   │   └── [-rw-rw-r--      179834 1441683243]  raynal-schiper-toueg.pdf
-│   ├── [drwxrwxr-x      137475 1443921163]  Review Questions/
-│   │   ├── [-rw-rw-r--       32158 1443921157]  questions2.pdf
-│   │   ├── [-rw-rw-r--       49684 1443921163]  questions3.pdf
-│   │   └── [-rw-rw-r--       51537 1443921149]  questions.pdf
-│   ├── [drwxrwxr-x      215999 1442890897]  Sample Quizzes/
-│   │   ├── [-rw-rw-r--       30400 1441728000]  quiz1(2).pdf
-│   │   ├── [-rw-rw-r--       32933 1441728006]  quiz2(1).pdf
-│   │   ├── [-rw-rw-r--       33837 1441728011]  quiz3(1).pdf
-│   │   ├── [-rw-rw-r--       38170 1441728016]  quiz4(1).pdf
-│   │   ├── [-rw-rw-r--       28072 1441728021]  quiz5(1).pdf
-│   │   ├── [-rw-rw-r--       21739 1441728027]  quiz6.pdf
-│   │   └── [-rw-rw-r--       26752 1441728031]  quiz7.pdf
-│   └── [-rw-rw-r--       60103 1442797356]  Syllabus.pdf
-├── [drwxrwxr-x  5494936814 1443916834]  BigData/
-│   ├── [drwxrwxr-x    44330428 1443893584]  Assignments/
-│   │   ├── [-rw-rw-r--     1413445 1442194005]  (439767293) HadoopLecture1.pdf
-│   │   ├── [drwxrwxr-x    21675256 1443893633]  Assignment1/
-│   │   │   ├── [-rw-rw-r--    21169722 1443893633]  dataset.zip
-│   │   │   ├── [-rw-rw-r--       14735 1441835291]  homeworkrevised-2.docx
-│   │   │   ├── [drwxrwxr-x       68686 1443380753]  JARS/
-│   │   │   │   ├── [-rw-rw-r--        7978 1443322966]  Hw1Q1.jar
-│   │   │   │   ├── [-rw-rw-r--       14968 1443322979]  Hw1Q2.jar
-│   │   │   │   ├── [-rw-rw-r--       28647 1443322989]  Hw1Q3.jar
-│   │   │   │   └── [-rw-rw-r--       12997 1443323001]  Hw1Q4.jar
-│   │   │   ├── [-rw-rw-r--      158332 1443380792]  kkj140030.zip
-│   │   │   ├── [drwxrwxr-x      235792 1443380783]  OutputFiles/
-│   │   │   │   ├── [-rw-rw-rw-       17480 1443383362]  Hw1Q1_out.txt
-│   │   │   │   ├── [-rw-rw-rw-         230 1443383972]  Hw1Q2_out.txt
-│   │   │   │   ├── [-rw-rw-rw-        1037 1443382512]  Hw1Q3_out.txt
-│   │   │   │   └── [-rw-rw-rw-      212949 1443384058]  Hw1Q4_out.txt
-│   │   │   ├── [-rw-rw-r--        3695 1443379453]  README.txt
-│   │   │   └── [drwxrwxr-x       20198 1443380771]  SourceFiles/
-│   │   │       ├── [-rw-rw-r--        6798 1443322406]  BusinessDetails.java
-│   │   │       ├── [-rw-rw-r--        1961 1443322646]  PaloAltoBusiness.java
-│   │   │       ├── [-rw-rw-r--        3771 1443327462]  StanfordBusinessRatings.java
-│   │   │       └── [-rw-rw-r--        3572 1443322422]  TopAvgBusiness.java
-│   │   └── [drwxrwxr-x    21237631 1443893619]  Assignment2/
-│   │       ├── [-rw-rw-r--    21169722 1443893619]  dataset(1).zip
-│   │       └── [-rw-rw-r--       63813 1443893587]  HW2Fall2015.pdf
-│   ├── [drwx------  5117736448 1443120974]  Big Data/
-│   │   ├── [drwxrwxr-x       16162 1443120964]  Assignment_1_ycp140030/
-│   │   │   ├── [-rw-rw-r--        4139 1424216298]  AgeGroup.java
-│   │   │   ├── [-rw-rw-r--        2697 1424216344]  Genere.java
-│   │   │   ├── [-rw-rw-r--        2998 1424218798]  Readme_txt.txt
-│   │   │   └── [-rw-rw-r--        2232 1424216386]  UserId.java
-│   │   ├── [-rw-------       13959 1424218918]  Assignment_1_ycp140030.zip
-│   │   ├── [drwxrwxr-x       22085 1443120958]  Assignment_2_ycp140030/
-│   │   │   ├── [-rw-rw-r--        4216 1425841166]  MapSideJoin.java
-│   │   │   ├── [-rw-rw-r--        2285 1425842876]  Readme_txt.txt
-│   │   │   └── [-rw-rw-r--       11488 1425841214]  ReduceSideJoin.java
-│   │   ├── [-rw-------       19657 1425843020]  Assignment_2_ycp140030.zip
-│   │   ├── [-rw-------      117656 1427850269]  Assignment_3_ycp140030.zip
-│   │   ├── [-rw-------        2219 1429937134]  Assignment_4_ycp140030.zip
-│   │   ├── [-rw-rw-r--        9486 1443120974]  Big Data.zip
-│   │   ├── [-rw-------  5038375936 1425414600]  Sandbox_HDP_2.2_VMware.ova
-│   │   └── [-rw-------    79155192 1425410812]  VMware-player-7.1.0-2496824.exe
-│   ├── [drwxrwxr-x    19192086 1442692195]  Lectures/
-│   │   ├── [-rw-rw-r--    12351282 1441224534]  BigdataIntro#0.pptx
-│   │   ├── [-rw-rw-r--      896976 1441224511]  DatabaseMapReduceBigData#4.pptx
-│   │   ├── [-rw-rw-r--     2206470 1441224495]  HadoopFeb2015.pptx
-│   │   ├── [-rw-rw-r--     3120547 1441224511]  Lecture_on_HadoopBigData#3New.pptx
-│   │   ├── [-rw-rw-r--      105755 1441224484]  Lecture_on_Mapreduce_BigData#1.pptx
-│   │   └── [-rw-rw-r--      506960 1441224500]  MapReduceFunnySlideBigData#2.pptx
-│   ├── [-rw-rw-r--   280901736 1443916832]  spark-1.5.1-bin-hadoop2.6.tgz
-│   └── [drwxrwxr-x    32772020 1443920034]  TA_ExtraLecs/
-│       ├── [drwxrwxr-x     1533245 1443916619]  Extralecture1fall/
-│       │   ├── [-rw-------     1413445 1442075298]  (439767293) HadoopLecture1.pdf
-│       │   ├── [-rw-------        1460 1442074500]  clusterprofile
-│       │   ├── [-rw-------       89456 1442094478]  HadoopLect2.pdf
-│       │   ├── [-rw-------        2498 1442088280]  howtousehadoopclusteroncs6360.txt
-│       │   ├── [-rw-------       21256 1433785230]  lect1SrcCode.zip
-│       │   └── [-rw-------        1034 1442075376]  mapsidesetupmethodforcluster.txt
-│       ├── [-rw-rw-r--     1236020 1443916590]  Extralecture1fall.zip
-│       ├── [drwxrwxr-x    22381327 1443916624]  sparktutorial/
-│       │   ├── [-rw-------         184 1429552928]  javaspark
-│       │   ├── [drwx------     8902677 1437152492]  sparkcode/
-│       │   │   ├── [-rw-------          62 1428532198]  docs
-│       │   │   ├── [drwx------       27356 1428526124]  project/
-│       │   │   │   └── [drwx------       23260 1428526124]  target/
-│       │   │   │       └── [drwx------       19164 1437150384]  config-classes/
-│       │   │   │           ├── [-rw-------         931 1437150382]  $13c5b7efdda1fd16019f$$anonfun$$sbtdef$1.class
-│       │   │   │           ├── [-rw-------          22 1437150382]  $13c5b7efdda1fd16019f.cache
-│       │   │   │           ├── [-rw-------         755 1437150382]  $13c5b7efdda1fd16019f.class
-│       │   │   │           ├── [-rw-------        1343 1437150382]  $13c5b7efdda1fd16019f$.class
-│       │   │   │           ├── [-rw-------        1072 1437150384]  $2ecbee699570d380005b$$anonfun$$sbtdef$1.class
-│       │   │   │           ├── [-rw-------          22 1437150384]  $2ecbee699570d380005b.cache
-│       │   │   │           ├── [-rw-------         433 1437150384]  $2ecbee699570d380005b.class
-│       │   │   │           ├── [-rw-------        1735 1437150384]  $2ecbee699570d380005b$.class
-│       │   │   │           ├── [-rw-------         920 1437150382]  $737f5d69315d80a0a4f5$$anonfun$$sbtdef$1.class
-│       │   │   │           ├── [-rw-------          22 1437150382]  $737f5d69315d80a0a4f5.cache
-│       │   │   │           ├── [-rw-------         433 1437150382]  $737f5d69315d80a0a4f5.class
-│       │   │   │           ├── [-rw-------        1346 1437150382]  $737f5d69315d80a0a4f5$.class
-│       │   │   │           ├── [-rw-------         923 1437150382]  $c9ac2cfe2ca918b4cac7$$anonfun$$sbtdef$1.class
-│       │   │   │           ├── [-rw-------          22 1437150382]  $c9ac2cfe2ca918b4cac7.cache
-│       │   │   │           ├── [-rw-------         433 1437150382]  $c9ac2cfe2ca918b4cac7.class
-│       │   │   │           ├── [-rw-------        1351 1437150382]  $c9ac2cfe2ca918b4cac7$.class
-│       │   │   │           ├── [-rw-------        1274 1437150384]  $ca79ffeb4ba838528b36$$anonfun$$sbtdef$1.class
-│       │   │   │           ├── [-rw-------          22 1437150384]  $ca79ffeb4ba838528b36.cache
-│       │   │   │           ├── [-rw-------         433 1437150384]  $ca79ffeb4ba838528b36.class
-│       │   │   │           └── [-rw-------        1576 1437150384]  $ca79ffeb4ba838528b36$.class
-│       │   │   ├── [drwx------     1233949 1416496360]  sbt/
-│       │   │   │   ├── [drwx------     1224671 1416496360]  bin/
-│       │   │   │   │   ├── [-rw-------        5062 1416496360]  sbt
-│       │   │   │   │   ├── [-rw-------        1321 1416496360]  sbt.bat
-│       │   │   │   │   ├── [-rw-------     1208380 1416496360]  sbt-launch.jar
-│       │   │   │   │   └── [-rw-------        5812 1416496360]  sbt-launch-lib.bash
-│       │   │   │   └── [drwx------        5182 1416496360]  conf/
-│       │   │   │       ├── [-rw-------         147 1416496360]  sbtconfig.txt
-│       │   │   │       └── [-rw-------         939 1416496360]  sbtopts
-│       │   │   ├── [-rw-------         223 1437152492]  Simple.sbt
-│       │   │   ├── [drwx------       13066 1428526020]  src/
-│       │   │   │   └── [drwx------        8970 1428526026]  main/
-│       │   │   │       └── [drwx------        4874 1440453648]  scala/
-│       │   │   │           └── [-rw-------         778 1440453646]  SimpleApp.scala
-│       │   │   └── [drwx------     7623925 1437150560]  target/
-│       │   │       ├── [drwx------     1435544 1437150560]  resolution-cache/
-│       │   │       │   ├── [drwx------     1416440 1437150560]  reports/
-│       │   │       │   │   ├── [-rw-------        4371 1437150560]  ivy-report.css
-│       │   │       │   │   ├── [-rw-------       20993 1437150560]  ivy-report.xsl
-│       │   │       │   │   ├── [-rw-------      230237 1437150560]  simple-project-simple-project_2.10-compile-internal.xml
-│       │   │       │   │   ├── [-rw-------      227658 1437150560]  simple-project-simple-project_2.10-compile.xml
-│       │   │       │   │   ├── [-rw-------         441 1437150560]  simple-project-simple-project_2.10-docs.xml
-│       │   │       │   │   ├── [-rw-------         445 1437150560]  simple-project-simple-project_2.10-optional.xml
-│       │   │       │   │   ├── [-rw-------         443 1437150560]  simple-project-simple-project_2.10-plugin.xml
-│       │   │       │   │   ├── [-rw-------         440 1437150560]  simple-project-simple-project_2.10-pom.xml
-│       │   │       │   │   ├── [-rw-------         445 1437150560]  simple-project-simple-project_2.10-provided.xml
-│       │   │       │   │   ├── [-rw-------      230234 1437150560]  simple-project-simple-project_2.10-runtime-internal.xml
-│       │   │       │   │   ├── [-rw-------      228251 1437150560]  simple-project-simple-project_2.10-runtime.xml
-│       │   │       │   │   ├── [-rw-------        7516 1437150560]  simple-project-simple-project_2.10-scala-tool.xml
-│       │   │       │   │   ├── [-rw-------         444 1437150560]  simple-project-simple-project_2.10-sources.xml
-│       │   │       │   │   ├── [-rw-------      230270 1437150560]  simple-project-simple-project_2.10-test-internal.xml
-│       │   │       │   │   └── [-rw-------      230156 1437150560]  simple-project-simple-project_2.10-test.xml
-│       │   │       │   └── [drwx------       15008 1437150484]  simple-project/
-│       │   │       │       └── [drwx------       10912 1437150484]  simple-project_2.10/
-│       │   │       │           └── [drwx------        6816 1437150484]  1.0/
-│       │   │       │               ├── [-rw-------         646 1437150484]  resolved.xml.properties
-│       │   │       │               └── [-rw-------        2074 1437150484]  resolved.xml.xml
-│       │   │       ├── [drwx------       38666 1437150666]  scala-2.10/
-│       │   │       │   ├── [drwx------       29965 1437150564]  classes/
-│       │   │       │   │   └── [drwx------       25869 1437150564]  org/
-│       │   │       │   │       └── [drwx------       21773 1437150564]  apache/
-│       │   │       │   │           └── [drwx------       17677 1437150564]  spark/
-│       │   │       │   │               └── [drwx------       13581 1437150564]  examples/
-│       │   │       │   │                   └── [drwx------        9485 1437150564]  streaming/
-│       │   │       │   │                       ├── [-rw-------        1178 1437150564]  SimpleApp$$anonfun$1.class
-│       │   │       │   │                       ├── [-rw-------        1178 1437150564]  SimpleApp$$anonfun$2.class
-│       │   │       │   │                       ├── [-rw-------         906 1437150564]  SimpleApp.class
-│       │   │       │   │                       └── [-rw-------        2127 1437150564]  SimpleApp$.class
-│       │   │       │   └── [-rw-------        4605 1437150564]  simple-project_2.10-1.0.jar
-│       │   │       └── [drwx------     6145619 1437150586]  streams/
-│       │   │           ├── [drwx------      258092 1437150588]  compile/
-│       │   │           │   ├── [drwx------       23345 1437150560]  compile/
-│       │   │           │   │   └── [drwx------       19249 1437150560]  $global/
-│       │   │           │   │       └── [drwx------       15153 1437150560]  streams/
-│       │   │           │   │           ├── [-rw-------       10284 1437150564]  export
-│       │   │           │   │           └── [-rw-------         773 1437150666]  out
-│       │   │           │   ├── [drwx------       12394 1437150564]  copyResources/
-│       │   │           │   │   └── [drwx------        8298 1437150564]  $global/
-│       │   │           │   │       └── [drwx------        4202 1437150564]  streams/
-│       │   │           │   │           ├── [-rw-------          23 1437150666]  copy-resources
-│       │   │           │   │           └── [-rw-------          83 1437150666]  out
-│       │   │           │   ├── [drwx------       21982 1437150560]  dependencyClasspath/
-│       │   │           │   │   └── [drwx------       17886 1437150560]  $global/
-│       │   │           │   │       └── [drwx------       13790 1437150560]  streams/
-│       │   │           │   │           └── [-rw-------        9694 1437150666]  export
-│       │   │           │   ├── [drwx------       12385 1437150588]  exportedProducts/
-│       │   │           │   │   └── [drwx------        8289 1437150588]  $global/
-│       │   │           │   │       └── [drwx------        4193 1437150588]  streams/
-│       │   │           │   │           └── [-rw-------          97 1437150666]  export
-│       │   │           │   ├── [drwx------       21982 1437150560]  externalDependencyClasspath/
-│       │   │           │   │   └── [drwx------       17886 1437150560]  $global/
-│       │   │           │   │       └── [drwx------       13790 1437150560]  streams/
-│       │   │           │   │           └── [-rw-------        9694 1437150666]  export
-│       │   │           │   ├── [drwx------       12339 1437150564]  $global/
-│       │   │           │   │   └── [drwx------        8243 1437150564]  $global/
-│       │   │           │   │       └── [drwx------        4147 1437150564]  discoveredMainClasses/
-│       │   │           │   │           └── [-rw-------          51 1437150670]  data
-│       │   │           │   ├── [drwx------       26952 1437150560]  incCompileSetup/
-│       │   │           │   │   └── [drwx------       22856 1437150560]  $global/
-│       │   │           │   │       └── [drwx------       18760 1437150564]  streams/
-│       │   │           │   │           └── [-rw-------       14664 1437150564]  inc_compile_2.10
-│       │   │           │   ├── [drwx------       12289 1437150560]  internalDependencyClasspath/
-│       │   │           │   │   └── [drwx------        8193 1437150560]  $global/
-│       │   │           │   │       └── [drwx------        4097 1437150560]  streams/
-│       │   │           │   │           └── [-rw-------           1 1437150666]  export
-│       │   │           │   ├── [drwx------       12288 1437150564]  mainClass/
-│       │   │           │   │   └── [drwx------        8192 1437150564]  $global/
-│       │   │           │   │       └── [drwx------        4096 1437150564]  streams/
-│       │   │           │   │           └── [-rw-------           0 1437150564]  out
-│       │   │           │   ├── [drwx------       21982 1437150560]  managedClasspath/
-│       │   │           │   │   └── [drwx------       17886 1437150560]  $global/
-│       │   │           │   │       └── [drwx------       13790 1437150560]  streams/
-│       │   │           │   │           └── [-rw-------        9694 1437150666]  export
-│       │   │           │   ├── [drwx------       17887 1437150564]  packageBin/
-│       │   │           │   │   └── [drwx------       13791 1437150564]  $global/
-│       │   │           │   │       └── [drwx------        9695 1437150564]  streams/
-│       │   │           │   │           ├── [-rw-------        3167 1437150564]  inputs
-│       │   │           │   │           ├── [-rw-------        2313 1437150564]  out
-│       │   │           │   │           └── [-rw-------         119 1437150564]  output
-│       │   │           │   ├── [drwx------       33593 1437150588]  run/
-│       │   │           │   │   └── [drwx------       29497 1437150588]  $global/
-│       │   │           │   │       └── [drwx------       25401 1437150588]  streams/
-│       │   │           │   │           └── [-rw-------       21305 1437150670]  out
-│       │   │           │   ├── [drwx------       12289 1437150406]  unmanagedClasspath/
-│       │   │           │   │   └── [drwx------        8193 1437150406]  $global/
-│       │   │           │   │       └── [drwx------        4097 1437150406]  streams/
-│       │   │           │   │           └── [-rw-------           1 1437150666]  export
-│       │   │           │   └── [drwx------       12289 1437150406]  unmanagedJars/
-│       │   │           │       └── [drwx------        8193 1437150406]  $global/
-│       │   │           │           └── [drwx------        4097 1437150406]  streams/
-│       │   │           │               └── [-rw-------           1 1437150666]  export
-│       │   │           ├── [drwx------     5741865 1437150406]  $global/
-│       │   │           │   ├── [drwx------       12288 1437150386]  clean/
-│       │   │           │   │   └── [drwx------        8192 1437150386]  $global/
-│       │   │           │   │       └── [drwx------        4096 1437150386]  streams/
-│       │   │           │   │           └── [-rw-------           0 1437150386]  out
-│       │   │           │   ├── [drwx------       16766 1437150406]  dependencyPositions/
-│       │   │           │   │   └── [drwx------       12670 1437150406]  $global/
-│       │   │           │   │       └── [drwx------        8574 1437150406]  streams/
-│       │   │           │   │           └── [drwx------        4478 1437150406]  update_cache_2.10/
-│       │   │           │   │               ├── [-rw-------         118 1437150406]  input_dsp
-│       │   │           │   │               └── [-rw-------         264 1437150666]  output_dsp
-│       │   │           │   ├── [drwx------       12288 1437150406]  $global/
-│       │   │           │   │   └── [drwx------        8192 1437150406]  $global/
-│       │   │           │   │       └── [drwx------        4096 1437150406]  streams/
-│       │   │           │   │           └── [-rw-------           0 1437150406]  out
-│       │   │           │   ├── [drwx------       12460 1437150406]  ivyConfiguration/
-│       │   │           │   │   └── [drwx------        8364 1437150406]  $global/
-│       │   │           │   │       └── [drwx------        4268 1437150406]  streams/
-│       │   │           │   │           └── [-rw-------         172 1437150406]  out
-│       │   │           │   ├── [drwx------       12288 1437150406]  ivySbt/
-│       │   │           │   │   └── [drwx------        8192 1437150406]  $global/
-│       │   │           │   │       └── [drwx------        4096 1437150406]  streams/
-│       │   │           │   │           └── [-rw-------           0 1437150406]  out
-│       │   │           │   ├── [drwx------       12288 1437150406]  projectDescriptors/
-│       │   │           │   │   └── [drwx------        8192 1437150406]  $global/
-│       │   │           │   │       └── [drwx------        4096 1437150406]  streams/
-│       │   │           │   │           └── [-rw-------           0 1437150406]  out
-│       │   │           │   └── [drwx------     5659391 1437150406]  update/
-│       │   │           │       └── [drwx------     5655295 1437150406]  $global/
-│       │   │           │           └── [drwx------     5651199 1437150406]  streams/
-│       │   │           │               ├── [-rw-------     4643993 1437150560]  out
-│       │   │           │               └── [drwx------     1003110 1437150560]  update_cache_2.10/
-│       │   │           │                   ├── [-rw-------        1629 1437150560]  inputs
-│       │   │           │                   └── [-rw-------      997385 1437150666]  output
-│       │   │           └── [drwx------      141566 1437150588]  runtime/
-│       │   │               ├── [drwx------       22079 1437150588]  dependencyClasspath/
-│       │   │               │   └── [drwx------       17983 1437150588]  $global/
-│       │   │               │       └── [drwx------       13887 1437150588]  streams/
-│       │   │               │           └── [-rw-------        9791 1437150666]  export
-│       │   │               ├── [drwx------       12385 1437150588]  exportedProducts/
-│       │   │               │   └── [drwx------        8289 1437150588]  $global/
-│       │   │               │       └── [drwx------        4193 1437150588]  streams/
-│       │   │               │           └── [-rw-------          97 1437150666]  export
-│       │   │               ├── [drwx------       21982 1437150588]  externalDependencyClasspath/
-│       │   │               │   └── [drwx------       17886 1437150588]  $global/
-│       │   │               │       └── [drwx------       13790 1437150588]  streams/
-│       │   │               │           └── [-rw-------        9694 1437150666]  export
-│       │   │               ├── [drwx------       22079 1437150588]  fullClasspath/
-│       │   │               │   └── [drwx------       17983 1437150588]  $global/
-│       │   │               │       └── [drwx------       13887 1437150588]  streams/
-│       │   │               │           └── [-rw-------        9791 1437150666]  export
-│       │   │               ├── [drwx------       12385 1437150588]  internalDependencyClasspath/
-│       │   │               │   └── [drwx------        8289 1437150588]  $global/
-│       │   │               │       └── [drwx------        4193 1437150588]  streams/
-│       │   │               │           └── [-rw-------          97 1437150666]  export
-│       │   │               ├── [drwx------       21982 1437150588]  managedClasspath/
-│       │   │               │   └── [drwx------       17886 1437150588]  $global/
-│       │   │               │       └── [drwx------       13790 1437150588]  streams/
-│       │   │               │           └── [-rw-------        9694 1437150666]  export
-│       │   │               ├── [drwx------       12289 1437150586]  unmanagedClasspath/
-│       │   │               │   └── [drwx------        8193 1437150586]  $global/
-│       │   │               │       └── [drwx------        4097 1437150586]  streams/
-│       │   │               │           └── [-rw-------           1 1437150666]  export
-│       │   │               └── [drwx------       12289 1437150586]  unmanagedJars/
-│       │   │                   └── [drwx------        8193 1437150586]  $global/
-│       │   │                       └── [drwx------        4097 1437150586]  streams/
-│       │   │                           └── [-rw-------           1 1437150666]  export
-│       │   ├── [-rw-------     1470216 1437860770]  sparkcode1.zip
-│       │   ├── [drwx------     8902619 1437152492]  sparkcodecluster/
-│       │   │   ├── [-rw-------          62 1428532198]  docs
-│       │   │   ├── [drwx------       27356 1428526124]  project/
-│       │   │   │   └── [drwx------       23260 1428526124]  target/
-│       │   │   │       └── [drwx------       19164 1437150384]  config-classes/
-│       │   │   │           ├── [-rw-------         931 1437150382]  $13c5b7efdda1fd16019f$$anonfun$$sbtdef$1.class
-│       │   │   │           ├── [-rw-------          22 1437150382]  $13c5b7efdda1fd16019f.cache
-│       │   │   │           ├── [-rw-------         755 1437150382]  $13c5b7efdda1fd16019f.class
-│       │   │   │           ├── [-rw-------        1343 1437150382]  $13c5b7efdda1fd16019f$.class
-│       │   │   │           ├── [-rw-------        1072 1437150384]  $2ecbee699570d380005b$$anonfun$$sbtdef$1.class
-│       │   │   │           ├── [-rw-------          22 1437150384]  $2ecbee699570d380005b.cache
-│       │   │   │           ├── [-rw-------         433 1437150384]  $2ecbee699570d380005b.class
-│       │   │   │           ├── [-rw-------        1735 1437150384]  $2ecbee699570d380005b$.class
-│       │   │   │           ├── [-rw-------         920 1437150382]  $737f5d69315d80a0a4f5$$anonfun$$sbtdef$1.class
-│       │   │   │           ├── [-rw-------          22 1437150382]  $737f5d69315d80a0a4f5.cache
-│       │   │   │           ├── [-rw-------         433 1437150382]  $737f5d69315d80a0a4f5.class
-│       │   │   │           ├── [-rw-------        1346 1437150382]  $737f5d69315d80a0a4f5$.class
-│       │   │   │           ├── [-rw-------         923 1437150382]  $c9ac2cfe2ca918b4cac7$$anonfun$$sbtdef$1.class
-│       │   │   │           ├── [-rw-------          22 1437150382]  $c9ac2cfe2ca918b4cac7.cache
-│       │   │   │           ├── [-rw-------         433 1437150382]  $c9ac2cfe2ca918b4cac7.class
-│       │   │   │           ├── [-rw-------        1351 1437150382]  $c9ac2cfe2ca918b4cac7$.class
-│       │   │   │           ├── [-rw-------        1274 1437150384]  $ca79ffeb4ba838528b36$$anonfun$$sbtdef$1.class
-│       │   │   │           ├── [-rw-------          22 1437150384]  $ca79ffeb4ba838528b36.cache
-│       │   │   │           ├── [-rw-------         433 1437150384]  $ca79ffeb4ba838528b36.class
-│       │   │   │           └── [-rw-------        1576 1437150384]  $ca79ffeb4ba838528b36$.class
-│       │   │   ├── [drwx------     1233949 1416496360]  sbt/
-│       │   │   │   ├── [drwx------     1224671 1416496360]  bin/
-│       │   │   │   │   ├── [-rw-------        5062 1416496360]  sbt
-│       │   │   │   │   ├── [-rw-------        1321 1416496360]  sbt.bat
-│       │   │   │   │   ├── [-rw-------     1208380 1416496360]  sbt-launch.jar
-│       │   │   │   │   └── [-rw-------        5812 1416496360]  sbt-launch-lib.bash
-│       │   │   │   └── [drwx------        5182 1416496360]  conf/
-│       │   │   │       ├── [-rw-------         147 1416496360]  sbtconfig.txt
-│       │   │   │       └── [-rw-------         939 1416496360]  sbtopts
-│       │   │   ├── [-rw-------         223 1437152492]  Simple.sbt
-│       │   │   ├── [drwx------       13008 1428526020]  src/
-│       │   │   │   └── [drwx------        8912 1428526026]  main/
-│       │   │   │       └── [drwx------        4816 1437153040]  scala/
-│       │   │   │           └── [-rw-------         720 1437153040]  SimpleApp.scala
-│       │   │   └── [drwx------     7623925 1437150560]  target/
-│       │   │       ├── [drwx------     1435544 1437150560]  resolution-cache/
-│       │   │       │   ├── [drwx------     1416440 1437150560]  reports/
-│       │   │       │   │   ├── [-rw-------        4371 1437150560]  ivy-report.css
-│       │   │       │   │   ├── [-rw-------       20993 1437150560]  ivy-report.xsl
-│       │   │       │   │   ├── [-rw-------      230237 1437150560]  simple-project-simple-project_2.10-compile-internal.xml
-│       │   │       │   │   ├── [-rw-------      227658 1437150560]  simple-project-simple-project_2.10-compile.xml
-│       │   │       │   │   ├── [-rw-------         441 1437150560]  simple-project-simple-project_2.10-docs.xml
-│       │   │       │   │   ├── [-rw-------         445 1437150560]  simple-project-simple-project_2.10-optional.xml
-│       │   │       │   │   ├── [-rw-------         443 1437150560]  simple-project-simple-project_2.10-plugin.xml
-│       │   │       │   │   ├── [-rw-------         440 1437150560]  simple-project-simple-project_2.10-pom.xml
-│       │   │       │   │   ├── [-rw-------         445 1437150560]  simple-project-simple-project_2.10-provided.xml
-│       │   │       │   │   ├── [-rw-------      230234 1437150560]  simple-project-simple-project_2.10-runtime-internal.xml
-│       │   │       │   │   ├── [-rw-------      228251 1437150560]  simple-project-simple-project_2.10-runtime.xml
-│       │   │       │   │   ├── [-rw-------        7516 1437150560]  simple-project-simple-project_2.10-scala-tool.xml
-│       │   │       │   │   ├── [-rw-------         444 1437150560]  simple-project-simple-project_2.10-sources.xml
-│       │   │       │   │   ├── [-rw-------      230270 1437150560]  simple-project-simple-project_2.10-test-internal.xml
-│       │   │       │   │   └── [-rw-------      230156 1437150560]  simple-project-simple-project_2.10-test.xml
-│       │   │       │   └── [drwx------       15008 1437150484]  simple-project/
-│       │   │       │       └── [drwx------       10912 1437150484]  simple-project_2.10/
-│       │   │       │           └── [drwx------        6816 1437150484]  1.0/
-│       │   │       │               ├── [-rw-------         646 1437150484]  resolved.xml.properties
-│       │   │       │               └── [-rw-------        2074 1437150484]  resolved.xml.xml
-│       │   │       ├── [drwx------       38666 1437150666]  scala-2.10/
-│       │   │       │   ├── [drwx------       29965 1437150564]  classes/
-│       │   │       │   │   └── [drwx------       25869 1437150564]  org/
-│       │   │       │   │       └── [drwx------       21773 1437150564]  apache/
-│       │   │       │   │           └── [drwx------       17677 1437150564]  spark/
-│       │   │       │   │               └── [drwx------       13581 1437150564]  examples/
-│       │   │       │   │                   └── [drwx------        9485 1437150564]  streaming/
-│       │   │       │   │                       ├── [-rw-------        1178 1437150564]  SimpleApp$$anonfun$1.class
-│       │   │       │   │                       ├── [-rw-------        1178 1437150564]  SimpleApp$$anonfun$2.class
-│       │   │       │   │                       ├── [-rw-------         906 1437150564]  SimpleApp.class
-│       │   │       │   │                       └── [-rw-------        2127 1437150564]  SimpleApp$.class
-│       │   │       │   └── [-rw-------        4605 1437150564]  simple-project_2.10-1.0.jar
-│       │   │       └── [drwx------     6145619 1437150586]  streams/
-│       │   │           ├── [drwx------      258092 1437150588]  compile/
-│       │   │           │   ├── [drwx------       23345 1437150560]  compile/
-│       │   │           │   │   └── [drwx------       19249 1437150560]  $global/
-│       │   │           │   │       └── [drwx------       15153 1437150560]  streams/
-│       │   │           │   │           ├── [-rw-------       10284 1437150564]  export
-│       │   │           │   │           └── [-rw-------         773 1437150666]  out
-│       │   │           │   ├── [drwx------       12394 1437150564]  copyResources/
-│       │   │           │   │   └── [drwx------        8298 1437150564]  $global/
-│       │   │           │   │       └── [drwx------        4202 1437150564]  streams/
-│       │   │           │   │           ├── [-rw-------          23 1437150666]  copy-resources
-│       │   │           │   │           └── [-rw-------          83 1437150666]  out
-│       │   │           │   ├── [drwx------       21982 1437150560]  dependencyClasspath/
-│       │   │           │   │   └── [drwx------       17886 1437150560]  $global/
-│       │   │           │   │       └── [drwx------       13790 1437150560]  streams/
-│       │   │           │   │           └── [-rw-------        9694 1437150666]  export
-│       │   │           │   ├── [drwx------       12385 1437150588]  exportedProducts/
-│       │   │           │   │   └── [drwx------        8289 1437150588]  $global/
-│       │   │           │   │       └── [drwx------        4193 1437150588]  streams/
-│       │   │           │   │           └── [-rw-------          97 1437150666]  export
-│       │   │           │   ├── [drwx------       21982 1437150560]  externalDependencyClasspath/
-│       │   │           │   │   └── [drwx------       17886 1437150560]  $global/
-│       │   │           │   │       └── [drwx------       13790 1437150560]  streams/
-│       │   │           │   │           └── [-rw-------        9694 1437150666]  export
-│       │   │           │   ├── [drwx------       12339 1437150564]  $global/
-│       │   │           │   │   └── [drwx------        8243 1437150564]  $global/
-│       │   │           │   │       └── [drwx------        4147 1437150564]  discoveredMainClasses/
-│       │   │           │   │           └── [-rw-------          51 1437150670]  data
-│       │   │           │   ├── [drwx------       26952 1437150560]  incCompileSetup/
-│       │   │           │   │   └── [drwx------       22856 1437150560]  $global/
-│       │   │           │   │       └── [drwx------       18760 1437150564]  streams/
-│       │   │           │   │           └── [-rw-------       14664 1437150564]  inc_compile_2.10
-│       │   │           │   ├── [drwx------       12289 1437150560]  internalDependencyClasspath/
-│       │   │           │   │   └── [drwx------        8193 1437150560]  $global/
-│       │   │           │   │       └── [drwx------        4097 1437150560]  streams/
-│       │   │           │   │           └── [-rw-------           1 1437150666]  export
-│       │   │           │   ├── [drwx------       12288 1437150564]  mainClass/
-│       │   │           │   │   └── [drwx------        8192 1437150564]  $global/
-│       │   │           │   │       └── [drwx------        4096 1437150564]  streams/
-│       │   │           │   │           └── [-rw-------           0 1437150564]  out
-│       │   │           │   ├── [drwx------       21982 1437150560]  managedClasspath/
-│       │   │           │   │   └── [drwx------       17886 1437150560]  $global/
-│       │   │           │   │       └── [drwx------       13790 1437150560]  streams/
-│       │   │           │   │           └── [-rw-------        9694 1437150666]  export
-│       │   │           │   ├── [drwx------       17887 1437150564]  packageBin/
-│       │   │           │   │   └── [drwx------       13791 1437150564]  $global/
-│       │   │           │   │       └── [drwx------        9695 1437150564]  streams/
-│       │   │           │   │           ├── [-rw-------        3167 1437150564]  inputs
-│       │   │           │   │           ├── [-rw-------        2313 1437150564]  out
-│       │   │           │   │           └── [-rw-------         119 1437150564]  output
-│       │   │           │   ├── [drwx------       33593 1437150588]  run/
-│       │   │           │   │   └── [drwx------       29497 1437150588]  $global/
-│       │   │           │   │       └── [drwx------       25401 1437150588]  streams/
-│       │   │           │   │           └── [-rw-------       21305 1437150670]  out
-│       │   │           │   ├── [drwx------       12289 1437150406]  unmanagedClasspath/
-│       │   │           │   │   └── [drwx------        8193 1437150406]  $global/
-│       │   │           │   │       └── [drwx------        4097 1437150406]  streams/
-│       │   │           │   │           └── [-rw-------           1 1437150666]  export
-│       │   │           │   └── [drwx------       12289 1437150406]  unmanagedJars/
-│       │   │           │       └── [drwx------        8193 1437150406]  $global/
-│       │   │           │           └── [drwx------        4097 1437150406]  streams/
-│       │   │           │               └── [-rw-------           1 1437150666]  export
-│       │   │           ├── [drwx------     5741865 1437150406]  $global/
-│       │   │           │   ├── [drwx------       12288 1437150386]  clean/
-│       │   │           │   │   └── [drwx------        8192 1437150386]  $global/
-│       │   │           │   │       └── [drwx------        4096 1437150386]  streams/
-│       │   │           │   │           └── [-rw-------           0 1437150386]  out
-│       │   │           │   ├── [drwx------       16766 1437150406]  dependencyPositions/
-│       │   │           │   │   └── [drwx------       12670 1437150406]  $global/
-│       │   │           │   │       └── [drwx------        8574 1437150406]  streams/
-│       │   │           │   │           └── [drwx------        4478 1437150406]  update_cache_2.10/
-│       │   │           │   │               ├── [-rw-------         118 1437150406]  input_dsp
-│       │   │           │   │               └── [-rw-------         264 1437150666]  output_dsp
-│       │   │           │   ├── [drwx------       12288 1437150406]  $global/
-│       │   │           │   │   └── [drwx------        8192 1437150406]  $global/
-│       │   │           │   │       └── [drwx------        4096 1437150406]  streams/
-│       │   │           │   │           └── [-rw-------           0 1437150406]  out
-│       │   │           │   ├── [drwx------       12460 1437150406]  ivyConfiguration/
-│       │   │           │   │   └── [drwx------        8364 1437150406]  $global/
-│       │   │           │   │       └── [drwx------        4268 1437150406]  streams/
-│       │   │           │   │           └── [-rw-------         172 1437150406]  out
-│       │   │           │   ├── [drwx------       12288 1437150406]  ivySbt/
-│       │   │           │   │   └── [drwx------        8192 1437150406]  $global/
-│       │   │           │   │       └── [drwx------        4096 1437150406]  streams/
-│       │   │           │   │           └── [-rw-------           0 1437150406]  out
-│       │   │           │   ├── [drwx------       12288 1437150406]  projectDescriptors/
-│       │   │           │   │   └── [drwx------        8192 1437150406]  $global/
-│       │   │           │   │       └── [drwx------        4096 1437150406]  streams/
-│       │   │           │   │           └── [-rw-------           0 1437150406]  out
-│       │   │           │   └── [drwx------     5659391 1437150406]  update/
-│       │   │           │       └── [drwx------     5655295 1437150406]  $global/
-│       │   │           │           └── [drwx------     5651199 1437150406]  streams/
-│       │   │           │               ├── [-rw-------     4643993 1437150560]  out
-│       │   │           │               └── [drwx------     1003110 1437150560]  update_cache_2.10/
-│       │   │           │                   ├── [-rw-------        1629 1437150560]  inputs
-│       │   │           │                   └── [-rw-------      997385 1437150666]  output
-│       │   │           └── [drwx------      141566 1437150588]  runtime/
-│       │   │               ├── [drwx------       22079 1437150588]  dependencyClasspath/
-│       │   │               │   └── [drwx------       17983 1437150588]  $global/
-│       │   │               │       └── [drwx------       13887 1437150588]  streams/
-│       │   │               │           └── [-rw-------        9791 1437150666]  export
-│       │   │               ├── [drwx------       12385 1437150588]  exportedProducts/
-│       │   │               │   └── [drwx------        8289 1437150588]  $global/
-│       │   │               │       └── [drwx------        4193 1437150588]  streams/
-│       │   │               │           └── [-rw-------          97 1437150666]  export
-│       │   │               ├── [drwx------       21982 1437150588]  externalDependencyClasspath/
-│       │   │               │   └── [drwx------       17886 1437150588]  $global/
-│       │   │               │       └── [drwx------       13790 1437150588]  streams/
-│       │   │               │           └── [-rw-------        9694 1437150666]  export
-│       │   │               ├── [drwx------       22079 1437150588]  fullClasspath/
-│       │   │               │   └── [drwx------       17983 1437150588]  $global/
-│       │   │               │       └── [drwx------       13887 1437150588]  streams/
-│       │   │               │           └── [-rw-------        9791 1437150666]  export
-│       │   │               ├── [drwx------       12385 1437150588]  internalDependencyClasspath/
-│       │   │               │   └── [drwx------        8289 1437150588]  $global/
-│       │   │               │       └── [drwx------        4193 1437150588]  streams/
-│       │   │               │           └── [-rw-------          97 1437150666]  export
-│       │   │               ├── [drwx------       21982 1437150588]  managedClasspath/
-│       │   │               │   └── [drwx------       17886 1437150588]  $global/
-│       │   │               │       └── [drwx------       13790 1437150588]  streams/
-│       │   │               │           └── [-rw-------        9694 1437150666]  export
-│       │   │               ├── [drwx------       12289 1437150586]  unmanagedClasspath/
-│       │   │               │   └── [drwx------        8193 1437150586]  $global/
-│       │   │               │       └── [drwx------        4097 1437150586]  streams/
-│       │   │               │           └── [-rw-------           1 1437150666]  export
-│       │   │               └── [drwx------       12289 1437150586]  unmanagedJars/
-│       │   │                   └── [drwx------        8193 1437150586]  $global/
-│       │   │                       └── [drwx------        4097 1437150586]  streams/
-│       │   │                           └── [-rw-------           1 1437150666]  export
-│       │   ├── [-rw-------        1823 1437179298]  sparkcodeInText.txt
-│       │   ├── [-rw-------     2967592 1437153662]  sparkCode.zip
-│       │   ├── [-rw-------         698 1429554994]  sparkexample.py
-│       │   ├── [drwx------       63786 1429551380]  sparkjava/
-│       │   │   ├── [-rw-------         922 1429551214]  pom.xml
-│       │   │   ├── [drwx------       13183 1429549650]  src/
-│       │   │   │   └── [drwx------        9087 1429549654]  main/
-│       │   │   │       └── [drwx------        4991 1429551360]  java/
-│       │   │   │           └── [-rw-------         895 1429551360]  SimpleApp.java
-│       │   │   └── [drwx------       45585 1429551380]  target/
-│       │   │       ├── [drwx------       16409 1429551380]  classes/
-│       │   │       │   └── [drwx------       12313 1429551380]  org/
-│       │   │       │       └── [drwx------        8217 1429551380]  sparkexample/
-│       │   │       │           ├── [-rw-------        1095 1429551380]  SimpleApp$1.class
-│       │   │       │           ├── [-rw-------        1095 1429551380]  SimpleApp$2.class
-│       │   │       │           └── [-rw-------        1931 1429551380]  SimpleApp.class
-│       │   │       ├── [drwx------        4218 1429551380]  maven-archiver/
-│       │   │       │   └── [-rw-------         122 1429551380]  pom.properties
-│       │   │       ├── [drwx------       16603 1429551380]  maven-status/
-│       │   │       │   └── [drwx------       12507 1429551380]  maven-compiler-plugin/
-│       │   │       │       └── [drwx------        8411 1429551380]  compile/
-│       │   │       │           └── [drwx------        4315 1429551380]  default-compile/
-│       │   │       │               ├── [-rw-------         103 1429551380]  createdFiles.lst
-│       │   │       │               └── [-rw-------         116 1429551380]  inputFiles.lst
-│       │   │       └── [-rw-------        4259 1429551380]  simple-project-1.0-SNAPSHOT.jar
-│       │   └── [drwx------       67636 1429552902]  sparkjava2/
-│       │       ├── [-rw-------         922 1429551214]  pom.xml
-│       │       ├── [drwx------       14101 1429549650]  src/
-│       │       │   └── [drwx------       10005 1429549654]  main/
-│       │       │       └── [drwx------        5909 1429553006]  java/
-│       │       │           └── [-rw-------        1813 1429553006]  SimpleApp.java
-│       │       └── [drwx------       48517 1429553016]  target/
-│       │           ├── [drwx------       18488 1429553016]  classes/
-│       │           │   └── [drwx------       14392 1429553016]  org/
-│       │           │       └── [drwx------       10296 1429553016]  sparkexample/
-│       │           │           ├── [-rw-------        1178 1429553016]  SimpleApp$1.class
-│       │           │           ├── [-rw-------        1184 1429553016]  SimpleApp$2.class
-│       │           │           ├── [-rw-------        1112 1429553016]  SimpleApp$3.class
-│       │           │           └── [-rw-------        2726 1429553016]  SimpleApp.class
-│       │           ├── [drwx------        4218 1429553016]  maven-archiver/
-│       │           │   └── [-rw-------         122 1429553016]  pom.properties
-│       │           ├── [drwx------       16639 1429552902]  maven-status/
-│       │           │   └── [drwx------       12543 1429552902]  maven-compiler-plugin/
-│       │           │       └── [drwx------        8447 1429552902]  compile/
-│       │           │           └── [drwx------        4351 1429552904]  default-compile/
-│       │           │               ├── [-rw-------         138 1429553016]  createdFiles.lst
-│       │           │               └── [-rw-------         117 1429552904]  inputFiles.lst
-│       │           └── [-rw-------        5076 1429553016]  simple-project-1.0-SNAPSHOT.jar
-│       ├── [-rw-rw-r--      207077 1443916609]  sparktutorial.pptx
-│       ├── [-rw-rw-r--     7406583 1443916610]  sparktutorial.zip
-│       └── [-rw-rw-r--        3672 1443916597]  Yelptest2.java
-└── [drwxrwxr-x    22011691 1443112045]  CloudComputing/
-    ├── [drwxrwxr-x    10422198 1443112035]  Jemish/
-    │   ├── [-rw-rw-r--     4667668 1431541336]  Lec - 1 Introduction.pptx
-    │   ├── [-rw-rw-r--      538566 1431541358]  Lec - 2 Map-Reduce.pptx
-    │   ├── [-rw-rw-r--      404434 1393375312]  Lec - 3 Manage Big Data.pptx
-    │   ├── [-rw-rw-r--      502784 1393729172]  Lec - 4 DHT.ppt
-    │   ├── [-rw-rw-r--      384000 1431541534]  Lec - 5 Consistancy Model.ppt
-    │   ├── [-rw-rw-r--     2502117 1434966808]  Lec - 6 File System and Big Table.pptx
-    │   ├── [-rw-rw-r--      228118 1431541644]  Lec - 7 Erasure Code.pptx
-    │   ├── [-rw-rw-r--       62943 1431541660]  Lec - 8 Cloud Security.pptx
-    │   └── [-rw-rw-r--     1127472 1397909974]  Lec - 9 Vitualization.pptx
-    ├── [drwxrwxr-x    11516177 1443220595]  Lectures/
-    │   ├── [-rw-rw-r--     4446121 1442170039]  1- introduction.pdf
-    │   ├── [-rw-rw-r--      826694 1442170058]  2- bigdata-background(2).pdf
-    │   ├── [-rw-rw-r--     1942777 1442600998]  3- bigdata(2).pdf
-    │   ├── [-rw-rw-r--     1942287 1442276485]  3- bigdata.pdf
-    │   ├── [-rw-rw-r--     1376019 1442595142]  4- virtualization.pdf
-    │   └── [-rw-rw-r--      978183 1443220595]  map-reduce.pdf
-    └── [-rw-rw-r--       69220 1442170086]  term-proj.pdf
+Fall 2015/
+├── [     198852 1443563302]  AcademicCalendarFall2015.pdf
+├── [   26192991 1444457229]  AOS/
+│   ├── [       3016 1443670856]  grade.sh
+│   ├── [        344 1443670856]  grading-output.txt
+│   ├── [        625 1442265401]  launcher.sh
+│   ├── [   13002177 1445970806]  Lectures/
+│   │   ├── [     627887 1443629410]  commit.pptx
+│   │   ├── [    1468140 1441076550]  Commit Protocols.pdf
+│   │   ├── [    2712828 1441076532]  foundations-animated.pdf
+│   │   ├── [     233027 1441076542]  foundations-nonanimated.pdf
+│   │   ├── [     534116 1445970770]  knots-animated.pdf
+│   │   ├── [      49659 1445970777]  knots-nonanimated.pdf
+│   │   ├── [     140545 1443629435]  mutex-handout(1).pdf
+│   │   ├── [    4127263 1443629399]  mutex-slides.pdf
+│   │   ├── [    1693124 1445970787]  recovery.pptx
+│   │   ├── [    1368735 1445970795]  recovery-split.pdf
+│   │   └── [      42757 1445970806]  useless.pdf
+│   ├── [    8305617 1442890880]  New Doc 2.pdf
+│   ├── [     168892 1444707929]  Project1/
+│   │   ├── [        715 1442266664]  cleanup.sh
+│   │   ├── [        618 1443480288]  cleanup_utd.sh
+│   │   ├── [        255 1444709909]  complete-graph.txt
+│   │   ├── [        531 1441340898]  config(2).txt
+│   │   ├── [        326 1444709908]  config5.txt
+│   │   ├── [       2918 1442266714]  config.txt
+│   │   ├── [       2918 1442961994]  config_utd.txt
+│   │   ├── [       3016 1443670856]  grade.sh
+│   │   ├── [        344 1443670856]  grading-output.txt
+│   │   ├── [      28160 1441340931]  keygen(1).doc
+│   │   ├── [      56109 1444715768]  kkj140030/
+│   │   │   ├── [       4018 1443919127]  AppConfigurations.class
+│   │   │   ├── [       5065 1443919119]  AppConfigurations.java
+│   │   │   ├── [        432 1443919264]  cleanup.sh
+│   │   │   ├── [       2923 1443725225]  config.txt
+│   │   │   ├── [       2672 1443919127]  Globals.class
+│   │   │   ├── [       2133 1443919119]  Globals.java
+│   │   │   ├── [        611 1444715554]  largesystem-16.txt
+│   │   │   ├── [        526 1444715707]  launcher.sh
+│   │   │   ├── [       6526 1443919128]  Node.class
+│   │   │   ├── [       1163 1443919127]  NodeInfo.class
+│   │   │   ├── [        992 1443919119]  NodeInfo.java
+│   │   │   ├── [       7210 1443919119]  Node.java
+│   │   │   ├── [        995 1443919244]  README
+│   │   │   ├── [       2109 1443919128]  TcpListener.class
+│   │   │   ├── [       2692 1443919119]  TcpListener.java
+│   │   │   ├── [       1748 1443919128]  TcpReceiver.class
+│   │   │   ├── [       2160 1443919119]  TcpReceiver.java
+│   │   │   ├── [        780 1443919128]  TcpSender.class
+│   │   │   ├── [        978 1443919119]  TcpSender.java
+│   │   │   ├── [       1910 1443919127]  Token.class
+│   │   │   ├── [       2461 1443919119]  Token.java
+│   │   │   ├── [       1126 1443919127]  Tokens.class
+│   │   │   └── [        783 1443919119]  Tokens.java
+│   │   ├── [      25720 1443919360]  kkj140030.zip
+│   │   ├── [        526 1444709910]  largesystem-16.txt
+│   │   ├── [        628 1442265453]  launcher.sh
+│   │   ├── [        801 1443480288]  launcher_utd.sh
+│   │   ├── [       1286 1442265528]  NOT-THIS-YEARS-CONFIG.txt
+│   │   ├── [      33202 1441936395]  project1.pdf
+│   │   ├── [       1628 1443492887]  README
+│   │   ├── [       1431 1441340916]  runScript(3).sh
+│   │   ├── [       1431 1442265460]  runScript.sh
+│   │   ├── [       2233 1442792881]  sampleoutput.txt
+│   │   └── [          0 1443724342]  setup.sh
+│   ├── [     155593 1445990664]  Project2/
+│   │   ├── [       2356 1445990664]  grade.sh
+│   │   └── [     149141 1444457195]  project2.pdf
+│   ├── [    3953668 1441683261]  Research Papers/
+│   │   ├── [    2915176 1441683261]  birman-schiper-stephenson.pdf
+│   │   ├── [     854562 1441683224]  lamport-clocks.pdf
+│   │   └── [     179834 1441683243]  raynal-schiper-toueg.pdf
+│   ├── [     137475 1443921163]  Review Questions/
+│   │   ├── [      32158 1443921157]  questions2.pdf
+│   │   ├── [      49684 1443921163]  questions3.pdf
+│   │   └── [      51537 1443921149]  questions.pdf
+│   ├── [     401385 1446167869]  Sample Quizzes/
+│   │   ├── [      30400 1441728000]  quiz1.pdf
+│   │   ├── [      32933 1441728006]  quiz2.pdf
+│   │   ├── [      33837 1441728011]  quiz3.pdf
+│   │   ├── [      38170 1441728016]  quiz4.pdf
+│   │   ├── [      28072 1441728021]  quiz5.pdf
+│   │   ├── [      21739 1441728027]  quiz6.pdf
+│   │   ├── [      26752 1441728031]  quiz7.pdf
+│   │   ├── [      95769 1446167067]  quiz8.pdf
+│   │   └── [      89617 1446167072]  quiz9.pdf
+│   └── [      60103 1442797356]  Syllabus.pdf
+├── [ 5504452474 1444236552]  BigData/
+│   ├── [   51708856 1446069174]  Assignments/
+│   │   ├── [    1413445 1442194005]  (439767293) HadoopLecture1.pdf
+│   │   ├── [   21675256 1443893633]  Assignment1/
+│   │   │   ├── [   21169722 1443893633]  dataset.zip
+│   │   │   ├── [      14735 1441835291]  homeworkrevised-2.docx
+│   │   │   ├── [      68686 1443380753]  JARS/
+│   │   │   │   ├── [       7978 1443322966]  Hw1Q1.jar
+│   │   │   │   ├── [      14968 1443322979]  Hw1Q2.jar
+│   │   │   │   ├── [      28647 1443322989]  Hw1Q3.jar
+│   │   │   │   └── [      12997 1443323001]  Hw1Q4.jar
+│   │   │   ├── [     158332 1443380792]  kkj140030.zip
+│   │   │   ├── [     235792 1443380783]  OutputFiles/
+│   │   │   │   ├── [      17480 1443383362]  Hw1Q1_out.txt
+│   │   │   │   ├── [        230 1443383972]  Hw1Q2_out.txt
+│   │   │   │   ├── [       1037 1443382512]  Hw1Q3_out.txt
+│   │   │   │   └── [     212949 1443384058]  Hw1Q4_out.txt
+│   │   │   ├── [       3695 1443379453]  README.txt
+│   │   │   └── [      20198 1443380771]  SourceFiles/
+│   │   │       ├── [       6798 1443322406]  BusinessDetails.java
+│   │   │       ├── [       1961 1443322646]  PaloAltoBusiness.java
+│   │   │       ├── [       3771 1443327462]  StanfordBusinessRatings.java
+│   │   │       └── [       3572 1443322422]  TopAvgBusiness.java
+│   │   ├── [   23778452 1445057563]  Assignment2/
+│   │   │   ├── [     212050 1445054557]  2a (copy).png
+│   │   │   ├── [      30949 1445055148]  2a_output.png
+│   │   │   ├── [     226035 1445054604]  2b (copy).png
+│   │   │   ├── [      31069 1445055191]  2b_output.png
+│   │   │   ├── [     227126 1445054644]  3a (copy).png
+│   │   │   ├── [     120378 1445055463]  3a_output.png
+│   │   │   ├── [     296670 1445054688]  3b (copy).png
+│   │   │   ├── [     113801 1445055497]  3b_output.png
+│   │   │   ├── [     992197 1445050585]  Assignment2.docx
+│   │   │   ├── [   21169722 1443893619]  dataset(1).zip
+│   │   │   ├── [      63813 1443893587]  HW2Fall2015.pdf
+│   │   │   ├── [        158 1445055869]  Instructions.txt
+│   │   │   ├── [     273141 1445056057]  kkj140030.zip
+│   │   │   ├── [      15183 1445054256]  q1_output.txt
+│   │   │   ├── [        331 1445054117]  q1.txt
+│   │   │   ├── [        404 1445055258]  q2.txt
+│   │   │   ├── [        638 1445055619]  q3_a.txt
+│   │   │   └── [        691 1445055716]  q3_b.txt
+│   │   └── [    4837607 1446085364]  Assignment3/
+│   │       ├── [    4818595 1446069186]  Apache_Cassandra_1.2.pdf
+│   │       └── [      14916 1446069176]  HW3fall2015.docx
+│   ├── [ 5118003595 1446072879]  Big Data/
+│   │   ├── [      16162 1443120964]  Assignment_1_ycp140030/
+│   │   │   ├── [       4139 1424216298]  AgeGroup.java
+│   │   │   ├── [       2697 1424216344]  Genere.java
+│   │   │   ├── [       2998 1424218798]  Readme_txt.txt
+│   │   │   └── [       2232 1424216386]  UserId.java
+│   │   ├── [      22085 1443120958]  Assignment_2_ycp140030/
+│   │   │   ├── [       4216 1425841166]  MapSideJoin.java
+│   │   │   ├── [       2285 1425842876]  Readme_txt.txt
+│   │   │   └── [      11488 1425841214]  ReduceSideJoin.java
+│   │   ├── [     412486 1427834318]  Assignment_3_ycp140030/
+│   │   │   ├── [       7052 1427834762]  Cassandra/
+│   │   │   │   ├── [       2092 1427835362]  Q10.txt
+│   │   │   │   ├── [        596 1427842592]  Q11.txt
+│   │   │   │   └── [        268 1427832298]  Q12.txt
+│   │   │   ├── [     160390 1427850186]  Hive/
+│   │   │   │   ├── [       1259 1427177716]  FormatGenreHive.jar
+│   │   │   │   ├── [       1113 1427177706]  FormatGenreHive.java
+│   │   │   │   ├── [     147299 1427834704]  Output/
+│   │   │   │   │   ├── [        302 1427829870]  Q5.res
+│   │   │   │   │   ├── [       2005 1427837738]  Q6.res
+│   │   │   │   │   ├── [       5756 1427830536]  Q7.res
+│   │   │   │   │   ├── [      14860 1427829374]  Q8.res
+│   │   │   │   │   └── [     120280 1427830760]  Q9.res
+│   │   │   │   ├── [       1216 1427838448]  Q5.hive
+│   │   │   │   ├── [       1892 1427838502]  Q6.hive
+│   │   │   │   ├── [       1577 1427838542]  Q7.hive
+│   │   │   │   ├── [       1068 1427174882]  Q8.hive
+│   │   │   │   ├── [        564 1427838574]  Q9.hive
+│   │   │   │   └── [        306 1427840464]  ReadMe.txt
+│   │   │   └── [     240948 1427850186]  Pig/
+│   │   │       ├── [       1347 1427824700]  FormatGenrePig.jar
+│   │   │       ├── [       1181 1427824618]  FormatGenrePig.java
+│   │   │       ├── [     228731 1427834620]  Output/
+│   │   │       │   ├── [     106857 1427849880]  Q2.res
+│   │   │       │   ├── [        423 1427831872]  Q3.res
+│   │   │       │   └── [     117355 1427834620]  Q4.res
+│   │   │       ├── [       3192 1427839070]  Q1.pig
+│   │   │       ├── [        760 1427849294]  Q2.pig
+│   │   │       ├── [        857 1427849352]  Q3.pig
+│   │   │       ├── [        513 1427838890]  Q4.pig
+│   │   │       └── [        271 1427840438]  Readme.txt
+│   │   ├── [       8152 1429937046]  Assignment_4_ycp140030/
+│   │   │   ├── [       1679 1429930524]  Question_1.txt
+│   │   │   ├── [        119 1429937114]  Question_2_1.txt
+│   │   │   ├── [       1971 1429932632]  Question_2_2.txt
+│   │   │   └── [        287 1429936902]  Readme.txt
+│   │   ├── [       9486 1443120974]  Big Data.zip
+│   │   ├── [ 5038375936 1425414600]  Sandbox_HDP_2.2_VMware.ova
+│   │   └── [   79155192 1425410812]  VMware-player-7.1.0-2496824.exe
+│   ├── [   21018937 1445454996]  Lectures/
+│   │   ├── [   12351282 1441224534]  BigdataIntro#0.pptx
+│   │   ├── [     896976 1444236604]  DatabaseMapReduceBigData#4.pptx
+│   │   ├── [    2206470 1441224495]  HadoopFeb2015.pptx
+│   │   ├── [    3120547 1441224511]  Lecture_on_HadoopBigData#3New.pptx
+│   │   ├── [     105755 1441224484]  Lecture_on_Mapreduce_BigData#1.pptx
+│   │   ├── [     506960 1441224500]  MapReduceFunnySlideBigData#2.pptx
+│   │   ├── [     463851 1444236580]  NOSQL-CAP.pptx
+│   │   └── [    1363000 1444236589]  SparkChapter3.pptx
+│   ├── [      43234 1444236559]  Project/
+│   │   ├── [      24576 1444236554]  projectFall2015.doc
+│   │   └── [      14562 1444236560]  ProjectSetupGuidelineFAll2015.docx
+│   ├── [  280901736 1443916832]  spark-1.5.1-bin-hadoop2.6.tgz
+│   └── [   32772020 1444449139]  TA_ExtraLecs/
+│       ├── [    1533245 1443916619]  Extralecture1fall/
+│       │   ├── [    1413445 1442075298]  (439767293) HadoopLecture1.pdf
+│       │   ├── [       1460 1442074500]  clusterprofile
+│       │   ├── [      89456 1442094478]  HadoopLect2.pdf
+│       │   ├── [       2498 1442088280]  howtousehadoopclusteroncs6360.txt
+│       │   ├── [      21256 1433785230]  lect1SrcCode.zip
+│       │   └── [       1034 1442075376]  mapsidesetupmethodforcluster.txt
+│       ├── [    1236020 1443916590]  Extralecture1fall.zip
+│       ├── [   22381327 1443916624]  sparktutorial/
+│       │   ├── [        184 1429552928]  javaspark
+│       │   ├── [    8902677 1437152492]  sparkcode/
+│       │   │   ├── [         62 1428532198]  docs
+│       │   │   ├── [      27356 1428526124]  project/
+│       │   │   │   └── [      23260 1428526124]  target/
+│       │   │   │       └── [      19164 1437150384]  config-classes/
+│       │   │   │           ├── [        931 1437150382]  $13c5b7efdda1fd16019f$$anonfun$$sbtdef$1.class
+│       │   │   │           ├── [         22 1437150382]  $13c5b7efdda1fd16019f.cache
+│       │   │   │           ├── [        755 1437150382]  $13c5b7efdda1fd16019f.class
+│       │   │   │           ├── [       1343 1437150382]  $13c5b7efdda1fd16019f$.class
+│       │   │   │           ├── [       1072 1437150384]  $2ecbee699570d380005b$$anonfun$$sbtdef$1.class
+│       │   │   │           ├── [         22 1437150384]  $2ecbee699570d380005b.cache
+│       │   │   │           ├── [        433 1437150384]  $2ecbee699570d380005b.class
+│       │   │   │           ├── [       1735 1437150384]  $2ecbee699570d380005b$.class
+│       │   │   │           ├── [        920 1437150382]  $737f5d69315d80a0a4f5$$anonfun$$sbtdef$1.class
+│       │   │   │           ├── [         22 1437150382]  $737f5d69315d80a0a4f5.cache
+│       │   │   │           ├── [        433 1437150382]  $737f5d69315d80a0a4f5.class
+│       │   │   │           ├── [       1346 1437150382]  $737f5d69315d80a0a4f5$.class
+│       │   │   │           ├── [        923 1437150382]  $c9ac2cfe2ca918b4cac7$$anonfun$$sbtdef$1.class
+│       │   │   │           ├── [         22 1437150382]  $c9ac2cfe2ca918b4cac7.cache
+│       │   │   │           ├── [        433 1437150382]  $c9ac2cfe2ca918b4cac7.class
+│       │   │   │           ├── [       1351 1437150382]  $c9ac2cfe2ca918b4cac7$.class
+│       │   │   │           ├── [       1274 1437150384]  $ca79ffeb4ba838528b36$$anonfun$$sbtdef$1.class
+│       │   │   │           ├── [         22 1437150384]  $ca79ffeb4ba838528b36.cache
+│       │   │   │           ├── [        433 1437150384]  $ca79ffeb4ba838528b36.class
+│       │   │   │           └── [       1576 1437150384]  $ca79ffeb4ba838528b36$.class
+│       │   │   ├── [    1233949 1416496360]  sbt/
+│       │   │   │   ├── [    1224671 1416496360]  bin/
+│       │   │   │   │   ├── [       5062 1416496360]  sbt
+│       │   │   │   │   ├── [       1321 1416496360]  sbt.bat
+│       │   │   │   │   ├── [    1208380 1416496360]  sbt-launch.jar
+│       │   │   │   │   └── [       5812 1416496360]  sbt-launch-lib.bash
+│       │   │   │   └── [       5182 1416496360]  conf/
+│       │   │   │       ├── [        147 1416496360]  sbtconfig.txt
+│       │   │   │       └── [        939 1416496360]  sbtopts
+│       │   │   ├── [        223 1437152492]  Simple.sbt
+│       │   │   ├── [      13066 1428526020]  src/
+│       │   │   │   └── [       8970 1428526026]  main/
+│       │   │   │       └── [       4874 1440453648]  scala/
+│       │   │   │           └── [        778 1440453646]  SimpleApp.scala
+│       │   │   └── [    7623925 1437150560]  target/
+│       │   │       ├── [    1435544 1437150560]  resolution-cache/
+│       │   │       │   ├── [    1416440 1437150560]  reports/
+│       │   │       │   │   ├── [       4371 1437150560]  ivy-report.css
+│       │   │       │   │   ├── [      20993 1437150560]  ivy-report.xsl
+│       │   │       │   │   ├── [     230237 1437150560]  simple-project-simple-project_2.10-compile-internal.xml
+│       │   │       │   │   ├── [     227658 1437150560]  simple-project-simple-project_2.10-compile.xml
+│       │   │       │   │   ├── [        441 1437150560]  simple-project-simple-project_2.10-docs.xml
+│       │   │       │   │   ├── [        445 1437150560]  simple-project-simple-project_2.10-optional.xml
+│       │   │       │   │   ├── [        443 1437150560]  simple-project-simple-project_2.10-plugin.xml
+│       │   │       │   │   ├── [        440 1437150560]  simple-project-simple-project_2.10-pom.xml
+│       │   │       │   │   ├── [        445 1437150560]  simple-project-simple-project_2.10-provided.xml
+│       │   │       │   │   ├── [     230234 1437150560]  simple-project-simple-project_2.10-runtime-internal.xml
+│       │   │       │   │   ├── [     228251 1437150560]  simple-project-simple-project_2.10-runtime.xml
+│       │   │       │   │   ├── [       7516 1437150560]  simple-project-simple-project_2.10-scala-tool.xml
+│       │   │       │   │   ├── [        444 1437150560]  simple-project-simple-project_2.10-sources.xml
+│       │   │       │   │   ├── [     230270 1437150560]  simple-project-simple-project_2.10-test-internal.xml
+│       │   │       │   │   └── [     230156 1437150560]  simple-project-simple-project_2.10-test.xml
+│       │   │       │   └── [      15008 1437150484]  simple-project/
+│       │   │       │       └── [      10912 1437150484]  simple-project_2.10/
+│       │   │       │           └── [       6816 1437150484]  1.0/
+│       │   │       │               ├── [        646 1437150484]  resolved.xml.properties
+│       │   │       │               └── [       2074 1437150484]  resolved.xml.xml
+│       │   │       ├── [      38666 1437150666]  scala-2.10/
+│       │   │       │   ├── [      29965 1437150564]  classes/
+│       │   │       │   │   └── [      25869 1437150564]  org/
+│       │   │       │   │       └── [      21773 1437150564]  apache/
+│       │   │       │   │           └── [      17677 1437150564]  spark/
+│       │   │       │   │               └── [      13581 1437150564]  examples/
+│       │   │       │   │                   └── [       9485 1437150564]  streaming/
+│       │   │       │   │                       ├── [       1178 1437150564]  SimpleApp$$anonfun$1.class
+│       │   │       │   │                       ├── [       1178 1437150564]  SimpleApp$$anonfun$2.class
+│       │   │       │   │                       ├── [        906 1437150564]  SimpleApp.class
+│       │   │       │   │                       └── [       2127 1437150564]  SimpleApp$.class
+│       │   │       │   └── [       4605 1437150564]  simple-project_2.10-1.0.jar
+│       │   │       └── [    6145619 1437150586]  streams/
+│       │   │           ├── [     258092 1437150588]  compile/
+│       │   │           │   ├── [      23345 1437150560]  compile/
+│       │   │           │   │   └── [      19249 1437150560]  $global/
+│       │   │           │   │       └── [      15153 1437150560]  streams/
+│       │   │           │   │           ├── [      10284 1437150564]  export
+│       │   │           │   │           └── [        773 1437150666]  out
+│       │   │           │   ├── [      12394 1437150564]  copyResources/
+│       │   │           │   │   └── [       8298 1437150564]  $global/
+│       │   │           │   │       └── [       4202 1437150564]  streams/
+│       │   │           │   │           ├── [         23 1437150666]  copy-resources
+│       │   │           │   │           └── [         83 1437150666]  out
+│       │   │           │   ├── [      21982 1437150560]  dependencyClasspath/
+│       │   │           │   │   └── [      17886 1437150560]  $global/
+│       │   │           │   │       └── [      13790 1437150560]  streams/
+│       │   │           │   │           └── [       9694 1437150666]  export
+│       │   │           │   ├── [      12385 1437150588]  exportedProducts/
+│       │   │           │   │   └── [       8289 1437150588]  $global/
+│       │   │           │   │       └── [       4193 1437150588]  streams/
+│       │   │           │   │           └── [         97 1437150666]  export
+│       │   │           │   ├── [      21982 1437150560]  externalDependencyClasspath/
+│       │   │           │   │   └── [      17886 1437150560]  $global/
+│       │   │           │   │       └── [      13790 1437150560]  streams/
+│       │   │           │   │           └── [       9694 1437150666]  export
+│       │   │           │   ├── [      12339 1437150564]  $global/
+│       │   │           │   │   └── [       8243 1437150564]  $global/
+│       │   │           │   │       └── [       4147 1437150564]  discoveredMainClasses/
+│       │   │           │   │           └── [         51 1437150670]  data
+│       │   │           │   ├── [      26952 1437150560]  incCompileSetup/
+│       │   │           │   │   └── [      22856 1437150560]  $global/
+│       │   │           │   │       └── [      18760 1437150564]  streams/
+│       │   │           │   │           └── [      14664 1437150564]  inc_compile_2.10
+│       │   │           │   ├── [      12289 1437150560]  internalDependencyClasspath/
+│       │   │           │   │   └── [       8193 1437150560]  $global/
+│       │   │           │   │       └── [       4097 1437150560]  streams/
+│       │   │           │   │           └── [          1 1437150666]  export
+│       │   │           │   ├── [      12288 1437150564]  mainClass/
+│       │   │           │   │   └── [       8192 1437150564]  $global/
+│       │   │           │   │       └── [       4096 1437150564]  streams/
+│       │   │           │   │           └── [          0 1437150564]  out
+│       │   │           │   ├── [      21982 1437150560]  managedClasspath/
+│       │   │           │   │   └── [      17886 1437150560]  $global/
+│       │   │           │   │       └── [      13790 1437150560]  streams/
+│       │   │           │   │           └── [       9694 1437150666]  export
+│       │   │           │   ├── [      17887 1437150564]  packageBin/
+│       │   │           │   │   └── [      13791 1437150564]  $global/
+│       │   │           │   │       └── [       9695 1437150564]  streams/
+│       │   │           │   │           ├── [       3167 1437150564]  inputs
+│       │   │           │   │           ├── [       2313 1437150564]  out
+│       │   │           │   │           └── [        119 1437150564]  output
+│       │   │           │   ├── [      33593 1437150588]  run/
+│       │   │           │   │   └── [      29497 1437150588]  $global/
+│       │   │           │   │       └── [      25401 1437150588]  streams/
+│       │   │           │   │           └── [      21305 1437150670]  out
+│       │   │           │   ├── [      12289 1437150406]  unmanagedClasspath/
+│       │   │           │   │   └── [       8193 1437150406]  $global/
+│       │   │           │   │       └── [       4097 1437150406]  streams/
+│       │   │           │   │           └── [          1 1437150666]  export
+│       │   │           │   └── [      12289 1437150406]  unmanagedJars/
+│       │   │           │       └── [       8193 1437150406]  $global/
+│       │   │           │           └── [       4097 1437150406]  streams/
+│       │   │           │               └── [          1 1437150666]  export
+│       │   │           ├── [    5741865 1437150406]  $global/
+│       │   │           │   ├── [      12288 1437150386]  clean/
+│       │   │           │   │   └── [       8192 1437150386]  $global/
+│       │   │           │   │       └── [       4096 1437150386]  streams/
+│       │   │           │   │           └── [          0 1437150386]  out
+│       │   │           │   ├── [      16766 1437150406]  dependencyPositions/
+│       │   │           │   │   └── [      12670 1437150406]  $global/
+│       │   │           │   │       └── [       8574 1437150406]  streams/
+│       │   │           │   │           └── [       4478 1437150406]  update_cache_2.10/
+│       │   │           │   │               ├── [        118 1437150406]  input_dsp
+│       │   │           │   │               └── [        264 1437150666]  output_dsp
+│       │   │           │   ├── [      12288 1437150406]  $global/
+│       │   │           │   │   └── [       8192 1437150406]  $global/
+│       │   │           │   │       └── [       4096 1437150406]  streams/
+│       │   │           │   │           └── [          0 1437150406]  out
+│       │   │           │   ├── [      12460 1437150406]  ivyConfiguration/
+│       │   │           │   │   └── [       8364 1437150406]  $global/
+│       │   │           │   │       └── [       4268 1437150406]  streams/
+│       │   │           │   │           └── [        172 1437150406]  out
+│       │   │           │   ├── [      12288 1437150406]  ivySbt/
+│       │   │           │   │   └── [       8192 1437150406]  $global/
+│       │   │           │   │       └── [       4096 1437150406]  streams/
+│       │   │           │   │           └── [          0 1437150406]  out
+│       │   │           │   ├── [      12288 1437150406]  projectDescriptors/
+│       │   │           │   │   └── [       8192 1437150406]  $global/
+│       │   │           │   │       └── [       4096 1437150406]  streams/
+│       │   │           │   │           └── [          0 1437150406]  out
+│       │   │           │   └── [    5659391 1437150406]  update/
+│       │   │           │       └── [    5655295 1437150406]  $global/
+│       │   │           │           └── [    5651199 1437150406]  streams/
+│       │   │           │               ├── [    4643993 1437150560]  out
+│       │   │           │               └── [    1003110 1437150560]  update_cache_2.10/
+│       │   │           │                   ├── [       1629 1437150560]  inputs
+│       │   │           │                   └── [     997385 1437150666]  output
+│       │   │           └── [     141566 1437150588]  runtime/
+│       │   │               ├── [      22079 1437150588]  dependencyClasspath/
+│       │   │               │   └── [      17983 1437150588]  $global/
+│       │   │               │       └── [      13887 1437150588]  streams/
+│       │   │               │           └── [       9791 1437150666]  export
+│       │   │               ├── [      12385 1437150588]  exportedProducts/
+│       │   │               │   └── [       8289 1437150588]  $global/
+│       │   │               │       └── [       4193 1437150588]  streams/
+│       │   │               │           └── [         97 1437150666]  export
+│       │   │               ├── [      21982 1437150588]  externalDependencyClasspath/
+│       │   │               │   └── [      17886 1437150588]  $global/
+│       │   │               │       └── [      13790 1437150588]  streams/
+│       │   │               │           └── [       9694 1437150666]  export
+│       │   │               ├── [      22079 1437150588]  fullClasspath/
+│       │   │               │   └── [      17983 1437150588]  $global/
+│       │   │               │       └── [      13887 1437150588]  streams/
+│       │   │               │           └── [       9791 1437150666]  export
+│       │   │               ├── [      12385 1437150588]  internalDependencyClasspath/
+│       │   │               │   └── [       8289 1437150588]  $global/
+│       │   │               │       └── [       4193 1437150588]  streams/
+│       │   │               │           └── [         97 1437150666]  export
+│       │   │               ├── [      21982 1437150588]  managedClasspath/
+│       │   │               │   └── [      17886 1437150588]  $global/
+│       │   │               │       └── [      13790 1437150588]  streams/
+│       │   │               │           └── [       9694 1437150666]  export
+│       │   │               ├── [      12289 1437150586]  unmanagedClasspath/
+│       │   │               │   └── [       8193 1437150586]  $global/
+│       │   │               │       └── [       4097 1437150586]  streams/
+│       │   │               │           └── [          1 1437150666]  export
+│       │   │               └── [      12289 1437150586]  unmanagedJars/
+│       │   │                   └── [       8193 1437150586]  $global/
+│       │   │                       └── [       4097 1437150586]  streams/
+│       │   │                           └── [          1 1437150666]  export
+│       │   ├── [    1470216 1437860770]  sparkcode1.zip
+│       │   ├── [    8902619 1437152492]  sparkcodecluster/
+│       │   │   ├── [         62 1428532198]  docs
+│       │   │   ├── [      27356 1428526124]  project/
+│       │   │   │   └── [      23260 1428526124]  target/
+│       │   │   │       └── [      19164 1437150384]  config-classes/
+│       │   │   │           ├── [        931 1437150382]  $13c5b7efdda1fd16019f$$anonfun$$sbtdef$1.class
+│       │   │   │           ├── [         22 1437150382]  $13c5b7efdda1fd16019f.cache
+│       │   │   │           ├── [        755 1437150382]  $13c5b7efdda1fd16019f.class
+│       │   │   │           ├── [       1343 1437150382]  $13c5b7efdda1fd16019f$.class
+│       │   │   │           ├── [       1072 1437150384]  $2ecbee699570d380005b$$anonfun$$sbtdef$1.class
+│       │   │   │           ├── [         22 1437150384]  $2ecbee699570d380005b.cache
+│       │   │   │           ├── [        433 1437150384]  $2ecbee699570d380005b.class
+│       │   │   │           ├── [       1735 1437150384]  $2ecbee699570d380005b$.class
+│       │   │   │           ├── [        920 1437150382]  $737f5d69315d80a0a4f5$$anonfun$$sbtdef$1.class
+│       │   │   │           ├── [         22 1437150382]  $737f5d69315d80a0a4f5.cache
+│       │   │   │           ├── [        433 1437150382]  $737f5d69315d80a0a4f5.class
+│       │   │   │           ├── [       1346 1437150382]  $737f5d69315d80a0a4f5$.class
+│       │   │   │           ├── [        923 1437150382]  $c9ac2cfe2ca918b4cac7$$anonfun$$sbtdef$1.class
+│       │   │   │           ├── [         22 1437150382]  $c9ac2cfe2ca918b4cac7.cache
+│       │   │   │           ├── [        433 1437150382]  $c9ac2cfe2ca918b4cac7.class
+│       │   │   │           ├── [       1351 1437150382]  $c9ac2cfe2ca918b4cac7$.class
+│       │   │   │           ├── [       1274 1437150384]  $ca79ffeb4ba838528b36$$anonfun$$sbtdef$1.class
+│       │   │   │           ├── [         22 1437150384]  $ca79ffeb4ba838528b36.cache
+│       │   │   │           ├── [        433 1437150384]  $ca79ffeb4ba838528b36.class
+│       │   │   │           └── [       1576 1437150384]  $ca79ffeb4ba838528b36$.class
+│       │   │   ├── [    1233949 1416496360]  sbt/
+│       │   │   │   ├── [    1224671 1416496360]  bin/
+│       │   │   │   │   ├── [       5062 1416496360]  sbt
+│       │   │   │   │   ├── [       1321 1416496360]  sbt.bat
+│       │   │   │   │   ├── [    1208380 1416496360]  sbt-launch.jar
+│       │   │   │   │   └── [       5812 1416496360]  sbt-launch-lib.bash
+│       │   │   │   └── [       5182 1416496360]  conf/
+│       │   │   │       ├── [        147 1416496360]  sbtconfig.txt
+│       │   │   │       └── [        939 1416496360]  sbtopts
+│       │   │   ├── [        223 1437152492]  Simple.sbt
+│       │   │   ├── [      13008 1428526020]  src/
+│       │   │   │   └── [       8912 1428526026]  main/
+│       │   │   │       └── [       4816 1437153040]  scala/
+│       │   │   │           └── [        720 1437153040]  SimpleApp.scala
+│       │   │   └── [    7623925 1437150560]  target/
+│       │   │       ├── [    1435544 1437150560]  resolution-cache/
+│       │   │       │   ├── [    1416440 1437150560]  reports/
+│       │   │       │   │   ├── [       4371 1437150560]  ivy-report.css
+│       │   │       │   │   ├── [      20993 1437150560]  ivy-report.xsl
+│       │   │       │   │   ├── [     230237 1437150560]  simple-project-simple-project_2.10-compile-internal.xml
+│       │   │       │   │   ├── [     227658 1437150560]  simple-project-simple-project_2.10-compile.xml
+│       │   │       │   │   ├── [        441 1437150560]  simple-project-simple-project_2.10-docs.xml
+│       │   │       │   │   ├── [        445 1437150560]  simple-project-simple-project_2.10-optional.xml
+│       │   │       │   │   ├── [        443 1437150560]  simple-project-simple-project_2.10-plugin.xml
+│       │   │       │   │   ├── [        440 1437150560]  simple-project-simple-project_2.10-pom.xml
+│       │   │       │   │   ├── [        445 1437150560]  simple-project-simple-project_2.10-provided.xml
+│       │   │       │   │   ├── [     230234 1437150560]  simple-project-simple-project_2.10-runtime-internal.xml
+│       │   │       │   │   ├── [     228251 1437150560]  simple-project-simple-project_2.10-runtime.xml
+│       │   │       │   │   ├── [       7516 1437150560]  simple-project-simple-project_2.10-scala-tool.xml
+│       │   │       │   │   ├── [        444 1437150560]  simple-project-simple-project_2.10-sources.xml
+│       │   │       │   │   ├── [     230270 1437150560]  simple-project-simple-project_2.10-test-internal.xml
+│       │   │       │   │   └── [     230156 1437150560]  simple-project-simple-project_2.10-test.xml
+│       │   │       │   └── [      15008 1437150484]  simple-project/
+│       │   │       │       └── [      10912 1437150484]  simple-project_2.10/
+│       │   │       │           └── [       6816 1437150484]  1.0/
+│       │   │       │               ├── [        646 1437150484]  resolved.xml.properties
+│       │   │       │               └── [       2074 1437150484]  resolved.xml.xml
+│       │   │       ├── [      38666 1437150666]  scala-2.10/
+│       │   │       │   ├── [      29965 1437150564]  classes/
+│       │   │       │   │   └── [      25869 1437150564]  org/
+│       │   │       │   │       └── [      21773 1437150564]  apache/
+│       │   │       │   │           └── [      17677 1437150564]  spark/
+│       │   │       │   │               └── [      13581 1437150564]  examples/
+│       │   │       │   │                   └── [       9485 1437150564]  streaming/
+│       │   │       │   │                       ├── [       1178 1437150564]  SimpleApp$$anonfun$1.class
+│       │   │       │   │                       ├── [       1178 1437150564]  SimpleApp$$anonfun$2.class
+│       │   │       │   │                       ├── [        906 1437150564]  SimpleApp.class
+│       │   │       │   │                       └── [       2127 1437150564]  SimpleApp$.class
+│       │   │       │   └── [       4605 1437150564]  simple-project_2.10-1.0.jar
+│       │   │       └── [    6145619 1437150586]  streams/
+│       │   │           ├── [     258092 1437150588]  compile/
+│       │   │           │   ├── [      23345 1437150560]  compile/
+│       │   │           │   │   └── [      19249 1437150560]  $global/
+│       │   │           │   │       └── [      15153 1437150560]  streams/
+│       │   │           │   │           ├── [      10284 1437150564]  export
+│       │   │           │   │           └── [        773 1437150666]  out
+│       │   │           │   ├── [      12394 1437150564]  copyResources/
+│       │   │           │   │   └── [       8298 1437150564]  $global/
+│       │   │           │   │       └── [       4202 1437150564]  streams/
+│       │   │           │   │           ├── [         23 1437150666]  copy-resources
+│       │   │           │   │           └── [         83 1437150666]  out
+│       │   │           │   ├── [      21982 1437150560]  dependencyClasspath/
+│       │   │           │   │   └── [      17886 1437150560]  $global/
+│       │   │           │   │       └── [      13790 1437150560]  streams/
+│       │   │           │   │           └── [       9694 1437150666]  export
+│       │   │           │   ├── [      12385 1437150588]  exportedProducts/
+│       │   │           │   │   └── [       8289 1437150588]  $global/
+│       │   │           │   │       └── [       4193 1437150588]  streams/
+│       │   │           │   │           └── [         97 1437150666]  export
+│       │   │           │   ├── [      21982 1437150560]  externalDependencyClasspath/
+│       │   │           │   │   └── [      17886 1437150560]  $global/
+│       │   │           │   │       └── [      13790 1437150560]  streams/
+│       │   │           │   │           └── [       9694 1437150666]  export
+│       │   │           │   ├── [      12339 1437150564]  $global/
+│       │   │           │   │   └── [       8243 1437150564]  $global/
+│       │   │           │   │       └── [       4147 1437150564]  discoveredMainClasses/
+│       │   │           │   │           └── [         51 1437150670]  data
+│       │   │           │   ├── [      26952 1437150560]  incCompileSetup/
+│       │   │           │   │   └── [      22856 1437150560]  $global/
+│       │   │           │   │       └── [      18760 1437150564]  streams/
+│       │   │           │   │           └── [      14664 1437150564]  inc_compile_2.10
+│       │   │           │   ├── [      12289 1437150560]  internalDependencyClasspath/
+│       │   │           │   │   └── [       8193 1437150560]  $global/
+│       │   │           │   │       └── [       4097 1437150560]  streams/
+│       │   │           │   │           └── [          1 1437150666]  export
+│       │   │           │   ├── [      12288 1437150564]  mainClass/
+│       │   │           │   │   └── [       8192 1437150564]  $global/
+│       │   │           │   │       └── [       4096 1437150564]  streams/
+│       │   │           │   │           └── [          0 1437150564]  out
+│       │   │           │   ├── [      21982 1437150560]  managedClasspath/
+│       │   │           │   │   └── [      17886 1437150560]  $global/
+│       │   │           │   │       └── [      13790 1437150560]  streams/
+│       │   │           │   │           └── [       9694 1437150666]  export
+│       │   │           │   ├── [      17887 1437150564]  packageBin/
+│       │   │           │   │   └── [      13791 1437150564]  $global/
+│       │   │           │   │       └── [       9695 1437150564]  streams/
+│       │   │           │   │           ├── [       3167 1437150564]  inputs
+│       │   │           │   │           ├── [       2313 1437150564]  out
+│       │   │           │   │           └── [        119 1437150564]  output
+│       │   │           │   ├── [      33593 1437150588]  run/
+│       │   │           │   │   └── [      29497 1437150588]  $global/
+│       │   │           │   │       └── [      25401 1437150588]  streams/
+│       │   │           │   │           └── [      21305 1437150670]  out
+│       │   │           │   ├── [      12289 1437150406]  unmanagedClasspath/
+│       │   │           │   │   └── [       8193 1437150406]  $global/
+│       │   │           │   │       └── [       4097 1437150406]  streams/
+│       │   │           │   │           └── [          1 1437150666]  export
+│       │   │           │   └── [      12289 1437150406]  unmanagedJars/
+│       │   │           │       └── [       8193 1437150406]  $global/
+│       │   │           │           └── [       4097 1437150406]  streams/
+│       │   │           │               └── [          1 1437150666]  export
+│       │   │           ├── [    5741865 1437150406]  $global/
+│       │   │           │   ├── [      12288 1437150386]  clean/
+│       │   │           │   │   └── [       8192 1437150386]  $global/
+│       │   │           │   │       └── [       4096 1437150386]  streams/
+│       │   │           │   │           └── [          0 1437150386]  out
+│       │   │           │   ├── [      16766 1437150406]  dependencyPositions/
+│       │   │           │   │   └── [      12670 1437150406]  $global/
+│       │   │           │   │       └── [       8574 1437150406]  streams/
+│       │   │           │   │           └── [       4478 1437150406]  update_cache_2.10/
+│       │   │           │   │               ├── [        118 1437150406]  input_dsp
+│       │   │           │   │               └── [        264 1437150666]  output_dsp
+│       │   │           │   ├── [      12288 1437150406]  $global/
+│       │   │           │   │   └── [       8192 1437150406]  $global/
+│       │   │           │   │       └── [       4096 1437150406]  streams/
+│       │   │           │   │           └── [          0 1437150406]  out
+│       │   │           │   ├── [      12460 1437150406]  ivyConfiguration/
+│       │   │           │   │   └── [       8364 1437150406]  $global/
+│       │   │           │   │       └── [       4268 1437150406]  streams/
+│       │   │           │   │           └── [        172 1437150406]  out
+│       │   │           │   ├── [      12288 1437150406]  ivySbt/
+│       │   │           │   │   └── [       8192 1437150406]  $global/
+│       │   │           │   │       └── [       4096 1437150406]  streams/
+│       │   │           │   │           └── [          0 1437150406]  out
+│       │   │           │   ├── [      12288 1437150406]  projectDescriptors/
+│       │   │           │   │   └── [       8192 1437150406]  $global/
+│       │   │           │   │       └── [       4096 1437150406]  streams/
+│       │   │           │   │           └── [          0 1437150406]  out
+│       │   │           │   └── [    5659391 1437150406]  update/
+│       │   │           │       └── [    5655295 1437150406]  $global/
+│       │   │           │           └── [    5651199 1437150406]  streams/
+│       │   │           │               ├── [    4643993 1437150560]  out
+│       │   │           │               └── [    1003110 1437150560]  update_cache_2.10/
+│       │   │           │                   ├── [       1629 1437150560]  inputs
+│       │   │           │                   └── [     997385 1437150666]  output
+│       │   │           └── [     141566 1437150588]  runtime/
+│       │   │               ├── [      22079 1437150588]  dependencyClasspath/
+│       │   │               │   └── [      17983 1437150588]  $global/
+│       │   │               │       └── [      13887 1437150588]  streams/
+│       │   │               │           └── [       9791 1437150666]  export
+│       │   │               ├── [      12385 1437150588]  exportedProducts/
+│       │   │               │   └── [       8289 1437150588]  $global/
+│       │   │               │       └── [       4193 1437150588]  streams/
+│       │   │               │           └── [         97 1437150666]  export
+│       │   │               ├── [      21982 1437150588]  externalDependencyClasspath/
+│       │   │               │   └── [      17886 1437150588]  $global/
+│       │   │               │       └── [      13790 1437150588]  streams/
+│       │   │               │           └── [       9694 1437150666]  export
+│       │   │               ├── [      22079 1437150588]  fullClasspath/
+│       │   │               │   └── [      17983 1437150588]  $global/
+│       │   │               │       └── [      13887 1437150588]  streams/
+│       │   │               │           └── [       9791 1437150666]  export
+│       │   │               ├── [      12385 1437150588]  internalDependencyClasspath/
+│       │   │               │   └── [       8289 1437150588]  $global/
+│       │   │               │       └── [       4193 1437150588]  streams/
+│       │   │               │           └── [         97 1437150666]  export
+│       │   │               ├── [      21982 1437150588]  managedClasspath/
+│       │   │               │   └── [      17886 1437150588]  $global/
+│       │   │               │       └── [      13790 1437150588]  streams/
+│       │   │               │           └── [       9694 1437150666]  export
+│       │   │               ├── [      12289 1437150586]  unmanagedClasspath/
+│       │   │               │   └── [       8193 1437150586]  $global/
+│       │   │               │       └── [       4097 1437150586]  streams/
+│       │   │               │           └── [          1 1437150666]  export
+│       │   │               └── [      12289 1437150586]  unmanagedJars/
+│       │   │                   └── [       8193 1437150586]  $global/
+│       │   │                       └── [       4097 1437150586]  streams/
+│       │   │                           └── [          1 1437150666]  export
+│       │   ├── [       1823 1437179298]  sparkcodeInText.txt
+│       │   ├── [    2967592 1437153662]  sparkCode.zip
+│       │   ├── [        698 1429554994]  sparkexample.py
+│       │   ├── [      63786 1429551380]  sparkjava/
+│       │   │   ├── [        922 1429551214]  pom.xml
+│       │   │   ├── [      13183 1429549650]  src/
+│       │   │   │   └── [       9087 1429549654]  main/
+│       │   │   │       └── [       4991 1429551360]  java/
+│       │   │   │           └── [        895 1429551360]  SimpleApp.java
+│       │   │   └── [      45585 1429551380]  target/
+│       │   │       ├── [      16409 1429551380]  classes/
+│       │   │       │   └── [      12313 1429551380]  org/
+│       │   │       │       └── [       8217 1429551380]  sparkexample/
+│       │   │       │           ├── [       1095 1429551380]  SimpleApp$1.class
+│       │   │       │           ├── [       1095 1429551380]  SimpleApp$2.class
+│       │   │       │           └── [       1931 1429551380]  SimpleApp.class
+│       │   │       ├── [       4218 1429551380]  maven-archiver/
+│       │   │       │   └── [        122 1429551380]  pom.properties
+│       │   │       ├── [      16603 1429551380]  maven-status/
+│       │   │       │   └── [      12507 1429551380]  maven-compiler-plugin/
+│       │   │       │       └── [       8411 1429551380]  compile/
+│       │   │       │           └── [       4315 1429551380]  default-compile/
+│       │   │       │               ├── [        103 1429551380]  createdFiles.lst
+│       │   │       │               └── [        116 1429551380]  inputFiles.lst
+│       │   │       └── [       4259 1429551380]  simple-project-1.0-SNAPSHOT.jar
+│       │   └── [      67636 1429552902]  sparkjava2/
+│       │       ├── [        922 1429551214]  pom.xml
+│       │       ├── [      14101 1429549650]  src/
+│       │       │   └── [      10005 1429549654]  main/
+│       │       │       └── [       5909 1429553006]  java/
+│       │       │           └── [       1813 1429553006]  SimpleApp.java
+│       │       └── [      48517 1429553016]  target/
+│       │           ├── [      18488 1429553016]  classes/
+│       │           │   └── [      14392 1429553016]  org/
+│       │           │       └── [      10296 1429553016]  sparkexample/
+│       │           │           ├── [       1178 1429553016]  SimpleApp$1.class
+│       │           │           ├── [       1184 1429553016]  SimpleApp$2.class
+│       │           │           ├── [       1112 1429553016]  SimpleApp$3.class
+│       │           │           └── [       2726 1429553016]  SimpleApp.class
+│       │           ├── [       4218 1429553016]  maven-archiver/
+│       │           │   └── [        122 1429553016]  pom.properties
+│       │           ├── [      16639 1429552902]  maven-status/
+│       │           │   └── [      12543 1429552902]  maven-compiler-plugin/
+│       │           │       └── [       8447 1429552902]  compile/
+│       │           │           └── [       4351 1429552904]  default-compile/
+│       │           │               ├── [        138 1429553016]  createdFiles.lst
+│       │           │               └── [        117 1429552904]  inputFiles.lst
+│       │           └── [       5076 1429553016]  simple-project-1.0-SNAPSHOT.jar
+│       ├── [     207077 1443916609]  sparktutorial.pptx
+│       ├── [    7406583 1443916610]  sparktutorial.zip
+│       └── [       3672 1443916597]  Yelptest2.java
+└── [   23056665 1446174993]  CloudComputing/
+    ├── [   10422198 1443112035]  Jemish/
+    │   ├── [    4667668 1431541336]  Lec - 1 Introduction.pptx
+    │   ├── [     538566 1431541358]  Lec - 2 Map-Reduce.pptx
+    │   ├── [     404434 1393375312]  Lec - 3 Manage Big Data.pptx
+    │   ├── [     502784 1393729172]  Lec - 4 DHT.ppt
+    │   ├── [     384000 1431541534]  Lec - 5 Consistancy Model.ppt
+    │   ├── [    2502117 1434966808]  Lec - 6 File System and Big Table.pptx
+    │   ├── [     228118 1431541644]  Lec - 7 Erasure Code.pptx
+    │   ├── [      62943 1431541660]  Lec - 8 Cloud Security.pptx
+    │   └── [    1127472 1397909974]  Lec - 9 Vitualization.pptx
+    ├── [   10693308 1446230837]  Lectures/
+    │   ├── [    4446121 1442170039]  1- introduction.pdf
+    │   ├── [     826694 1444236445]  2- bigdata-background.pdf
+    │   ├── [    1942777 1444236408]  3- bigdata.pdf
+    │   ├── [    1376019 1442595142]  4- virtualization.pdf
+    │   ├── [     641859 1446230837]  IaaS-resources.pdf
+    │   ├── [     978183 1443220595]  map-reduce.pdf
+    │   └── [     477559 1446168472]  tutorial-MapReduce(1).pptx
+    ├── [    1620143 1444195125]  OnlinePdf/
+    │   ├── [     970790 1444195113]  DistSys-13f-4.pdf
+    │   ├── [     236307 1444186526]  lec11.pdf
+    │   ├── [     408875 1444186532]  lec12.pdf
+    │   └── [         75 1444186569]  Links.txt
+    ├── [     241887 1446168483]  proj1.pdf
+    ├── [       5813 1446172196]  scanfs.py
+    └── [      69220 1442170086]  term-proj.pdf
+
+  5553905078 bytes used in 293 directories, 397 files

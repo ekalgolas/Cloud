@@ -23,10 +23,8 @@ public class DirectoryParser {
 	 * Constants based on the output format of
 	 * 'tree -F -R -p --timefmt "%s" --du --noreport' command
 	 */
-	protected static final int						ACCESS_RIGHT_ENDINDEX	= 10;
-	protected static final int						SIZE_STARTINDEX			= 10;
 
-	/**
+    /**
 	 * Mapping for directory and level of hierarchy
 	 */
 	private static HashMap<Integer, Directory>	levelDirectoryMap		= new HashMap<>();
@@ -73,22 +71,21 @@ public class DirectoryParser {
 				// Figure out if it is a file or a directory
 				String name = dirName;
 				boolean isFile = true;
-				if (dirName.endsWith("/")) {
+				if (dirName.endsWith("/") || dirName.endsWith("\\")) {
 					// Ends with '/' implies it is a directory and NOT a file
 					name = dirName.substring(0, dirName.length() - 1);
 					isFile = false;
 				}
 
 				// Extract other info from first part of the split
-				final String details = split[0].substring(StringUtils.lastIndexOf(split[0], "[") + 1);
-				final String accessRights = details.substring(0, ACCESS_RIGHT_ENDINDEX);
-				final int sizeEndIndex = details.lastIndexOf(" ");
-				final String readableTimeStamp = details.substring(sizeEndIndex).trim();
-				final String size = details.substring(SIZE_STARTINDEX, sizeEndIndex).trim();
+				final String details = split[0].substring(StringUtils.lastIndexOf(split[0], "[") + 1).trim();
+				final String[] detail = details.split(" ");
+				final String size = detail[0].trim();
+				final String readableTimeStamp = detail[1].trim();
 
 				// Create a new directory object
 				final Directory dir = new Directory(name, isFile, new ArrayList<>(),
-						Long.parseLong(readableTimeStamp), accessRights, Long.parseLong(size));
+						Long.parseLong(readableTimeStamp), Long.parseLong(size));
 
 				// Put current directory to current level
 				levelDirectoryMap.put(currentLevel, dir);

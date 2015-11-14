@@ -1063,4 +1063,10 @@ public class CephDirectoryOperations implements ICommandOperations {
 		return null;
 	}
 
+    @Override
+    public Directory releaseParentReadLocks(Directory root, String filePath) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }
