@@ -7,8 +7,12 @@ package commons;
  */
 public enum CommandsSupported {
 	LS,
+	LSL,
 	MKDIR,
 	RMDIR,
+	RMDIRF,
 	TOUCH,
+	CD,
+	PWD,
 	EXIT
 }

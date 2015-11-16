@@ -7,6 +7,7 @@ import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 
 import com.sun.media.sound.InvalidDataException;
+
 import commons.CompletionStatusCode;
 import commons.Message;
 import commons.OutputFormatter;
@@ -51,15 +52,30 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		// Try acquiring read lock on the directory
         root.getReadLock().lock();
 
+        // True if detailed output asked for LS command (LSL)
+        final boolean isDetailed = arguments != null 
+                && arguments[arguments.length - 1].equals("-l");
+
 		// If we reach here, it means valid directory was found
 		// Compute output
 		final OutputFormatter output = new OutputFormatter();
-		output.addRow("TYPE", "NAME");
+		if(isDetailed) {
+		    output.addRow("TYPE", "NAME", "SIZE", "TIMESTAMP");
+		} else {
+		    output.addRow("TYPE", "NAME");
+		}
 
 		// Append children
 		for (final Directory child : root.getChildren()) {
 			final String type = child.isFile() ? "File" : "Directory";
-			output.addRow(type, child.getName());
+			if(isDetailed) {
+			    output.addRow(type,
+			            child.getName(),
+			            child.getSize().toString(),
+			            child.getModifiedTimeStamp().toString());
+			} else {
+			    output.addRow(type, child.getName());
+			}
 		}
 
 		//Release the read lock
@@ -355,7 +371,11 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		final String name = paths[paths.length - 1];
 		final String dirPath = path.substring(0, path.length() - name.length() - 1);
 
-		remove(root, dirPath, name, false);
+		// True for RMDIRF i.e. rmdir -f option
+		final boolean isForceRemove = arguments != null 
+		        && arguments[arguments.length - 1].equals("-f");
+
+		remove(root, dirPath, name, false, isForceRemove);
 		return new Message("rmdir Successful");
 	}
 
@@ -375,7 +395,8 @@ public class GFSDirectoryOperations implements ICommandOperations {
 	private void remove(final Directory root,
 			final String path,
 			final String name,
-			final boolean isFile) {
+			final boolean isFile,
+			final boolean isForceRemove) {
 		// Search and get to the directory where we want to remove
 		final Directory directory = search(root, path);
 
@@ -403,12 +424,15 @@ public class GFSDirectoryOperations implements ICommandOperations {
 			}
 		}
 
-		/**
-		 * TODO : Currently we blindly remove the directory, but in future we may need to defer it saying directory is not empty. This will come into picture
-		 * after finalizing the arguments we are supporting for rmdir.
-		 */
-
-		subDirectories.remove(directoryToRemove);
+        // Remove only if directory is empty or force removal is asked
+        final boolean canRemove = isForceRemove || directoryToRemove.isEmptyDirectory();
+        if (canRemove) {
+            subDirectories.remove(directoryToRemove);
+        } else {
+            // Release the lock
+            directory.getWriteLock().unlock();
+            throw new IllegalStateException("Directory is not empty. Cannot remove.");
+        }
 		
 		// Release the lock
 		directory.getWriteLock().unlock();
@@ -434,7 +458,18 @@ public class GFSDirectoryOperations implements ICommandOperations {
 	public Message cd(final Directory root,
 			final String filePath)
 					throws InvalidPropertiesFormatException {
-		// TODO Auto-generated method stub
-		return null;
+	    final Directory directory = search(root, filePath);
+	    
+	       // If search returns null, return
+        if (directory == null) {
+            throw new InvalidPathException(filePath, "Does not exist");
+        }
+
+        // If path is a file, return
+        if (directory.isFile()) {
+            throw new InvalidPropertiesFormatException(filePath + " is a file. Expecting directory!");
+        }
+
+        return new Message(String.valueOf(true));
 	}
 }
