@@ -52,22 +52,29 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		// Try acquiring read lock on the directory
         root.getReadLock().lock();
 
+        // True if detailed output asked for LS command (LSL)
+        final boolean isDetailed = arguments != null 
+                && arguments[arguments.length - 1].equals("-l");
+
 		// If we reach here, it means valid directory was found
 		// Compute output
 		final OutputFormatter output = new OutputFormatter();
-		output.addRow("TYPE", "NAME");
+		if(isDetailed) {
+		    output.addRow("TYPE", "NAME", "SIZE", "TIMESTAMP");
+		} else {
+		    output.addRow("TYPE", "NAME");
+		}
 
-		// True if detailed output asked for LS command (LSL)
-		final boolean isDetailed = arguments != null 
-		        && arguments[arguments.length - 1].equals("-l");
-		
 		// Append children
 		for (final Directory child : root.getChildren()) {
 			final String type = child.isFile() ? "File" : "Directory";
-			output.addRow(type, child.getName());
 			if(isDetailed) {
-			    output.addRow("Size", child.getSize().toString());
-			    output.addRow("Timestamp", child.getModifiedTimeStamp().toString());
+			    output.addRow(type,
+			            child.getName(),
+			            child.getSize().toString(),
+			            child.getModifiedTimeStamp().toString());
+			} else {
+			    output.addRow(type, child.getName());
 			}
 		}
 
