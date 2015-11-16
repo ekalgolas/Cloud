@@ -1,9 +1,10 @@
 package master.metadata;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
-import commons.Globals;
 import commons.dir.Directory;
 
 /**
@@ -115,7 +116,7 @@ public class MetaDataServerInfo implements Serializable {
 	 */
 	@Override
 	public String toString() {
-		return "MetaDataServerInfo [serverName=" + serverName + ", ipAddress=" + ipAddress + ", serverType=" + serverType + ", status=" + status + "]";
+		return "MetaDataServerInfo {serverName=" + serverName + ", ipAddress=" + ipAddress + ", serverType=" + serverType + ", status=" + status + "}";
 	}
 
 	/**
@@ -153,4 +154,78 @@ public class MetaDataServerInfo implements Serializable {
 		matchedPath.append(maxMatchPath);
 		return parititionMap.get(maxMatchPath);
 	}
+	
+	/**
+	 * Find the closest MDS server that matches with the required file path.
+	 *
+	 * @param filePath
+	 * @return closest mds server.
+	 */
+	public static List<MetaDataServerInfo> findClosestServer(final String filePath,
+			final StringBuffer matchedPath, 
+			final HashMap<String,List<MetaDataServerInfo>> mdsServers) {
+		int maxLevel = -1;
+		String maxMatchPath = "";
+		for (final String node : mdsServers.keySet()) {
+			// Get level for this node
+			int currentLevel = 0, i = 0;
+			while (i < node.length() && i < filePath.length()) {
+				if (node.charAt(i) == filePath.charAt(i)) {
+					if (node.charAt(i) == '/') {
+						currentLevel++;
+					}
+				} else {
+					break;
+				}
+
+				i++;
+			}
+
+			// Set max level if current level is greater
+			if (currentLevel > maxLevel && i == node.length()) {
+				maxLevel = currentLevel;
+				maxMatchPath = node;
+			}
+		}
+
+		matchedPath.append(maxMatchPath);
+		return mdsServers.get(maxMatchPath);
+	}
+	
+	/**
+	 * Convert the Metadata details in message header to List of MetaDataServerInfo
+	 * @param string
+	 * @return List of mds server details
+	 */
+	public static ArrayList<MetaDataServerInfo> fromStringToMetadata(String string) {
+	    String[] strings = string.replace("[", "")
+	    		.replace("]", "").replace("MetaDataServerInfo", "") .split(",  ");
+	    ArrayList<MetaDataServerInfo> mdsList = new ArrayList<>();
+	    for(String mds:strings)
+	    {
+	    	String[] properties = mds.replace("{", "").replace("}", "").split(", ");
+	    	MetaDataServerInfo newMds = new MetaDataServerInfo();
+	    	for(String property:properties)
+	    	{
+	    		String[] propertyValue = property.split("=");
+	    		switch(propertyValue[0].trim())
+	    		{
+	    			case "serverName":
+	    				newMds.setServerName(propertyValue[1].trim());
+	    				break;
+	    			case "ipAddress":
+	    				newMds.setIpAddress(propertyValue[1].trim());
+	    				break;
+	    			case "serverType":
+	    				newMds.setServerType(propertyValue[1].trim());
+	    				break;
+	    			case "status":
+	    				newMds.setStatus(propertyValue[1].trim());
+	    				break;
+	    		}
+	    	}
+	    	mdsList.add(newMds);
+	    }
+	    return mdsList;
+	 }
 }
