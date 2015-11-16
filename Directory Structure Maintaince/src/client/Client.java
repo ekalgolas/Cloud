@@ -6,6 +6,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.file.Paths;
 import java.util.Scanner;
 
 import org.apache.log4j.Level;
@@ -23,6 +24,8 @@ public class Client {
 	private final ObjectInputStream		inputStream;
 	private final ObjectOutputStream	outputStream;
 	private final static Logger			LOGGER	= Logger.getLogger(Client.class);
+
+	private static String pwd = "";
 
 	/**
 	 * Constructor
@@ -52,23 +55,33 @@ public class Client {
 		// Read commands
 		try (Scanner scanner = new Scanner(new File(inputFileName))) {
 			while (scanner.hasNext()) {
-				final String command = scanner.nextLine();				
+				String command = scanner.nextLine();				
 
-				if("EXIT".equals(command))
-					break;
+				if(command.equals(CommandsSupported.EXIT.name())) {
+				    break;
+				} else if(command.startsWith(CommandsSupported.CD.name())) {
+				    String argument = command.substring(3);
+				    command = new String(Paths.get(pwd, argument).toString());
+				} else if(command.startsWith(CommandsSupported.PWD.name())) {
+				    LOGGER.info("Command " + number + " : " + command);
+				    LOGGER.info(pwd + "\n");
+				    number++;
+				    continue;
+				}
+
 				// Send command to master
 				outputStream.writeObject(new Message(command));
 				outputStream.flush();
 
-				// Exit if command is exit
-				if (command.equalsIgnoreCase(CommandsSupported.EXIT.name())) {
-					LOGGER.info("Command " + number + " : " + command);
-					break;
-				}
-
 				// Wait and read the reply
 				final Message message = (Message) inputStream.readObject();
 				final String reply = message.getContent();
+				if(command.startsWith(CommandsSupported.CD.name())) {
+				    final boolean isValid = Boolean.parseBoolean(reply);
+				    if(isValid) {
+				        pwd = Paths.get(pwd, command.substring(3)).toString();
+				    }
+				}
 				LOGGER.info("Command " + number + " : " + command);
 				LOGGER.info(reply + "\n");
 

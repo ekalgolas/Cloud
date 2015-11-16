@@ -218,6 +218,14 @@ public class Worker implements Runnable {
                 }
 
                 logState(command, root);
+            } else if (command.startsWith(CommandsSupported.CD.name())) {
+                // Command line parameter (directory name) start from index '3'
+                // in the received string
+                argument = command.substring(3);
+
+                reply = directoryOperations.cd(root, argument);
+
+                logState(command, root);
             } else if (command.startsWith(CommandsSupported.EXIT.name())) {
 				// Close the connection
 				isRunning = false;

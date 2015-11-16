@@ -449,7 +449,18 @@ public class GFSDirectoryOperations implements ICommandOperations {
 	public Message cd(final Directory root,
 			final String filePath)
 					throws InvalidPropertiesFormatException {
-		// TODO Auto-generated method stub
-		return null;
+	    final Directory directory = search(root, filePath);
+	    
+	       // If search returns null, return
+        if (directory == null) {
+            throw new InvalidPathException(filePath, "Does not exist");
+        }
+
+        // If path is a file, return
+        if (directory.isFile()) {
+            throw new InvalidPropertiesFormatException(filePath + " is a file. Expecting directory!");
+        }
+
+        return new Message(String.valueOf(true));
 	}
 }
