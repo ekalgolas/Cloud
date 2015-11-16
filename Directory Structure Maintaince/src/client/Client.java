@@ -1,6 +1,5 @@
 package client;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -54,22 +53,22 @@ public class Client {
 		int number = 0;
 
 		// Read commands
-		try (Scanner scanner = new Scanner(new File(inputFileName))) {
+		try (Scanner scanner = new Scanner(System.in)) {
 			while (scanner.hasNext()) {
-				String command = scanner.nextLine();				
+				String command = scanner.nextLine();
 
 				if(command.equals(CommandsSupported.EXIT.name())) {
-				    break;
+					break;
 				} else if(command.startsWith(CommandsSupported.CD.name())) {
-				    String argument = command.substring(3);
-				    if(!argument.startsWith(ROOT)) {
-				        command = new String(Paths.get(pwd, argument).toString());
-				    }
+					final String argument = command.substring(3);
+					if(!argument.startsWith(ROOT)) {
+						command = new String(Paths.get(pwd, argument).toString());
+					}
 				} else if(command.startsWith(CommandsSupported.PWD.name())) {
-				    LOGGER.info("Command " + number + " : " + command);
-				    LOGGER.info(pwd + "\n");
-				    number++;
-				    continue;
+					LOGGER.info("Command " + number + " : " + command);
+					LOGGER.info(pwd + "\n");
+					number++;
+					continue;
 				}
 
 				// Send command to master
@@ -80,13 +79,13 @@ public class Client {
 				final Message message = (Message) inputStream.readObject();
 				final String reply = message.getContent();
 				if(command.startsWith(CommandsSupported.CD.name())) {
-				    final boolean isValid = Boolean.parseBoolean(reply);
-				    if(isValid) {
-				        String argument = command.substring(3);
-				        pwd = argument.startsWith(ROOT)
-				                        ? argument
-				                        : Paths.get(pwd, argument).toString();
-				    }
+					final boolean isValid = reply.startsWith("true");
+					if(isValid) {
+						final String argument = command.substring(3);
+						pwd = argument.startsWith(ROOT)
+								? argument
+										: Paths.get(pwd, argument).toString();
+					}
 				}
 				LOGGER.info("Command " + number + " : " + command);
 				LOGGER.info(reply + "\n");

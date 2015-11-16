@@ -30,13 +30,13 @@ import commons.dir.ICommandOperations;
  * </pre>
  */
 public class Worker implements Runnable {
-	private static final AppWatch   APPWATCH    = new AppWatch();
-	private final static Logger     LOGGER      = Logger.getLogger(Worker.class);
-	public volatile boolean        isRunning	= true;
-	private final String           listenerType;
-	private final Socket           workerSocket;
-	private ObjectInputStream      inputStream;
-	private ObjectOutputStream     outputStream;
+	private static final AppWatch	APPWATCH	= new AppWatch();
+	private final static Logger		LOGGER		= Logger.getLogger(Worker.class);
+	public volatile boolean			isRunning	= true;
+	private final String			listenerType;
+	private final Socket			workerSocket;
+	private ObjectInputStream		inputStream;
+	private ObjectOutputStream		outputStream;
 
 	/**
 	 * Constructor
@@ -70,7 +70,7 @@ public class Worker implements Runnable {
 				// Read the queried command
 				final Message message = (Message) inputStream.readObject();
 				final String command = message.getContent();
-				System.out.println("command:"+command);
+				System.out.println("command:" + command);
 				Message reply = null;
 				Directory root = null;
 				Directory replica = null;
@@ -89,25 +89,22 @@ public class Worker implements Runnable {
 						directoryOperations = new CephDirectoryOperations();
 						replicationOperations = null;
 						final String[] commandParse = command.split(" ");
-						root = MetaDataServerInfo.findClosestNode(command
-								.substring(commandParse[0].length()+1),
-								partialFilePath, Globals.subTreePartitionList);
+						root = MetaDataServerInfo.findClosestNode(command.substring(commandParse[0].length() + 1),
+								partialFilePath,
+								Globals.subTreePartitionList);
 					} else {
 						directoryOperations = new DhtDirectoryOperations();
 						replicationOperations = null;
 					}
 
 					APPWATCH.startWatch("Command execution started...");
-					reply = executeCommand(command,
-							root, replica, partialFilePath,
-							directoryOperations, replicationOperations,
-							message);
+					reply = executeCommand(command, root, replica, partialFilePath, directoryOperations, replicationOperations, message);
 
 					final String performance = APPWATCH.stopAndLogTime("Command execution completed");
 					reply.appendContent(performance);
 				} catch (final Exception e) {
 					// If any command threw errors, propagate the error to the client
-					reply = new Message(e.getMessage()+" error occurred");
+					reply = new Message(e.getMessage() + " error occurred");
 				}
 
 				System.out.println(reply.toString());
@@ -154,30 +151,26 @@ public class Worker implements Runnable {
 		Message reply = null;
 		String argument = "";
 		try {
-			if (command.startsWith(CommandsSupported.LS.name())) {
+			if (command.startsWith(CommandsSupported.LSL.name())) {
+				// Command line parameter (directory name) start from index '4'
+				// in the received string
+				argument = command.substring(4);
+
+				reply = directoryOperations.ls(root, argument, partialFilePath.toString(), "-l");
+			} else if (command.startsWith(CommandsSupported.LS.name())) {
 				// Command line parameter (directory name) start from index '3'
 				// in the received string
 				argument = command.substring(3);
 
-				reply = directoryOperations.ls(root, argument,
-						partialFilePath.toString());
-			} else if (command.startsWith(CommandsSupported.LSL.name())) {
-                // Command line parameter (directory name) start from index '4'
-                // in the received string
-                argument = command.substring(4);
-
-                reply = directoryOperations.ls(root, argument,
-                        partialFilePath.toString(), "-l");
-            } else if (command.startsWith(CommandsSupported.MKDIR.name())) {
+				reply = directoryOperations.ls(root, argument, partialFilePath.toString());
+			} else if (command.startsWith(CommandsSupported.MKDIR.name())) {
 				// Command line parameter (directory name) start from index '6'
 				// in the received string
 				argument = command.substring(6);
 
-				reply = directoryOperations.mkdir(root, argument,
-						partialFilePath.toString(), message.getHeader());
+				reply = directoryOperations.mkdir(root, argument, partialFilePath.toString(), message.getHeader());
 				if (replicationOperations != null) {
-					replicationOperations.replicateMkdir(root, replica,
-							argument);
+					replicationOperations.replicateMkdir(root, replica, argument);
 				}
 
 				logState(command, root);
@@ -186,11 +179,20 @@ public class Worker implements Runnable {
 				// in the received string
 				argument = command.substring(6);
 
-				reply = directoryOperations.touch(root, argument,
-						partialFilePath.toString(), message.getHeader());
+				reply = directoryOperations.touch(root, argument, partialFilePath.toString(), message.getHeader());
 				if (replicationOperations != null) {
-					replicationOperations.replicateTouch(root, replica,
-							argument);
+					replicationOperations.replicateTouch(root, replica, argument);
+				}
+
+				logState(command, root);
+			} else if (command.startsWith(CommandsSupported.RMDIRF.name())) {
+				// Command line parameter (directory name) start from index '7'
+				// in the received string
+				argument = command.substring(7);
+
+				reply = directoryOperations.rmdir(root, argument, partialFilePath.toString(), message.getHeader(), "-f");
+				if (replicationOperations != null) {
+					replicationOperations.replicateRmdir(replica, argument);
 				}
 
 				logState(command, root);
@@ -199,34 +201,21 @@ public class Worker implements Runnable {
 				// in the received string
 				argument = command.substring(6);
 
-				reply = directoryOperations.rmdir(root, argument,
-						partialFilePath.toString(), message.getHeader());
+				reply = directoryOperations.rmdir(root, argument, partialFilePath.toString(), message.getHeader());
 				if (replicationOperations != null) {
 					replicationOperations.replicateRmdir(replica, argument);
 				}
 
 				logState(command, root);
-			} else if (command.startsWith(CommandsSupported.RMDIRF.name())) {
-                // Command line parameter (directory name) start from index '7'
-                // in the received string
-                argument = command.substring(7);
+			} else if (command.startsWith(CommandsSupported.CD.name())) {
+				// Command line parameter (directory name) start from index '3'
+				// in the received string
+				argument = command.substring(3);
 
-                reply = directoryOperations.rmdir(root, argument,
-                        partialFilePath.toString(), message.getHeader(), "-f");
-                if (replicationOperations != null) {
-                    replicationOperations.replicateRmdir(replica, argument);
-                }
+				reply = directoryOperations.cd(root, argument);
 
-                logState(command, root);
-            } else if (command.startsWith(CommandsSupported.CD.name())) {
-                // Command line parameter (directory name) start from index '3'
-                // in the received string
-                argument = command.substring(3);
-
-                reply = directoryOperations.cd(root, argument);
-
-                logState(command, root);
-            } else if (command.startsWith(CommandsSupported.EXIT.name())) {
+				logState(command, root);
+			} else if (command.startsWith(CommandsSupported.EXIT.name())) {
 				// Close the connection
 				isRunning = false;
 			} else {
@@ -236,7 +225,6 @@ public class Worker implements Runnable {
 		} finally {
 			directoryOperations.releaseParentReadLocks(root, argument);
 		}
-
 
 		return reply;
 	}
