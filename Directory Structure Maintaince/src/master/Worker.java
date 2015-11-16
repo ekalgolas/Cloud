@@ -161,7 +161,14 @@ public class Worker implements Runnable {
 
 				reply = directoryOperations.ls(root, argument,
 						partialFilePath.toString());
-			} else if (command.startsWith(CommandsSupported.MKDIR.name())) {
+			} else if (command.startsWith(CommandsSupported.LSL.name())) {
+                // Command line parameter (directory name) start from index '4'
+                // in the received string
+                argument = command.substring(4);
+
+                reply = directoryOperations.ls(root, argument, "-l",
+                        partialFilePath.toString());
+            } else if (command.startsWith(CommandsSupported.MKDIR.name())) {
 				// Command line parameter (directory name) start from index '6'
 				// in the received string
 				argument = command.substring(6);
@@ -199,7 +206,19 @@ public class Worker implements Runnable {
 				}
 
 				logState(command, root);
-			} else if (command.startsWith(CommandsSupported.EXIT.name())) {
+			} else if (command.startsWith(CommandsSupported.RMDIRF.name())) {
+                // Command line parameter (directory name) start from index '7'
+                // in the received string
+                argument = command.substring(7);
+
+                reply = directoryOperations.rmdir(root, argument, "-f",
+                        partialFilePath.toString(), message.getHeader());
+                if (replicationOperations != null) {
+                    replicationOperations.replicateRmdir(replica, argument);
+                }
+
+                logState(command, root);
+            } else if (command.startsWith(CommandsSupported.EXIT.name())) {
 				// Close the connection
 				isRunning = false;
 			} else {

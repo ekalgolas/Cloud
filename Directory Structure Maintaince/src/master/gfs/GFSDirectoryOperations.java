@@ -7,6 +7,7 @@ import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 
 import com.sun.media.sound.InvalidDataException;
+
 import commons.CompletionStatusCode;
 import commons.Message;
 import commons.OutputFormatter;
@@ -56,10 +57,17 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		final OutputFormatter output = new OutputFormatter();
 		output.addRow("TYPE", "NAME");
 
+		// True if detailed output asked for LS command (LSL)
+		final boolean isDetailed = arguments != null && arguments[0].equals("-l");
+		
 		// Append children
 		for (final Directory child : root.getChildren()) {
 			final String type = child.isFile() ? "File" : "Directory";
 			output.addRow(type, child.getName());
+			if(isDetailed) {
+			    output.addRow("Size", child.getSize().toString());
+			    output.addRow("Timestamp", child.getModifiedTimeStamp().toString());
+			}
 		}
 
 		//Release the read lock
@@ -355,7 +363,10 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		final String name = paths[paths.length - 1];
 		final String dirPath = path.substring(0, path.length() - name.length() - 1);
 
-		remove(root, dirPath, name, false);
+		// True for RMDIRF i.e. rmdir -f option
+		final boolean isForceRemove = arguments != null && arguments[0].equals("-f");
+
+		remove(root, dirPath, name, false, isForceRemove);
 		return new Message("rmdir Successful");
 	}
 
@@ -375,7 +386,8 @@ public class GFSDirectoryOperations implements ICommandOperations {
 	private void remove(final Directory root,
 			final String path,
 			final String name,
-			final boolean isFile) {
+			final boolean isFile,
+			final boolean isForceRemove) {
 		// Search and get to the directory where we want to remove
 		final Directory directory = search(root, path);
 
@@ -403,12 +415,15 @@ public class GFSDirectoryOperations implements ICommandOperations {
 			}
 		}
 
-		/**
-		 * TODO : Currently we blindly remove the directory, but in future we may need to defer it saying directory is not empty. This will come into picture
-		 * after finalizing the arguments we are supporting for rmdir.
-		 */
-
-		subDirectories.remove(directoryToRemove);
+        // Remove only if directory is empty or force removal is asked
+        final boolean canRemove = isForceRemove || directoryToRemove.isEmptyDirectory();
+        if (canRemove) {
+            subDirectories.remove(directoryToRemove);
+        } else {
+            // Release the lock
+            directory.getWriteLock().unlock();
+            throw new IllegalStateException("Directory is not empty. Cannot remove.");
+        }
 		
 		// Release the lock
 		directory.getWriteLock().unlock();
