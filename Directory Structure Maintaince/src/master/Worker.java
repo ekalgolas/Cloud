@@ -166,8 +166,8 @@ public class Worker implements Runnable {
                 // in the received string
                 argument = command.substring(4);
 
-                reply = directoryOperations.ls(root, argument, "-l",
-                        partialFilePath.toString());
+                reply = directoryOperations.ls(root, argument,
+                        partialFilePath.toString(), "-l");
             } else if (command.startsWith(CommandsSupported.MKDIR.name())) {
 				// Command line parameter (directory name) start from index '6'
 				// in the received string
@@ -211,8 +211,8 @@ public class Worker implements Runnable {
                 // in the received string
                 argument = command.substring(7);
 
-                reply = directoryOperations.rmdir(root, argument, "-f",
-                        partialFilePath.toString(), message.getHeader());
+                reply = directoryOperations.rmdir(root, argument,
+                        partialFilePath.toString(), message.getHeader(), "-f");
                 if (replicationOperations != null) {
                     replicationOperations.replicateRmdir(replica, argument);
                 }

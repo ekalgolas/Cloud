@@ -58,7 +58,8 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		output.addRow("TYPE", "NAME");
 
 		// True if detailed output asked for LS command (LSL)
-		final boolean isDetailed = arguments != null && arguments[0].equals("-l");
+		final boolean isDetailed = arguments != null 
+		        && arguments[arguments.length - 1].equals("-l");
 		
 		// Append children
 		for (final Directory child : root.getChildren()) {
@@ -364,7 +365,8 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		final String dirPath = path.substring(0, path.length() - name.length() - 1);
 
 		// True for RMDIRF i.e. rmdir -f option
-		final boolean isForceRemove = arguments != null && arguments[0].equals("-f");
+		final boolean isForceRemove = arguments != null 
+		        && arguments[arguments.length - 1].equals("-f");
 
 		remove(root, dirPath, name, false, isForceRemove);
 		return new Message("rmdir Successful");

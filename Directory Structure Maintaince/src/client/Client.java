@@ -24,8 +24,9 @@ public class Client {
 	private final ObjectInputStream		inputStream;
 	private final ObjectOutputStream	outputStream;
 	private final static Logger			LOGGER	= Logger.getLogger(Client.class);
+	private static final String         ROOT    = "root";
 
-	private static String pwd = "";
+	private static String               pwd     = ROOT;
 
 	/**
 	 * Constructor
@@ -61,7 +62,9 @@ public class Client {
 				    break;
 				} else if(command.startsWith(CommandsSupported.CD.name())) {
 				    String argument = command.substring(3);
-				    command = new String(Paths.get(pwd, argument).toString());
+				    if(!argument.startsWith(ROOT)) {
+				        command = new String(Paths.get(pwd, argument).toString());
+				    }
 				} else if(command.startsWith(CommandsSupported.PWD.name())) {
 				    LOGGER.info("Command " + number + " : " + command);
 				    LOGGER.info(pwd + "\n");
@@ -79,7 +82,10 @@ public class Client {
 				if(command.startsWith(CommandsSupported.CD.name())) {
 				    final boolean isValid = Boolean.parseBoolean(reply);
 				    if(isValid) {
-				        pwd = Paths.get(pwd, command.substring(3)).toString();
+				        String argument = command.substring(3);
+				        pwd = argument.startsWith(ROOT)
+				                        ? argument
+				                        : Paths.get(pwd, argument).toString();
 				    }
 				}
 				LOGGER.info("Command " + number + " : " + command);
