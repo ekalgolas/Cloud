@@ -212,7 +212,7 @@ public class Worker implements Runnable {
 				// in the received string
 				argument = command.substring(3);
 
-				reply = directoryOperations.cd(root, argument);
+				reply = directoryOperations.cd(root, argument, partialFilePath.toString());
 
 				logState(command, root);
 			} else if (command.startsWith(CommandsSupported.EXIT.name())) {
