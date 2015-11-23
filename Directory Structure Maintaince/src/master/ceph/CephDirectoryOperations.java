@@ -144,7 +144,6 @@ public class CephDirectoryOperations implements ICommandOperations {
 
 				// Wait and read the reply
 				final Message message = (Message) inputStream.readObject();				
-				final String reply = message.getContent();
 				socket.close();
 				return message;
 			} 
@@ -174,10 +173,10 @@ public class CephDirectoryOperations implements ICommandOperations {
 	@Override
 	public Message ls(final Directory root, final String filePath, final String... arguments)
 			throws InvalidPropertiesFormatException {
-		System.out.println("Calling ls");
 		try
 		{
 			final StringBuffer resultCode = new StringBuffer();
+			//Contains the relative path for the current partition.
 			String searchablePath;
 			if (arguments != null && 
 					arguments.length > 0 && 
@@ -188,6 +187,12 @@ public class CephDirectoryOperations implements ICommandOperations {
 			}
 			final Directory node;
 			
+			// True if detailed output asked for LS command (LSL)
+	        final boolean isDetailed = (arguments != null) 
+	                && arguments[arguments.length - 1].equals("-l");
+			
+	        //If partial match for the command path is found, start searching from that node. 
+	        //Else start from the root node.
 			if(searchablePath != null && 
 					!"/".equals(searchablePath.trim()) && 
 					!"".equals(searchablePath.trim()))
@@ -200,66 +205,106 @@ public class CephDirectoryOperations implements ICommandOperations {
 				resultCode.append(Globals.PATH_FOUND);
 			}
 	
+			//If search returns a non null node.
 			if (node != null) 
 			{
 				final Inode inode = node.getInode();
-//				System.out.println("inode:"+inode);
-//				System.out.println("resultCode:"+resultCode);
 				String resultcodeValue = resultCode.toString().trim();
+				//If path found in the current MDS 
 				if (inode.getInodeNumber() != null && 
 						Globals.PATH_FOUND.equals(resultcodeValue)) 
 				{
-//					System.out.println("Inside Path Found");
 					final OutputFormatter output = new OutputFormatter();
+					//If the path is a directory
 					if (!node.isFile()) 
 					{
 						// If we reach here, it means valid directory was found
 						// Compute output
-						output.addRow("TYPE", "NAME");
+						if(isDetailed)
+						{
+							output.addRow("TYPE", "NAME", "SIZE", "TIMESTAMP");
+						}
+						else
+						{
+							output.addRow("TYPE", "NAME");
+						}
 	
 						// Append children
 						for (final Directory child : node.getChildren()) 
 						{
 							final String type = child.isFile() ? "File" : "Directory";
-							output.addRow(type, child.getName());
+							if(isDetailed) {
+							    output.addRow(type,
+							            child.getName(),
+							            child.getSize().toString(),
+							            child.getModifiedTimeStamp().toString());
+							}
+							else
+							{
+								output.addRow(type, child.getName());
+							}
 						}
 					} 
-					else
+					else //If the path is a file
 					{
-						output.addRow("TYPE", "NAME");
-						output.addRow("File", node.getName());
+						if(isDetailed)
+						{
+							output.addRow("TYPE", "NAME", "SIZE", "TIMESTAMP");
+							output.addRow("File",
+									node.getName(),
+									node.getSize().toString(),
+									node.getModifiedTimeStamp().toString());
+						}
+						else
+						{
+							output.addRow("TYPE", "NAME");
+							output.addRow("File", node.getName());
+						}
 					}
-					final Message result = new Message(output.toString(), node.getInode().getDataServerInfo().toString());
+					final Message result = new Message(output.toString(), 
+							inode.getDataServerInfo().toString());
 					return result;
 				} 
+				//If the path lead to another MDS. Forward the command to the resp MDS.
 				else if (inode.getInodeNumber() == null && 
 						(Globals.PARTIAL_PATH_FOUND.equals(resultcodeValue)||
 								Globals.PATH_FOUND.equals(resultcodeValue))) 
 				{
-//					System.out.println("Forwarding ls to another MDS");
-					if (inode.getDataServerInfo() != null && inode.getDataServerInfo().size() > 0) 
+					if (inode.getDataServerInfo() != null && 
+							inode.getDataServerInfo().size() > 0) 
 					{
-						final MetaDataServerInfo mdsServer = getRequiredMdsInfo(inode, false); 
-//						System.out.println("Metadata Server:"+mdsServer);
-						final Message message = remoteExecCommand(CommandsSupported.LS, filePath, mdsServer, false, null);
+						final MetaDataServerInfo mdsServer = getRequiredMdsInfo(inode, true); 
+						final CommandsSupported remoteCommand;
+						if(isDetailed)
+						{
+							remoteCommand = CommandsSupported.LSL;
+						}
+						else
+						{
+							remoteCommand = CommandsSupported.LS;
+						}
+						final Message message = remoteExecCommand(remoteCommand, 
+								filePath, mdsServer, false, null);
 						if (message != null) 
 						{
 							return message;
 						}
 					}
-				} 
+				}
+				//If partial path found but the inode indicates 
+				//that the path existing in current MDS
 				else if (inode.getInodeNumber() != null && 
 						!Globals.PARTIAL_PATH_FOUND.equals(resultcodeValue)) 
 				{
-//					System.out.println("Inside Unstable");
 					return new Message(filePath + " is in an instable state");
 				} 
+				//If the path not found.
 				else 
 				{
-//					System.out.println("Inside Does not exists");
 					return new Message(filePath + " Does not exist");
 				}
 			} 
+			//If the path not found.
 			else 
 			{
 				return new Message(filePath + " Does not exist");
@@ -271,7 +316,9 @@ public class CephDirectoryOperations implements ICommandOperations {
 					"",
 					CompletionStatusCode.ERROR.name());
 		}
-		return null;
+		return new Message("LS command completed without any errors and proper output",
+				"",
+				CompletionStatusCode.ERROR.name());
 	}
 	
 	private Message updateReplicas(final CommandsSupported command,
@@ -1052,15 +1099,116 @@ public class CephDirectoryOperations implements ICommandOperations {
 	}
 
 	@Override
-	public void rm(final Directory root, final String path) throws InvalidPropertiesFormatException {
+	public void rm(final Directory root, 
+			final String path,
+			String... arguments) throws InvalidPropertiesFormatException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public Message cd(final Directory root, final String filePath) throws InvalidPropertiesFormatException {
-		// TODO Auto-generated method stub
-		return null;
+	public Message cd(final Directory root, 
+			final String filePath,
+			String... arguments) throws InvalidPropertiesFormatException {
+		try
+		{
+			final StringBuffer resultCode = new StringBuffer();
+			//Contains the relative path for the current partition.
+			String searchablePath;
+			if (arguments != null && 
+					arguments.length > 0 && 
+					(!"/".equals(arguments[0]) && !"root".equals(arguments[0]))) {
+				searchablePath = filePath.substring(arguments[0].length());
+			} else {
+				searchablePath = filePath;
+			}
+			final Directory node;
+					
+	        //If partial match for the command path is found, start searching from that node. 
+	        //Else start from the root node.
+			if(searchablePath != null && 
+					!"/".equals(searchablePath.trim()) && 
+					!"".equals(searchablePath.trim()))
+			{
+				node = search(root, searchablePath, resultCode);
+			}
+			else
+			{
+				node = root;
+				resultCode.append(Globals.PATH_FOUND);
+			}
+	
+			//If search returns a non null node.
+			if (node != null) 
+			{
+				final Inode inode = node.getInode();
+				String resultcodeValue = resultCode.toString().trim();
+				//If path found in the current MDS 
+				if (inode.getInodeNumber() != null && 
+						Globals.PATH_FOUND.equals(resultcodeValue)) 
+				{					
+					//If the path is a directory
+					if (!node.isFile()) 
+					{
+						// If we reach here, it means valid directory was found
+						final Message result = new Message("",
+								inode.getDataServerInfo().toString(),
+								CompletionStatusCode.SUCCESS.name());
+						return result;
+					} 
+					else //If the path is a file
+					{
+						final Message result = new Message("Directory expected",
+								inode.getDataServerInfo().toString(),
+								CompletionStatusCode.DIR_EXPECTED.name());
+						return result;
+					}					
+				} 
+				//If the path lead to another MDS. Forward the command to the resp MDS.
+				else if (inode.getInodeNumber() == null && 
+						(Globals.PARTIAL_PATH_FOUND.equals(resultcodeValue)||
+								Globals.PATH_FOUND.equals(resultcodeValue))) 
+				{
+					if (inode.getDataServerInfo() != null && 
+							inode.getDataServerInfo().size() > 0) 
+					{
+						final MetaDataServerInfo mdsServer = getRequiredMdsInfo(inode, true); 						
+						final Message message = remoteExecCommand(CommandsSupported.CD, 
+								filePath, mdsServer, false, null);
+						if (message != null) 
+						{
+							return message;
+						}
+					}
+				}
+				//If partial path found but the inode indicates 
+				//that the path existing in current MDS
+				else if (inode.getInodeNumber() != null && 
+						!Globals.PARTIAL_PATH_FOUND.equals(resultcodeValue)) 
+				{
+					return new Message(filePath + " is in an instable state");
+				} 
+				//If the path not found.
+				else 
+				{
+					return new Message(filePath + " Does not exist");
+				}
+			} 
+			//If the path not found.
+			else 
+			{
+				return new Message(filePath + " Does not exist");
+			}
+		}
+		catch(Exception exp)
+		{
+			return new Message(exp.getLocalizedMessage()+" error occurred",
+					"",
+					CompletionStatusCode.ERROR.name());
+		}
+		return new Message("CD command completed without any errors and proper output",
+				"",
+				CompletionStatusCode.ERROR.name());
 	}
 
     @Override

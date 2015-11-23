@@ -57,7 +57,9 @@ public class CacheOperations implements ICommandOperations {
 	 * @see commons.ICommandOperations#rm(master.metadata.Directory, java.lang.String)
 	 */
 	@Override
-	public void rm(final Directory root, final String path) throws InvalidPropertiesFormatException {
+	public void rm(final Directory root, 
+			final String path,
+			String... arguments) throws InvalidPropertiesFormatException {
 		// TODO Auto-generated method stub
 
 	}
@@ -67,7 +69,9 @@ public class CacheOperations implements ICommandOperations {
 	 * @see commons.ICommandOperations#cd(master.metadata.Directory, java.lang.String)
 	 */
 	@Override
-	public Message cd(final Directory root, final String filePath) throws InvalidPropertiesFormatException {
+	public Message cd(final Directory root, 
+			final String filePath,
+			String... arguments) throws InvalidPropertiesFormatException {
 		// TODO Auto-generated method stub
 		return null;
 	}

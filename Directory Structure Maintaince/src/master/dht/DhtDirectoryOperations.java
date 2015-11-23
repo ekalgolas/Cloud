@@ -427,7 +427,8 @@ public class DhtDirectoryOperations implements ICommandOperations {
 
 	@Override
 	public void rm(final Directory root,
-			final String path)
+			final String path,
+			final String... arguments)
 					throws InvalidPropertiesFormatException {
 		// TODO Auto-generated method stub
 
@@ -435,7 +436,8 @@ public class DhtDirectoryOperations implements ICommandOperations {
 
 	@Override
 	public Message cd(final Directory root,
-			final String filePath)
+			final String filePath,
+			final String... arguments)
 					throws InvalidPropertiesFormatException {
 		// TODO Auto-generated method stub
 		return null;

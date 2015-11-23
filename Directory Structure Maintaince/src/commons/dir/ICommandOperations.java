@@ -87,7 +87,8 @@ public interface ICommandOperations {
 	 * @throws InvalidPropertiesFormatException
 	 */
 	public void rm(final Directory root,
-			final String path)
+			final String path,
+			String... arguments)
 			throws InvalidPropertiesFormatException;
 
 	/**
@@ -101,7 +102,8 @@ public interface ICommandOperations {
 	 * @throws InvalidPropertiesFormatException
 	 */
 	public Message cd(Directory root,
-			final String filePath)
+			final String filePath,
+			String... arguments)
 			throws InvalidPropertiesFormatException;
 	
 	/**
