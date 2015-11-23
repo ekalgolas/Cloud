@@ -1,11 +1,11 @@
 package client;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
@@ -31,6 +31,8 @@ public class CephClient {
 	
 	private final HashMap<String,List<MetaDataServerInfo>> cachedServers = new HashMap<>();
 	private final static Logger			LOGGER	= Logger.getLogger(CephClient.class);
+	private static final String         ROOT    = "root";
+	private static String               pwd     = ROOT;
 	
 	/**
 	 * Constructor
@@ -105,12 +107,28 @@ public class CephClient {
 		int number = 0;
 
 		// Read commands
-		try (Scanner scanner = new Scanner(new File(inputFileName))) {
+		try (Scanner scanner = new Scanner(System.in)) {
 			while (scanner.hasNext()) {
-				final String command = scanner.nextLine();				
+				String command = scanner.nextLine();				
 
 				if("EXIT".equals(command))
+				{
 					break;
+				}
+				else if(command.startsWith(CommandsSupported.CD.name()))
+				{
+					final String argument = command.substring(3);
+					if(!argument.startsWith(ROOT)) {
+						command = new String(Paths.get(pwd, argument).toString());
+					}
+				}
+				else if(command.startsWith(CommandsSupported.PWD.name())) 
+				{
+					LOGGER.info("Command " + number + " : " + command);
+					LOGGER.info(pwd + "\n");
+					number++;
+					continue;
+				}
 				
 				final String[] commandParse = command.split(" ");
 				final StringBuffer partialFilePath = new StringBuffer();
@@ -120,14 +138,7 @@ public class CephClient {
 								.substring(commandParse[0].length()+1), 
 								partialFilePath, this.cachedServers);
 				
-				boolean isWrite =false;
-				if(CommandsSupported.MKDIR.name().equalsIgnoreCase(commandParse[0].trim())
-						|| CommandsSupported.RMDIR.name().equalsIgnoreCase(commandParse[0].trim())
-						|| CommandsSupported.TOUCH.name().equalsIgnoreCase(commandParse[0].trim()))
-				{
-					isWrite = true;
-				}
-				final Socket mdsServerSocket = getRequiredMdsSocket(mdsServers, isWrite);
+				final Socket mdsServerSocket = getRequiredMdsSocket(mdsServers, true);
 				// Send command to master
 				
 				ObjectInputStream inputStream 
@@ -154,6 +165,7 @@ public class CephClient {
 						&& header != null 
 						&& !"".equals(header.trim()))
 				{
+					//Update the client cache of MDS cluster map.
 					final List<MetaDataServerInfo> newMdsServers 
 						= MetaDataServerInfo.fromStringToMetadata(header.trim());
 					if(!newMdsServers.isEmpty())
@@ -161,6 +173,13 @@ public class CephClient {
 						this.cachedServers.put(command
 								.substring(commandParse[0].length()+1)
 								, newMdsServers);
+					}
+					//Update the pwd if the executed command is CD
+					if(command.startsWith(CommandsSupported.CD.name())) {
+						final String argument = command.substring(3);
+						pwd = argument.startsWith(ROOT)
+								? argument
+										: Paths.get(pwd, argument).toString();						
 					}
 				}
 				LOGGER.info("Command " + number + " : " + command);
