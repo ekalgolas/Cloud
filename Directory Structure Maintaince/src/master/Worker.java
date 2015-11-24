@@ -191,7 +191,8 @@ public class Worker implements Runnable {
 				// in the received string
 				argument = command.substring(7);
 
-				reply = directoryOperations.rmdir(root, argument, partialFilePath.toString(), message.getHeader(), "-f");
+				reply = directoryOperations.rmdir(root, argument, 
+						partialFilePath.toString(), message.getHeader(), "-f");
 				if (replicationOperations != null) {
 					replicationOperations.replicateRmdir(replica, argument);
 				}
@@ -202,7 +203,8 @@ public class Worker implements Runnable {
 				// in the received string
 				argument = command.substring(6);
 
-				reply = directoryOperations.rmdir(root, argument, partialFilePath.toString(), message.getHeader());
+				reply = directoryOperations.rmdir(root, argument, 
+						partialFilePath.toString(), message.getHeader());
 				if (replicationOperations != null) {
 					replicationOperations.replicateRmdir(replica, argument);
 				}
