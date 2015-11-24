@@ -126,8 +126,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 	private Message remoteExecCommand(final CommandsSupported command, 
 			final String filePath,
 			final MetaDataServerInfo mdsServer,
-			boolean primaryMessage,
-			Long inodeNumber) 
+			final String messageHeader) 
 	{
 		System.out.println("Calling "+mdsServer);
 		if (mdsServer != null) {
@@ -138,7 +137,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 				final ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
 				final ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
 				outputStream.writeObject(new Message(command + " " + filePath,
-						primaryMessage?(Globals.PRIMARY_MDS+":"+inodeNumber):""));
+									messageHeader));
 				outputStream.flush();
 
 				// Wait and read the reply
@@ -283,7 +282,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 							remoteCommand = CommandsSupported.LS;
 						}
 						final Message message = remoteExecCommand(remoteCommand, 
-								filePath, mdsServer, false, null);
+								filePath, mdsServer, "");
 						if (message != null) 
 						{
 							return message;
@@ -336,7 +335,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 				if(Globals.REPLICA_MDS.equals(metaData.getServerType()))
 				{
 					Message replicaMessage = remoteExecCommand(command, 
-							fullPath, metaData, true, inodeNumber);
+							fullPath, metaData, Globals.PRIMARY_MDS+":"+inodeNumber);
 					if(replicaMessage != null)
 					{
 						finalStatus &= (CompletionStatusCode.SUCCESS.name()
@@ -501,8 +500,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 						return remoteExecCommand(CommandsSupported.MKDIR, 
 												fullPath, 
 												serverInfo,
-												false,
-												null);
+												"");
 					}
 				}
 				catch(Exception unexp)
@@ -521,7 +519,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 				{
 					final MetaDataServerInfo mdsServer = getRequiredMdsInfo(inode, true); 
 					return remoteExecCommand(CommandsSupported.MKDIR, 
-							fullPath, mdsServer, false, null);
+							fullPath, mdsServer, "");
 				}
 			} 
 			else if (inode.getInodeNumber() != null) 
@@ -660,7 +658,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 				{
 					final MetaDataServerInfo mdsServer = getRequiredMdsInfo(inode, true); 
 					return remoteExecCommand(CommandsSupported.TOUCH, 
-							path, mdsServer, false, null);
+							path, mdsServer, "");
 				}
 			}
 			//If the parent Directory is found in the current MDS
@@ -700,7 +698,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 					if(touchFile.getInode().getInodeNumber() == null)
 					{
 						return remoteExecCommand(CommandsSupported.TOUCH, 
-								path, metaData, false, null);
+								path, metaData, "");
 					}					
 					try
 					{
@@ -747,7 +745,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 						else
 						{							
 							return remoteExecCommand(CommandsSupported.TOUCH, 
-									path, metaData, false, null);
+									path, metaData, "");
 						}
 					}
 					catch(Exception unexp)
@@ -818,7 +816,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 						else //If not primary for the parent directory then forward to the primary MDS
 						{							
 							return remoteExecCommand(CommandsSupported.TOUCH, 
-									path, metaData, false, null);
+									path, metaData, "");
 						}
 					}
 					catch(Exception unexp)
@@ -853,13 +851,112 @@ public class CephDirectoryOperations implements ICommandOperations {
 				CompletionStatusCode.ERROR.name());
 	}
 	
-	private Message removeNodeRecursively(final Directory dir)
+	/**
+	 * Removes a directory along with all its children.
+	 * @param parentDir
+	 * @param removeDir
+	 * @param fullPath
+	 * @return final status
+	 */
+	private Message removeNodeRecursively(final Directory parentDir,
+			final Directory removeDir,
+			final String fullPath,
+			final String parentList,
+			final boolean primaryMessage)
 	{
-		if(dir != null)
+		final List<Directory> remoteChildDirs = new ArrayList<>(); 
+		boolean finalStatus = true;
+		if(removeDir != null)
 		{
-			
+			for(final Directory child:removeDir.getChildren())
+			{
+				final MetaDataServerInfo metadata = getRequiredMdsInfo(child.getInode(), true);
+				if(child.getInode().getInodeNumber() != null &&
+						(metadata != null && 
+						Master.getMdsServerIpAddress().equals(metadata.getIpAddress())) &&
+						child.isEmptyDirectory())
+				{
+					removeDir.getChildren().remove(child);
+				}
+				else if(child.getInode().getInodeNumber() == null)
+				{
+					remoteChildDirs.add(child);
+				}				
+			}
+			for(final String path:Globals.subTreePartitionList.keySet())
+			{				
+				if(path.startsWith(fullPath))
+				{
+					final Message localStatus = removeNodeRecursively(null, 
+							Globals.subTreePartitionList.get(path), 
+							path,parentList,primaryMessage);
+					finalStatus &= (localStatus != null && 
+							CompletionStatusCode.SUCCESS.name()
+								.equals(localStatus.getCompletionCode().toString().trim()));
+				}
+			}
+			if(!primaryMessage)
+			{
+				for(final Directory remoteDir:remoteChildDirs)
+				{
+					final MetaDataServerInfo dataServerInfo = 
+							getRequiredMdsInfo(remoteDir.getInode(),true);
+					if( parentList == null || 
+							"".equals(parentList) ||
+							!parentList.contains(dataServerInfo.getServerName()))
+					{
+						final Message remoteStatus = remoteExecCommand(CommandsSupported.RMDIRF, 
+								fullPath+"/"+remoteDir.getName(), 
+								dataServerInfo, 
+								Globals.PARENT_MDS+":"+parentList+Master.getMdsServerId()+",");
+						finalStatus &= (remoteStatus != null &&
+								CompletionStatusCode.SUCCESS.name()
+									.equals(remoteStatus.getCompletionCode().toString().trim()));
+						if(remoteStatus != null && CompletionStatusCode.SUCCESS.name()
+										.equals(remoteStatus.getCompletionCode().toString().trim()))
+						{
+							removeDir.getChildren().remove(remoteDir);
+						}
+					}
+					else
+					{
+						removeDir.getChildren().remove(remoteDir);
+					}
+				}
+			}
+			if(removeDir.isEmptyDirectory())
+			{
+				if(parentDir != null)
+				{
+					parentDir.getChildren().remove(removeDir);
+				}
+				else
+				{
+					Globals.subTreePartitionList.remove(fullPath);
+				}
+				if(finalStatus)
+				{
+					return new Message(fullPath+" removed successfully",
+						"",
+						CompletionStatusCode.SUCCESS.name());
+				}
+				else
+				{
+					return new Message("error occurred while removing children of "+fullPath,
+							"",
+							CompletionStatusCode.ERROR.name());
+				}
+			}
+			else
+			{
+				return new Message("error occurred while removing children of "+fullPath,
+						"",
+						CompletionStatusCode.ERROR.name());
+			}
 		}
-		return null;
+		return new Message("No Error or No processing done",
+				"",
+				CompletionStatusCode.ERROR.name());
 	}
 	
 	/**
@@ -878,9 +975,31 @@ public class CephDirectoryOperations implements ICommandOperations {
 			final String name, 
 			final boolean isFile,
 			final String fullPath,
-			boolean primaryMessage,
-			boolean forceRemove)
+			final String messageHeader,
+			final boolean forceRemove)
 	{
+		boolean primaryMessage = false;
+		boolean parentMessage = false;
+		final String parentList;
+		if(messageHeader != null)
+		{			
+			String[] primaryMessagesContent = messageHeader.split(":");
+			primaryMessage = Globals.PRIMARY_MDS.equals(primaryMessagesContent[0].trim());
+			parentMessage = Globals.PARENT_MDS.equals(primaryMessagesContent[0].trim());
+			if(parentMessage)
+			{
+				parentList = primaryMessagesContent[1];
+			}
+			else
+			{
+				parentList = "";
+			}
+		}
+		else
+		{
+			parentList = "";
+		}
+		
 		// Search and get to the directory where we have to create
 		final StringBuffer resultCode = new StringBuffer();
 		final Directory directory;
@@ -890,8 +1009,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 			directory = Globals.subTreePartitionList.get(fullPath);
 			if(directory.isEmptyDirectory())
 			{
-				Inode inode = directory.getInode();
-				MetaDataServerInfo metadata = getRequiredMdsInfo(inode, true);
+				final Inode inode = directory.getInode();
+				final MetaDataServerInfo metadata = getRequiredMdsInfo(inode, true);
 				try
 				{
 					if((primaryMessage) || (metadata != null && 
@@ -921,7 +1040,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 					else
 					{
 						return remoteExecCommand(CommandsSupported.RMDIR, 
-								fullPath, metadata, primaryMessage, null);
+								fullPath, metadata, Globals.PRIMARY_MDS+":");
 					}
 				}
 				catch(Exception unexp)
@@ -933,7 +1052,33 @@ public class CephDirectoryOperations implements ICommandOperations {
 			}
 			else if(forceRemove)
 			{
-				
+				final Message removeRecur = removeNodeRecursively(null,
+						directory,
+						fullPath,
+						parentList,
+						primaryMessage);
+				if(removeRecur != null && 
+						CompletionStatusCode.SUCCESS.name()
+							.equals(removeRecur.getCompletionCode().toString().trim()))
+				{
+					if(!primaryMessage)
+					{
+						Message finalMessage = updateReplicas(CommandsSupported.RMDIRF, 
+								directory.getInode(), fullPath, null);
+						if(CompletionStatusCode.SUCCESS.name()
+								.equals(finalMessage.getCompletionCode()
+										.toString().trim()))
+						{
+							return new Message(name+" removed successfully",
+									"",
+									CompletionStatusCode.SUCCESS.name());
+						}
+						return new Message(finalMessage.getContent(),
+								directory.getInode().getDataServerInfo().toString(),
+								CompletionStatusCode.ERROR.name());
+					}
+					return removeRecur;
+				}
 			}
 			return new Message(name+" not empty",
 					directory.getInode().getDataServerInfo().toString(),
@@ -970,7 +1115,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 							inode.getDataServerInfo().size() > 0) 
 					{
 						final MetaDataServerInfo mdsServer = getRequiredMdsInfo(inode, true); 
-						return remoteExecCommand(CommandsSupported.RMDIR, fullPath, mdsServer, false, null);
+						return remoteExecCommand(CommandsSupported.RMDIR, 
+								fullPath, mdsServer, "");
 					}
 				}
 				else if(inode.getInodeNumber() != null && 
@@ -991,11 +1137,12 @@ public class CephDirectoryOperations implements ICommandOperations {
 					{
 						if(removeDirectory.isEmptyDirectory())
 						{
-							MetaDataServerInfo metaData = getRequiredMdsInfo(removeDirectory.getInode(), true);
+							MetaDataServerInfo metaData 
+								= getRequiredMdsInfo(removeDirectory.getInode(), true);
 							if(removeDirectory.getInode().getInodeNumber() == null)
 							{
 								return remoteExecCommand(CommandsSupported.RMDIR, 
-										fullPath, metaData, false, null);
+										fullPath, metaData, "");
 							}
 							try
 							{
@@ -1027,7 +1174,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 								else
 								{
 									return remoteExecCommand(CommandsSupported.RMDIR, 
-											fullPath, metaData, false, null);
+											fullPath, metaData, "");
 								}
 							}
 							catch(Exception unexp)
@@ -1037,6 +1184,37 @@ public class CephDirectoryOperations implements ICommandOperations {
 										CompletionStatusCode.ERROR.name());
 							}
 						}
+						else if(forceRemove)
+						{
+							final Message removeRecur = removeNodeRecursively(directory,
+									removeDirectory,
+									fullPath,
+									parentList,
+									primaryMessage);
+							if(removeRecur != null && 
+									CompletionStatusCode.SUCCESS.name()
+										.equals(removeRecur.getCompletionCode().toString().trim()))
+							{
+								if(!primaryMessage)
+								{
+									Message finalMessage = updateReplicas(CommandsSupported.RMDIRF, 
+											directory.getInode(), fullPath, null);
+									if(CompletionStatusCode.SUCCESS.name()
+											.equals(finalMessage.getCompletionCode()
+													.toString().trim()))
+									{
+										return new Message(name+" removed successfully",
+												"",
+												CompletionStatusCode.SUCCESS.name());
+									}
+									return new Message(finalMessage.getContent(),
+											directory.getInode().getDataServerInfo().toString(),
+											CompletionStatusCode.ERROR.name());
+								}
+								return removeRecur;
+							}
+						}
+						
 						return new Message(name+" not empty",
 								"",
 								CompletionStatusCode.NOT_EMPTY.name());
@@ -1093,20 +1271,16 @@ public class CephDirectoryOperations implements ICommandOperations {
 		}		
 		final String[] paths = searchablePath.split("/");
 		final String name = paths[paths.length - 1];
-		final String dirPath = searchablePath.substring(0, searchablePath.length() - name.length() - 1);
-		
-		boolean primaryMessage = false;
-		if(arguments != null && arguments.length >= 2)
-		{			
-			String[] primaryMessagesContent = arguments[1].split(":");
-			primaryMessage = Globals.PRIMARY_MDS.equals(primaryMessagesContent[0].trim());
-		}
+		final String dirPath = searchablePath.substring(0, searchablePath.length() - name.length() - 1);				
 		
 		// True for RMDIRF i.e. rmdir -f option
 		final boolean isForceRemove = arguments != null 
 		        && arguments[arguments.length - 1].equals("-f");
 					
-		return removeNode(root, dirPath, name, false, path, primaryMessage, isForceRemove);
+		return removeNode(root, dirPath, name, 
+				false, path, 
+				(arguments != null && arguments.length > 1)?arguments[1]:"", 
+				isForceRemove);
 	}
 
 	@Override
@@ -1185,7 +1359,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 					{
 						final MetaDataServerInfo mdsServer = getRequiredMdsInfo(inode, true); 						
 						final Message message = remoteExecCommand(CommandsSupported.CD, 
-								filePath, mdsServer, false, null);
+								filePath, mdsServer, "");
 						if (message != null) 
 						{
 							return message;

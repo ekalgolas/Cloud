@@ -32,6 +32,7 @@ public class Globals {
 	public static final String					DEAD_STATUS				= "Dead";
 	public static final String					PRIMARY_MDS				= "Primary";
 	public static final String					REPLICA_MDS				= "Replica";
+	public static final String					PARENT_MDS				= "Parent";
 
 	// File search status codes.
 	public static final String					PATH_NOT_FOUND			= "PNF";
