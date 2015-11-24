@@ -7,7 +7,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.InvalidPropertiesFormatException;
 import java.util.List;
@@ -176,7 +175,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 		try
 		{
 			final StringBuffer resultCode = new StringBuffer();
-			//Contains the relative path for the current partition.
+			//Extract the relative path for the current partition.
 			String searchablePath;
 			if (arguments != null && 
 					arguments.length > 0 && 
@@ -410,18 +409,13 @@ public class CephDirectoryOperations implements ICommandOperations {
 			}
 		}
 		
-//		System.out.println("Create => "+directory);
-
 		if (directory != null) 
 		{
 			final Inode inode = directory.getInode();
-//			System.out.println("inode:"+inode);
-//			System.out.println("resultCode:"+resultCode);
 			String resultcodeValue = resultCode.toString().trim();
 			if (inode.getInodeNumber() != null && 
 					Globals.PATH_FOUND.equals(resultcodeValue)) 
 			{
-//				System.out.println("Inside Path Found");
 				try
 				{
 					MetaDataServerInfo serverInfo = getRequiredMdsInfo(inode, true);
@@ -522,27 +516,23 @@ public class CephDirectoryOperations implements ICommandOperations {
 					(Globals.PARTIAL_PATH_FOUND.equals(resultcodeValue) || 
 							Globals.PATH_FOUND.equals(resultcodeValue))) 
 			{
-//				System.out.println("Forwarding mkdir to another MDS");
 				if (inode.getDataServerInfo() != null && 
 						inode.getDataServerInfo().size() > 0) 
 				{
 					final MetaDataServerInfo mdsServer = getRequiredMdsInfo(inode, true); 
-//					System.out.println("Metadata Server:"+mdsServer);
 					return remoteExecCommand(CommandsSupported.MKDIR, 
 							fullPath, mdsServer, false, null);
 				}
 			} 
 			else if (inode.getInodeNumber() != null) 
 			{
-//				System.out.println("Inside Unstable");
+				// need to add message explaining the unstable state of metadata.
 				return new Message("MetaData in unstable state",
 						"",
-						CompletionStatusCode.UNSTABLE.name()); // need to add message explaining the unstable state of
-						// metadata.
+						CompletionStatusCode.UNSTABLE.name()); 			
 			} 
 			else 
 			{
-//				System.out.println("Inside Path Not Found");
 				return new Message("Path"+ fullPath +" not found",
 						"",
 						CompletionStatusCode.NOT_FOUND.name());
@@ -560,8 +550,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 			final String... arguments)
 			throws InvalidPropertiesFormatException 
 	{
-		System.out.println("Calling mkdir");
-		// Get the parent directory and the name of directory
+		//Extract the relative path for the current partition.
 		String searchablePath;
 		if (arguments != null && 
 				arguments.length > 0 && 
@@ -573,13 +562,13 @@ public class CephDirectoryOperations implements ICommandOperations {
 		{
 			searchablePath = path;
 		}
-//		System.out.println("searchablePath: "+searchablePath);
+		// Get the parent directory and the name of directory
 		final String[] paths = searchablePath.split("/");
 		final String name = paths[paths.length - 1];
-		final String dirPath = searchablePath.substring(0, searchablePath.length() - name.length() - 1);
+		final String dirPath = searchablePath.substring(0, 
+				searchablePath.length() - name.length() - 1);
 		
-//		System.out.println("dirPath: "+dirPath);
-//		System.out.println("name: "+name);
+		//Check if this is primary to replica update command.
 		boolean primaryMessage = false;
 		Long inodeNumber = null;
 		if(arguments != null && arguments.length >= 2)
@@ -591,7 +580,6 @@ public class CephDirectoryOperations implements ICommandOperations {
 				inodeNumber = Long.valueOf(primaryMessagesContent[1].trim());
 			}
 		}
-//		System.out.println("inodeNumber:"+ inodeNumber);
 
 		// Create the directory
 		return create(root, dirPath, name, false, path,primaryMessage,inodeNumber);
@@ -603,8 +591,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 			String... arguments) 
 			throws InvalidPropertiesFormatException 
 	{
-		System.out.println("Calling touch");
-		// Get the parent directory and the name of directory
+		// Extract the relative path for the current partition.
 		String searchablePath;
 		if (arguments != null && 
 				arguments.length > 0 && 
@@ -616,89 +603,82 @@ public class CephDirectoryOperations implements ICommandOperations {
 		{
 			searchablePath = path;
 		}
+		// Get the parent directory and the name of directory
 		final String[] paths = searchablePath.split("/");
 		final String name = paths[paths.length - 1];
 		final String dirPath = searchablePath.substring(0, searchablePath.length() - name.length() - 1);
 		
-		System.out.println("dirPath:"+dirPath);
-		System.out.println("name:"+name);
-		System.out.println(Arrays.toString(arguments));
-		
+		//Check this is a primary to replica update command.
 		boolean primaryMessage = false;
 		Long inodeNumber = null;
 		if(arguments != null && arguments.length >= 2)
 		{
 			String[] primaryMessagesContent = arguments[1].split(":");
 			primaryMessage = Globals.PRIMARY_MDS.equals(primaryMessagesContent[0].trim());
-//			System.out.println("Crossed reading primary");
-			System.out.println(Arrays.toString(primaryMessagesContent));
 			if(primaryMessagesContent.length > 1 && 
-					(primaryMessagesContent[1] != null && !"null".equals(primaryMessagesContent[1].trim())))
+					(primaryMessagesContent[1] != null && 
+					!"null".equals(primaryMessagesContent[1].trim())))
 			{
-//				System.out.println("Inside primary null");
 				inodeNumber = Long.valueOf(primaryMessagesContent[1].trim());
 			}
 		}
 
 		StringBuffer resultCode = new StringBuffer();
 		final Directory directory;
+		//Get the partition root from the partition root list
 		if(Globals.subTreePartitionList.containsKey(path))
 		{
-			System.out.println("getting from list");
 			directory = Globals.subTreePartitionList.get(path);
 		}
-		else
+		else // If not partition root then search the children of partition.
 		{
 			if(dirPath != null && 
 					!"/".equals(dirPath.trim()) && 
 					!"".equals(dirPath.trim()))
 			{
-				System.out.println("Calling SEarch");
 				directory = search(root, dirPath, resultCode);
-				System.out.println("Search over");
 			}
 			else
 			{
-				System.out.println("Assigning Root");
 				directory = root;
 				resultCode.append(Globals.PATH_FOUND);
 			}
 		}
+		//If search return a valid result.
 		if(directory != null)
 		{
 			Inode inode = directory.getInode();
-			System.out.println("inode:"+inode);
-			System.out.println("resultCode:"+resultCode);
-//			System.out.println(inode.getInodeNumber() == null);
 			String resultcodeValue = resultCode.toString().trim();
+			
+			//if the path leads to another MDS, then forward the command to the respective MDS 
 			if(inode.getInodeNumber() == null && 
 					(Globals.PARTIAL_PATH_FOUND.equals(resultcodeValue) || 
 							Globals.PATH_FOUND.equals(resultcodeValue)))
 			{
-//				System.out.println("Forwarding touch to another MDS");
 				if (inode.getDataServerInfo() != null && 
 						inode.getDataServerInfo().size() > 0) 
 				{
 					final MetaDataServerInfo mdsServer = getRequiredMdsInfo(inode, true); 
-//					System.out.println("Metadata Server:"+mdsServer);
-					return remoteExecCommand(CommandsSupported.TOUCH, path, mdsServer, false, null);
+					return remoteExecCommand(CommandsSupported.TOUCH, 
+							path, mdsServer, false, null);
 				}
 			}
+			//If the parent Directory is found in the current MDS
 			else if(inode.getInodeNumber() != null && 
 					Globals.PATH_FOUND.equals(resultcodeValue))
 			{
-//				System.out.println("Inside Path Found");
 				// Create the file
 				final Directory file = new Directory(name, true, null);
 				final List<Directory> contents = directory.getChildren();
 				boolean found = false;
-				Directory touchFile = null; 
+				Directory touchFile = null;
+				//If the end directory is the found directory
 				if(directory.getName().equals(file.getName().trim()))
 				{
 					touchFile = directory;
 					found = true;
 				}
-				else
+				else //Find the end directory in the child of found directory.
 				{
 					for (final Directory child : contents) 
 					{
@@ -711,9 +691,12 @@ public class CephDirectoryOperations implements ICommandOperations {
 						}
 					}
 				}
+				//If the end file or Directory already exists.
 				if(found && touchFile != null)
 				{
 					MetaDataServerInfo metaData = getRequiredMdsInfo(touchFile.getInode(), true);
+					//If the end directory is present in another MDS, then forward the command
+					//respective MDS
 					if(touchFile.getInode().getInodeNumber() == null)
 					{
 						return remoteExecCommand(CommandsSupported.TOUCH, 
@@ -721,6 +704,9 @@ public class CephDirectoryOperations implements ICommandOperations {
 					}					
 					try
 					{
+						//If the parent directory is found in the current MDS 
+						//and the current MDS is the primary for the parent directory
+						//OR a primary message to update replica 
 						if((primaryMessage) || (metaData != null && 
 								Master.getMdsServerIpAddress().equals(metaData.getIpAddress())))
 						{
@@ -757,6 +743,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 										CompletionStatusCode.SUCCESS.name()
 										);
 						}
+						//If not primary for the parent directory then forward to the primary MDS
 						else
 						{							
 							return remoteExecCommand(CommandsSupported.TOUCH, 
@@ -770,12 +757,15 @@ public class CephDirectoryOperations implements ICommandOperations {
 								CompletionStatusCode.ERROR.name()
 								);
 					}
-				}
-				else
+				}				
+				else //If the end file is not found. Create a file node.
 				{
 					MetaDataServerInfo metaData = getRequiredMdsInfo(inode, true);
 					try
 					{
+						//If the parent directory is found in the current MDS 
+						//and the current MDS is the primary for the parent directory
+						//OR a primary message to update replica 
 						if((primaryMessage) || (metaData != null && 
 								Master.getMdsServerIpAddress()
 								.equals(metaData.getIpAddress())))
@@ -793,15 +783,18 @@ public class CephDirectoryOperations implements ICommandOperations {
 							{
 								Inode newInode = new Inode();
 								newInode.setInodeNumber(newInodeNumber);
-								newInode.getDataServerInfo().addAll(inode.getDataServerInfo());
+								newInode.getDataServerInfo().addAll(inode.getDataServerInfo());								
 								file.setInode(newInode);
+								file.setModifiedTimeStamp(new Date().getTime());
 								directory.getChildren().add(file);
+								//If primary to replica update then return after creating file in current MDS.
 								if(primaryMessage)
 								{
 									return new Message(file.getName()+" created succesfully",
 											directory.getInode().getDataServerInfo().toString(),
 											CompletionStatusCode.SUCCESS.name());
 								}
+								//If current MDS is the primary then forward the commands to replicas
 								Message replicaMessages = updateReplicas(CommandsSupported.TOUCH,
 										inode,path, newInodeNumber);
 								if(CompletionStatusCode.SUCCESS.name()
@@ -822,7 +815,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 									CompletionStatusCode.ERROR.name());
 							
 						}
-						else
+						else //If not primary for the parent directory then forward to the primary MDS
 						{							
 							return remoteExecCommand(CommandsSupported.TOUCH, 
 									path, metaData, false, null);
@@ -837,17 +830,17 @@ public class CephDirectoryOperations implements ICommandOperations {
 					}
 				}
 			}
+			//If the node exists in the current MDS but does match with the expected path.
+			//Indication of unstable state.
 			else if (inode.getInodeNumber() != null) 
 			{
-//				System.out.println("Inside Unstable");
 				return new Message("MetaData in unstable state",
 						"",
 						CompletionStatusCode.UNSTABLE.name()); // need to add message explaining the unstable state of
 						// metadata.
 			} 
-			else 
+			else //Path is not found. 
 			{
-//				System.out.println("Inside Path Not Found");
 				return new Message("Path"+ path +" not found",
 						"",
 						CompletionStatusCode.NOT_FOUND.name());
@@ -860,19 +853,37 @@ public class CephDirectoryOperations implements ICommandOperations {
 				CompletionStatusCode.ERROR.name());
 	}
 	
+	private Message removeNodeRecursively(final Directory dir)
+	{
+		if(dir != null)
+		{
+			
+		}
+		return null;
+	}
+	
+	/**
+	 * This function is used to remove a directory from the tree.
+	 * @param root
+	 * @param currentPath
+	 * @param name
+	 * @param isFile
+	 * @param fullPath
+	 * @param primaryMessage
+	 * @param forceRemove
+	 * @return remove directory status message
+	 */
 	private Message removeNode(final Directory root, 
 			final String currentPath,
 			final String name, 
 			final boolean isFile,
 			final String fullPath,
-			boolean primaryMessage
-			)
+			boolean primaryMessage,
+			boolean forceRemove)
 	{
 		// Search and get to the directory where we have to create
 		final StringBuffer resultCode = new StringBuffer();
 		final Directory directory;
-		System.out.println("Keys:"+Arrays.toString(Globals.subTreePartitionList.keySet().toArray()));
-		System.out.println("fullPath:"+fullPath);
 		
 		if(Globals.subTreePartitionList.containsKey(fullPath))
 		{
@@ -880,8 +891,6 @@ public class CephDirectoryOperations implements ICommandOperations {
 			if(directory.isEmptyDirectory())
 			{
 				Inode inode = directory.getInode();
-//				System.out.println("inode:"+inode);
-//				System.out.println("resultCode:"+resultCode);
 				MetaDataServerInfo metadata = getRequiredMdsInfo(inode, true);
 				try
 				{
@@ -922,6 +931,10 @@ public class CephDirectoryOperations implements ICommandOperations {
 							CompletionStatusCode.ERROR.name());
 				}
 			}
+			else if(forceRemove)
+			{
+				
+			}
 			return new Message(name+" not empty",
 					directory.getInode().getDataServerInfo().toString(),
 					CompletionStatusCode.NOT_EMPTY.name());
@@ -953,19 +966,16 @@ public class CephDirectoryOperations implements ICommandOperations {
 						(Globals.PARTIAL_PATH_FOUND.equals(resultcodeValue) || 
 								(Globals.PATH_FOUND.equals(resultcodeValue))))
 				{
-//					System.out.println("Forwarding rmdir to another MDS");
 					if (inode.getDataServerInfo() != null && 
 							inode.getDataServerInfo().size() > 0) 
 					{
 						final MetaDataServerInfo mdsServer = getRequiredMdsInfo(inode, true); 
-//						System.out.println("Metadata Server:"+mdsServer);
 						return remoteExecCommand(CommandsSupported.RMDIR, fullPath, mdsServer, false, null);
 					}
 				}
 				else if(inode.getInodeNumber() != null && 
 						Globals.PATH_FOUND.equals(resultcodeValue))
 				{
-//					System.out.println("Inside Path Found");
 					Directory removeDirectory = null;
 					boolean found = false;
 					for(Directory child:directory.getChildren())
@@ -1037,7 +1047,6 @@ public class CephDirectoryOperations implements ICommandOperations {
 				}
 				else if (inode.getInodeNumber() != null) 
 				{
-//					System.out.println("Inside Unstable");
 					return new Message("MetaData in unstable state",
 							"",
 							CompletionStatusCode.UNSTABLE.name()); // need to add message explaining the unstable state of
@@ -1045,7 +1054,6 @@ public class CephDirectoryOperations implements ICommandOperations {
 				} 
 				else 
 				{
-//					System.out.println("Inside Path Not Found");
 					return new Message("Path "+ fullPath +" not found",
 							"",
 							CompletionStatusCode.NOT_FOUND.name());
@@ -1060,11 +1068,15 @@ public class CephDirectoryOperations implements ICommandOperations {
 			}
 		}
 		
-		return null;
+		return new Message("No Error or No Action. Something went worng",
+				"",
+				CompletionStatusCode.ERROR.name());
 	}
 
 	@Override
-	public Message rmdir(final Directory root, final String path, final String... arguments)
+	public Message rmdir(final Directory root, 
+			final String path, 
+			final String... arguments)
 			throws InvalidPropertiesFormatException {
 		System.out.println("Calling Rmdir");
 		// Get the parent directory and the name of directory
@@ -1080,13 +1092,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 			searchablePath = path;
 		}		
 		final String[] paths = searchablePath.split("/");
-//		System.out.println("Searchable path:"+searchablePath);
-//		System.out.println("paths:"+Arrays.toString(paths));
 		final String name = paths[paths.length - 1];
 		final String dirPath = searchablePath.substring(0, searchablePath.length() - name.length() - 1);
-		
-//		System.out.println("dirPath:"+dirPath);
-//		System.out.println("name:"+name);
 		
 		boolean primaryMessage = false;
 		if(arguments != null && arguments.length >= 2)
@@ -1094,8 +1101,12 @@ public class CephDirectoryOperations implements ICommandOperations {
 			String[] primaryMessagesContent = arguments[1].split(":");
 			primaryMessage = Globals.PRIMARY_MDS.equals(primaryMessagesContent[0].trim());
 		}
+		
+		// True for RMDIRF i.e. rmdir -f option
+		final boolean isForceRemove = arguments != null 
+		        && arguments[arguments.length - 1].equals("-f");
 					
-		return removeNode(root, dirPath, name, false, path, primaryMessage);
+		return removeNode(root, dirPath, name, false, path, primaryMessage, isForceRemove);
 	}
 
 	@Override
