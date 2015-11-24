@@ -11,7 +11,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 /**
- * Class to master.dht.test application configuration
+ * Class to test application configuration
  *
  * @author Ekal.Golas
  */
@@ -29,7 +29,7 @@ public class AppConfigTest {
 	 */
 	@Test(expected = InvalidPropertiesFormatException.class)
 	public void invalidLoadTest() throws InvalidPropertiesFormatException {
-		new AppConfig("master.dht.test");
+		new AppConfig("test");
 	}
 
 	/**
@@ -37,12 +37,12 @@ public class AppConfigTest {
 	 */
 	@Test
 	public void invalidKeyTest() {
-		Assert.assertNull("Did not return null for property that was absent", AppConfig.getValue("master.dht.test"));
+		Assert.assertNull("Did not return null for property that was absent", AppConfig.getValue("test"));
 	}
 
 	/**
 	 * Test if properties can be loaded successfully
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	@Test
@@ -55,10 +55,10 @@ public class AppConfigTest {
 		final File file = folder.newFile();
 
 		// Write to file
-		FileUtils.writeStringToFile(file, "master.dht.test=value");
+		FileUtils.writeStringToFile(file, "test=value");
 
-		// Load and master.dht.test
+		// Load and test
 		appConfig.loadConfiguration(file);
-		Assert.assertEquals("Configuration not loaded as expected", "value", AppConfig.getValue("master.dht.test"));
+		Assert.assertEquals("Configuration not loaded as expected", "value", AppConfig.getValue("test"));
 	}
 }
