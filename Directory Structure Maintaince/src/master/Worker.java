@@ -7,14 +7,15 @@ import java.net.Socket;
 import java.util.InvalidPropertiesFormatException;
 
 import master.ceph.CephDirectoryOperations;
-import master.dht.DhtDirectoryOperations;
 import master.gfs.GFSDirectoryOperations;
 import master.gfs.GFSMetadataReplicationOperations;
 import master.metadata.MetaDataServerInfo;
+import master.nfs.NFSDirectoryOperations;
 
 import org.apache.log4j.Logger;
 
 import com.sun.media.sound.InvalidDataException;
+
 import commons.AppWatch;
 import commons.CommandsSupported;
 import commons.Globals;
@@ -93,7 +94,7 @@ public class Worker implements Runnable {
 								partialFilePath,
 								Globals.subTreePartitionList);
 					} else {
-						directoryOperations = new DhtDirectoryOperations();
+						directoryOperations = new NFSDirectoryOperations();
 						replicationOperations = null;
 					}
 

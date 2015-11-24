@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import master.Master;
-import master.dht.DhtDirectoryParser;
+import master.nfs.NFSDirectoryParser;
 
 import org.apache.log4j.Logger;
 
@@ -75,7 +75,7 @@ public class MetadataManager {
 			}
 		} else {
 			// Parse the directory
-			fileMap = DhtDirectoryParser.parseText(Integer.parseInt(AppConfig.getValue("server.dht.cutLevel")));
+			fileMap = NFSDirectoryParser.parseText(Integer.parseInt(AppConfig.getValue("server.dht.cutLevel")));
 
 			// Serialize and store the master.metadata
 			storeDHTMetadata(fileMap);

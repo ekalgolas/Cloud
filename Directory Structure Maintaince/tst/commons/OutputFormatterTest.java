@@ -6,7 +6,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Test;
 
 /**
- * Class to master.dht.test formatting of output
+ * Class to test formatting of output
  *
  * @author Ekal.Golas
  */
@@ -22,7 +22,7 @@ public class OutputFormatterTest {
 		// Create object for formatter
 		final OutputFormatter formatter = new OutputFormatter();
 
-		// Add some master.dht.test data
+		// Add some test data
 		formatter.addRow("No.", "Name");
 		formatter.addRow("1", "Test one");
 		formatter.addRow("10", "Test ten");
