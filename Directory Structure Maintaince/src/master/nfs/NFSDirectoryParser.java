@@ -1,4 +1,4 @@
-package master.dht;
+package master.nfs;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -10,14 +10,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
 
-import master.dht.dhtfs.client.ClientConfiguration;
-import master.dht.dhtfs.client.DHTFileSystem;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.google.common.io.Files;
-
 import commons.AppConfig;
 import commons.dir.Directory;
 import commons.dir.DirectoryParser;
@@ -27,8 +23,8 @@ import commons.dir.DirectoryParser;
  *
  * @author sahith
  */
-public class DhtDirectoryParser extends DirectoryParser {
-	private final static Logger					LOGGER				= Logger.getLogger(DhtDirectoryParser.class);
+public class NFSDirectoryParser extends DirectoryParser {
+	private final static Logger					LOGGER				= Logger.getLogger(NFSDirectoryParser.class);
 
 	/**
 	 * Mapping for directory and level of hierarchy
@@ -45,11 +41,6 @@ public class DhtDirectoryParser extends DirectoryParser {
 	 */
 	public static HashMap<String, File> parseText(final int cutLevel)
 			throws IOException {
-		// Initialize DHT
-		ClientConfiguration.initialize("conf/dhtclient.conf");
-		final DHTFileSystem fileSystem = new DHTFileSystem();
-		fileSystem.initialize();
-
 		// Get a temp folder
 		final File folder = Files.createTempDir();
 		final File root = new File(folder.getAbsolutePath() + "/root.txt");
@@ -192,12 +183,6 @@ public class DhtDirectoryParser extends DirectoryParser {
 
 				fileMap.put(key, levelfile);
 			}
-		}
-
-		// After the file map has been constructed, get all files created and place them in DHT file system
-		final File[] files = folder.listFiles();
-		for (final File file : files) {
-			fileSystem.copyFromLocal(file.getAbsolutePath(), file.getName());
 		}
 
 		// Return the map created

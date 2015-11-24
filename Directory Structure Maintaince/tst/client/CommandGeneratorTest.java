@@ -17,12 +17,11 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.sun.media.sound.InvalidDataException;
-
 import commons.AppConfig;
 import commons.dir.Directory;
 
 /**
- * Class to master.dht.test command generation
+ * Class to test command generation
  *
  * @author Ekal.Golas
  */
@@ -141,7 +140,7 @@ public class CommandGeneratorTest {
 		FileUtils.writeStringToFile(conf, "client.inputFile=" + inputFile.getPath().replace("\\", "/") + "\n");
 		FileUtils.writeStringToFile(conf, "client.commandsFile=" + outputFile.getPath().replace("\\", "/"), true);
 
-		// Write master.dht.test data in input file
+		// Write test data in input file
 		FileUtils.writeStringToFile(inputFile, "Fall 2015\n" + "├── [-rw-rw-r--      198852 1443563302]  AcademicCalendarFall2015.pdf\n"
 				+ "├── [drwxrwxr-x    22161867 1443921137]  AOS/\n" + "│   ├── [-rw-rw-r--        3016 1443670856]  grade.sh\n"
 				+ "│   ├── [-rw-rw-r--         344 1443670856]  grading-output.txt\n"
