@@ -117,4 +117,48 @@ public interface ICommandOperations {
      */
     public Directory releaseParentReadLocks(Directory root,
             final String filePath);
+    
+    /**
+     * Used to acquire read lock for the specified destination
+     * @param root
+     * @param filePath
+     * @param arguments
+     * @return status of acquiring read locks
+     */
+    public Message acquireReadLocks(final Directory root,
+    		final String filePath,
+    		final String... arguments);
+   
+    /**
+     * Used to acquire write lock for the specified destination
+     * @param root
+     * @param filePath
+     * @param arguments
+     * @return status of acquiring write locks
+     */
+    public Message acquireWriteLocks(final Directory root,
+    		final String filePath,
+    		final String... arguments);
+ 
+    /**
+     * Used to release all the read locks for the specified destination
+     * @param root
+     * @param filePath
+     * @param arguements
+     * @return status of releasing the read locks
+     */
+    public Message releaseReadLocks(final Directory root,
+    		final String filePath,
+    		final String... arguements);
+    
+    /**
+     * Used to release the write locks for the specified destination
+     * @param root
+     * @param filePath
+     * @param arguements
+     * @return status of releasing the write lock
+     */
+    public Message releaseWriteLocks(final Directory root,
+    		final String filePath,
+    		final String... arguements);
 }
