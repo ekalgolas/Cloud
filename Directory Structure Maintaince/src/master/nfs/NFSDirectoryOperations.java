@@ -73,4 +73,29 @@ public class NFSDirectoryOperations implements ICommandOperations {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public Message acquireReadLocks(Directory root, String filePath, String... arguments) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Message acquireWriteLocks(Directory root, String filePath, String... arguments) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Message releaseReadLocks(Directory root, String filePath, String... arguements) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Message releaseWriteLocks(Directory root, String filePath, String... arguements) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+		
 }

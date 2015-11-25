@@ -33,11 +33,16 @@ import commons.dir.ICommandOperations;
 public class Worker implements Runnable {
 	private static final AppWatch	APPWATCH	= new AppWatch();
 	private final static Logger		LOGGER		= Logger.getLogger(Worker.class);
+	private final String 	ACQUIRE_READ_LOCK 	= "ARLCK";
+	private final String 	ACQUIRE_WRITE_LOCK	= "AWLCK";
+	private final String 	RELEASE_READ_LOCK 	= "RRLCK";
+	private final String 	RELEASE_WRITE_LOCK	= "RWLCK";
 	public volatile boolean			isRunning	= true;
 	private final String			listenerType;
 	private final Socket			workerSocket;
 	private ObjectInputStream		inputStream;
-	private ObjectOutputStream		outputStream;
+	private ObjectOutputStream		outputStream;	
+	
 
 	/**
 	 * Constructor
@@ -218,7 +223,48 @@ public class Worker implements Runnable {
 				reply = directoryOperations.cd(root, argument, partialFilePath.toString());
 
 				logState(command, root);
-			} else if (command.startsWith(CommandsSupported.EXIT.name())) {
+			} 
+			else if(command.startsWith(ACQUIRE_READ_LOCK))
+			{
+				// Command line parameter (directory name) start from index '5'
+				// in the received string
+				argument = command.substring(5);
+
+				reply = directoryOperations.acquireReadLocks(root, 
+									argument, 
+									partialFilePath.toString());
+			}
+			else if(command.startsWith(ACQUIRE_WRITE_LOCK))
+			{
+				// Command line parameter (directory name) start from index '5'
+				// in the received string
+				argument = command.substring(5);
+
+				reply = directoryOperations.acquireWriteLocks(root, 
+									argument, 
+									partialFilePath.toString());
+			}
+			else if(command.startsWith(RELEASE_READ_LOCK))
+			{
+				// Command line parameter (directory name) start from index '5'
+				// in the received string
+				argument = command.substring(5);
+
+				reply = directoryOperations.releaseReadLocks(root, 
+									argument, 
+									partialFilePath.toString());
+			}
+			else if(command.startsWith(RELEASE_WRITE_LOCK))
+			{
+				// Command line parameter (directory name) start from index '5'
+				// in the received string
+				argument = command.substring(5);
+
+				reply = directoryOperations.releaseWriteLocks(root, 
+									argument, 
+									partialFilePath.toString());
+			}
+			else if (command.startsWith(CommandsSupported.EXIT.name())) {
 				// Close the connection
 				isRunning = false;
 			} else {

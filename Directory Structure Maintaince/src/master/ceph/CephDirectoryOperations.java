@@ -424,15 +424,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 						if (!directory.isFile()) 
 						{
 							final Directory node = new Directory(name, isFile, null);
-							boolean fileExist = false;
-							for (Directory child : directory.getChildren()) 
-							{
-								if (child.equals(node)) 
-								{
-									fileExist = true;
-									break;
-								}
-							}
+							boolean fileExist = directory.getChildren().contains(node);
 							if (fileExist) 
 							{
 								return new Message(node.getName()+ " already exists",
@@ -445,7 +437,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 							{
 								node.setChildren(new ArrayList<Directory>());
 							}
-							Long newInodeNumber;
+							final Long newInodeNumber;
 							if(primaryMessage)
 							{
 								newInodeNumber = inodeNumber;
@@ -457,10 +449,11 @@ public class CephDirectoryOperations implements ICommandOperations {
 							
 							if(newInodeNumber != -1) // When inode number available
 							{
-								Inode newInode = new Inode();
+								final Inode newInode = new Inode();
 								newInode.setInodeNumber(newInodeNumber);
 								newInode.getDataServerInfo().addAll(inode.getDataServerInfo());
 								node.setInode(newInode);
+								node.setModifiedTimeStamp(new Date().getTime());
 								directory.getChildren().add(node);
 								if(primaryMessage)
 								{
@@ -468,7 +461,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 											directory.getInode().getDataServerInfo().toString(),
 											CompletionStatusCode.SUCCESS.name());
 								}
-								Message replicaMessages = updateReplicas(CommandsSupported.MKDIR,
+								final Message replicaMessages = updateReplicas(CommandsSupported.MKDIR,
 										inode,
 										fullPath,
 										newInodeNumber);
@@ -1402,4 +1395,28 @@ public class CephDirectoryOperations implements ICommandOperations {
         return null;
     }
 
+	@Override
+	public Message acquireReadLocks(Directory root, String filePath, String... arguments) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Message acquireWriteLocks(Directory root, String filePath, String... arguments) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Message releaseReadLocks(Directory root, String filePath, String... arguements) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Message releaseWriteLocks(Directory root, String filePath, String... arguements) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+    
 }
