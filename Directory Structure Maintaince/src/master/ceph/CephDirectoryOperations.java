@@ -47,16 +47,16 @@ public class CephDirectoryOperations implements ICommandOperations {
 		// Get list of paths
 		final String[] paths = filePathBuf.toString().split("/");
 		int countLevel = 0;
-//		System.out.println("filepath:"+filePath);
 		// Find the directory in directory tree
 		for (final String path : paths) {
 			// Match the root
 			boolean found = false;
-			if (root.getName()
-					.equals(path)) {
-//				System.out.println("matched node:"+root.getName());
+			if (root.getName().equals(path)) {
 				found = true;
 				countLevel++;
+				Long operationCounter = root.getOperationCounter();
+				operationCounter++;
+				root.setOperationCounter(operationCounter);
 			}
 			
 			if(root.getChildren() != null)
@@ -123,7 +123,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 	 * @param mdsServer
 	 * @return Message containing the result.
 	 */
-	private Message remoteExecCommand(final CommandsSupported command, 
+	private Message remoteExecCommand(final String command, 
 			final String filePath,
 			final MetaDataServerInfo mdsServer,
 			final String messageHeader) 
@@ -281,7 +281,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 						{
 							remoteCommand = CommandsSupported.LS;
 						}
-						final Message message = remoteExecCommand(remoteCommand, 
+						final Message message = remoteExecCommand(remoteCommand.name(), 
 								filePath, mdsServer, "");
 						if (message != null) 
 						{
@@ -294,18 +294,24 @@ public class CephDirectoryOperations implements ICommandOperations {
 				else if (inode.getInodeNumber() != null && 
 						!Globals.PARTIAL_PATH_FOUND.equals(resultcodeValue)) 
 				{
-					return new Message(filePath + " is in an instable state");
+					return new Message(filePath + " is in an instable state",
+							"",
+							CompletionStatusCode.UNSTABLE.name());
 				} 
 				//If the path not found.
 				else 
 				{
-					return new Message(filePath + " Does not exist");
+					return new Message(filePath + " Does not exist",
+							"",
+							CompletionStatusCode.NOT_FOUND.name());
 				}
 			} 
 			//If the path not found.
 			else 
 			{
-				return new Message(filePath + " Does not exist");
+				return new Message(filePath + " Does not exist",
+						"",
+						CompletionStatusCode.NOT_FOUND.name());
 			}
 		}
 		catch(Exception exp)
@@ -334,7 +340,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 			{
 				if(Globals.REPLICA_MDS.equals(metaData.getServerType()))
 				{
-					Message replicaMessage = remoteExecCommand(command, 
+					Message replicaMessage = remoteExecCommand(command.name(), 
 							fullPath, metaData, Globals.PRIMARY_MDS+":"+inodeNumber);
 					if(replicaMessage != null)
 					{
@@ -490,7 +496,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 					}
 					else
 					{
-						return remoteExecCommand(CommandsSupported.MKDIR, 
+						return remoteExecCommand(CommandsSupported.MKDIR.name(), 
 												fullPath, 
 												serverInfo,
 												"");
@@ -511,7 +517,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 						inode.getDataServerInfo().size() > 0) 
 				{
 					final MetaDataServerInfo mdsServer = getRequiredMdsInfo(inode, true); 
-					return remoteExecCommand(CommandsSupported.MKDIR, 
+					return remoteExecCommand(CommandsSupported.MKDIR.name(), 
 							fullPath, mdsServer, "");
 				}
 			} 
@@ -650,7 +656,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 						inode.getDataServerInfo().size() > 0) 
 				{
 					final MetaDataServerInfo mdsServer = getRequiredMdsInfo(inode, true); 
-					return remoteExecCommand(CommandsSupported.TOUCH, 
+					return remoteExecCommand(CommandsSupported.TOUCH.name(), 
 							path, mdsServer, "");
 				}
 			}
@@ -690,7 +696,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 					//respective MDS
 					if(touchFile.getInode().getInodeNumber() == null)
 					{
-						return remoteExecCommand(CommandsSupported.TOUCH, 
+						return remoteExecCommand(CommandsSupported.TOUCH.name(), 
 								path, metaData, "");
 					}					
 					try
@@ -737,7 +743,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 						//If not primary for the parent directory then forward to the primary MDS
 						else
 						{							
-							return remoteExecCommand(CommandsSupported.TOUCH, 
+							return remoteExecCommand(CommandsSupported.TOUCH.name(), 
 									path, metaData, "");
 						}
 					}
@@ -808,7 +814,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 						}
 						else //If not primary for the parent directory then forward to the primary MDS
 						{							
-							return remoteExecCommand(CommandsSupported.TOUCH, 
+							return remoteExecCommand(CommandsSupported.TOUCH.name(), 
 									path, metaData, "");
 						}
 					}
@@ -898,7 +904,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 							"".equals(parentList) ||
 							!parentList.contains(dataServerInfo.getServerName()))
 					{
-						final Message remoteStatus = remoteExecCommand(CommandsSupported.RMDIRF, 
+						final Message remoteStatus = remoteExecCommand(CommandsSupported.RMDIRF.name(), 
 								fullPath+"/"+remoteDir.getName(), 
 								dataServerInfo, 
 								Globals.PARENT_MDS+":"+parentList+Master.getMdsServerId()+",");
@@ -1032,7 +1038,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 					}
 					else
 					{
-						return remoteExecCommand(CommandsSupported.RMDIR, 
+						return remoteExecCommand(CommandsSupported.RMDIR.name(), 
 								fullPath, metadata, Globals.PRIMARY_MDS+":");
 					}
 				}
@@ -1108,7 +1114,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 							inode.getDataServerInfo().size() > 0) 
 					{
 						final MetaDataServerInfo mdsServer = getRequiredMdsInfo(inode, true); 
-						return remoteExecCommand(CommandsSupported.RMDIR, 
+						return remoteExecCommand(CommandsSupported.RMDIR.name(), 
 								fullPath, mdsServer, "");
 					}
 				}
@@ -1134,7 +1140,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 								= getRequiredMdsInfo(removeDirectory.getInode(), true);
 							if(removeDirectory.getInode().getInodeNumber() == null)
 							{
-								return remoteExecCommand(CommandsSupported.RMDIR, 
+								return remoteExecCommand(CommandsSupported.RMDIR.name(), 
 										fullPath, metaData, "");
 							}
 							try
@@ -1166,7 +1172,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 								}
 								else
 								{
-									return remoteExecCommand(CommandsSupported.RMDIR, 
+									return remoteExecCommand(CommandsSupported.RMDIR.name(), 
 											fullPath, metaData, "");
 								}
 							}
@@ -1351,7 +1357,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 							inode.getDataServerInfo().size() > 0) 
 					{
 						final MetaDataServerInfo mdsServer = getRequiredMdsInfo(inode, true); 						
-						final Message message = remoteExecCommand(CommandsSupported.CD, 
+						final Message message = remoteExecCommand(CommandsSupported.CD.name(), 
 								filePath, mdsServer, "");
 						if (message != null) 
 						{
@@ -1394,29 +1400,613 @@ public class CephDirectoryOperations implements ICommandOperations {
         // TODO Auto-generated method stub
         return null;
     }
+    
+    private void unlockAllDirs(final List<Directory> directories,
+    		final boolean readLock)
+    {
+    	if(directories != null)
+    	{
+			for(final Directory dir:directories)
+			{
+				if(readLock)
+				{
+					dir.getReadLock().unlock();
+				}
+				else
+				{
+					dir.getWriteLock().unlock();
+				}
+			}
+    	}
+    }
+    
+    private List<Directory> lockAllDirs(final List<Directory> directories,
+    		final boolean readLock)
+    {
+    	final List<Directory> lockedDirs = new ArrayList<>();
+    	boolean status = true;
+    	if(directories != null)
+    	{
+    		for(final Directory dir:directories)
+    		{
+    			if(readLock)
+    			{
+    				status &= dir.getReadLock().tryLock();
+    			}
+    			else
+    			{
+    				status &= dir.getWriteLock().tryLock();
+    			}
+    			
+    			if(status)
+    			{
+    				lockedDirs.add(dir);
+    			}
+    			else
+    			{
+    				break;
+    			}    				
+    		}
+    	}    	
+    	return lockedDirs;
+    }
+    
+    /**
+	 * Performs a tree search from the {@literal root} on the directory
+	 * structure corresponding to the {@literal filePath}
+	 *
+	 * @param root
+	 *            Root of directory structure
+	 * @param filePath
+	 *            Path to search
+	 * @return list of matching Nodes in the path, empty list if not found
+	 */
+	private List<Directory> fetchDirsInPath(final Directory root, 
+			final String filePath, 
+			final StringBuffer resultCode) {		
+		final StringBuffer filePathBuf; 
+		if(filePath.charAt(0) == '/')
+		{
+			filePathBuf = new StringBuffer(filePath.substring(1));
+		}
+		else
+		{
+			filePathBuf = new StringBuffer(filePath);
+		}
+		// Get list of paths
+		final String[] paths = filePathBuf.toString().split("/");
+		int countLevel = 0;
+		final List<Directory> dirsInPath = new ArrayList<>();
+		Directory curNode= root;
+		// Find the directory in directory tree
+		for (final String path : paths) {
+			// Match the root
+			boolean found = false;
+			if (curNode.getName()
+					.equals(path)) {
+				found = true;
+				countLevel++;
+				dirsInPath.add(curNode);
+				Long operationCounter = curNode.getOperationCounter();
+				operationCounter++;
+				curNode.setOperationCounter(operationCounter);
+			}
+			
+			if(curNode.getChildren() != null)
+			{
+				// Check if the path corresponds to any child in this directory
+				for (final Directory child : curNode.getChildren()) {					
+					if (child.getName()
+							.equals(path)) {
+						curNode = child;
+						found = true;			
+						dirsInPath.add(curNode);
+						Long operationCounter = child.getOperationCounter();
+						operationCounter++;
+						child.setOperationCounter(operationCounter);
+						break;
+					}
+				}
+			}
 
+			// If child was not found, path does not exists
+			if (!found) {
+				if (countLevel > 0) {
+					resultCode.append(Globals.PARTIAL_PATH_FOUND);
+				} else {
+					resultCode.append(Globals.PATH_NOT_FOUND);
+				}
+				return dirsInPath;
+			}
+		}
+
+		// Return the node where the path was found
+		resultCode.append(Globals.PATH_FOUND);
+		return dirsInPath;
+	}
+    
 	@Override
-	public Message acquireReadLocks(Directory root, String filePath, String... arguments) {
-		// TODO Auto-generated method stub
-		return null;
+	public Message acquireReadLocks(final Directory root, 
+			final String filePath, 
+			final String... arguments) 
+	{
+		try
+		{
+			String searchablePath;
+			if (arguments != null && 
+					arguments.length > 0 && 
+					(!"/".equals(arguments[0]) && !"root".equals(arguments[0]))) {
+				searchablePath = filePath.substring(arguments[0].length());
+			} else {
+				searchablePath = filePath;
+			}
+			
+			final List<Directory> toLockDirs = new ArrayList<>();
+			final StringBuffer resultCode = new StringBuffer();
+			if(searchablePath != null && 
+					!"".equals(searchablePath) &&
+					!"root".equals(searchablePath))
+			{
+				toLockDirs.addAll(fetchDirsInPath(
+									root, 
+									filePath, 
+									resultCode));
+			}
+			else
+			{
+				toLockDirs.add(root);
+			}
+			if(!toLockDirs.isEmpty())
+			{
+				final Directory node = toLockDirs.get(toLockDirs.size()-1);
+				final Inode lastNodeInode = node.getInode();
+				final String resultCodeValue = resultCode.toString().trim();
+				if(lastNodeInode.getInodeNumber() != null &&
+						Globals.PATH_FOUND.equals(resultCodeValue))
+				{
+					final List<Directory> lockedDirs = lockAllDirs(toLockDirs, true);
+					if(lockedDirs == null ||
+							(lockedDirs.size() != toLockDirs.size()))
+					{
+						if(lockedDirs != null &&
+								!lockedDirs.isEmpty())
+						{
+							unlockAllDirs(lockedDirs, true);
+						}
+						return new Message("Not able to read lock all the directories in "+ filePath,
+								lastNodeInode.getDataServerInfo().toString(),
+								CompletionStatusCode.ERROR.name());
+					}
+					
+					return new Message(filePath + " read locked successfully",
+							lastNodeInode.getDataServerInfo().toString(),
+							CompletionStatusCode.SUCCESS.name());
+				}
+				else if(lastNodeInode.getInodeNumber() == null &&
+						(Globals.PATH_FOUND.equals(resultCodeValue) ||
+								Globals.PARTIAL_PATH_FOUND.equals(resultCodeValue)))
+				{
+					toLockDirs.remove(toLockDirs.size() -1);
+					final List<Directory> lockedDirs = lockAllDirs(toLockDirs, true);
+					if(lockedDirs == null ||
+							(lockedDirs.size() != toLockDirs.size()))
+					{
+						if(lockedDirs != null &&
+								!lockedDirs.isEmpty())
+						{
+							unlockAllDirs(lockedDirs, true);
+						}
+						return new Message("Not able to read lock all the directories in "+ filePath,
+								lastNodeInode.getDataServerInfo().toString(),
+								CompletionStatusCode.ERROR.name());
+					}
+					else
+					{
+						final MetaDataServerInfo mdsServer = getRequiredMdsInfo(lastNodeInode, 
+																true);
+						final Message remoteStatus = remoteExecCommand(Globals.ACQUIRE_READ_LOCK, 
+									filePath, 
+									mdsServer, 
+									"");
+						if(remoteStatus != null &&
+								CompletionStatusCode.SUCCESS
+									.equals(remoteStatus.getCompletionCode().toString().trim()))
+						{
+							return remoteStatus;
+						}
+						if(lockedDirs != null &&
+								!lockedDirs.isEmpty())
+						{
+							unlockAllDirs(lockedDirs, true);
+						}
+						return new Message("Not able to read lock all the nodes in "+ filePath,
+								remoteStatus.getHeader(),
+								CompletionStatusCode.ERROR.name());
+					}
+				}
+				//If partial path found but the inode indicates 
+				//that the path existing in current MDS
+				else if (lastNodeInode.getInodeNumber() != null && 
+						!Globals.PARTIAL_PATH_FOUND.equals(resultCodeValue)) 
+				{
+					return new Message(filePath + " is in an instable state",
+							"",
+							CompletionStatusCode.UNSTABLE.name());
+				} 
+				//If the path not found.
+				else 
+				{
+					return new Message(filePath + " Does not exist",
+							"",
+							CompletionStatusCode.NOT_FOUND.name());
+				}
+			}
+		}
+		catch(Exception ex)
+		{
+			return new Message(ex.getLocalizedMessage(),
+					"",
+					CompletionStatusCode.ERROR.name());
+		}
+		return new Message("Read lock command completed without any errors and proper output",
+				"",
+				CompletionStatusCode.ERROR.name());
 	}
 
 	@Override
-	public Message acquireWriteLocks(Directory root, String filePath, String... arguments) {
-		// TODO Auto-generated method stub
-		return null;
+	public Message acquireWriteLocks(final Directory root, 
+			final String filePath, 
+			final String... arguments) 
+	{
+		try
+		{
+			String searchablePath;
+			if (arguments != null && 
+					arguments.length > 0 && 
+					(!"/".equals(arguments[0]) && !"root".equals(arguments[0]))) {
+				searchablePath = filePath.substring(arguments[0].length());
+			} else {
+				searchablePath = filePath;
+			}
+			
+			final List<Directory> toLockDirs = new ArrayList<>();
+			final StringBuffer resultCode = new StringBuffer();
+			if(searchablePath != null && 
+					!"".equals(searchablePath) &&
+					!"root".equals(searchablePath))
+			{
+				toLockDirs.addAll(fetchDirsInPath(
+									root, 
+									filePath, 
+									resultCode));
+			}
+			else
+			{
+				toLockDirs.add(root);
+			}
+			if(!toLockDirs.isEmpty())
+			{
+				final Directory node = toLockDirs.get(toLockDirs.size()-1);
+				final Inode lastNodeInode = node.getInode();
+				final String resultCodeValue = resultCode.toString().trim();
+				if(lastNodeInode.getInodeNumber() != null &&
+						Globals.PATH_FOUND.equals(resultCodeValue))
+				{
+					final List<Directory> toWriteLockDirs = new ArrayList<>();
+					toWriteLockDirs.add(toLockDirs.remove(toLockDirs.size() -1));
+					if(!toLockDirs.isEmpty())
+					{
+						final List<Directory> readLockedDirs = lockAllDirs(toLockDirs, true);					
+						if(readLockedDirs == null ||
+								(readLockedDirs.size() != toLockDirs.size()))
+						{
+							if(readLockedDirs != null &&
+									!readLockedDirs.isEmpty())
+							{
+								unlockAllDirs(readLockedDirs, true);
+							}
+							return new Message("Not able to read lock all the parent directories in "+ filePath,
+									lastNodeInode.getDataServerInfo().toString(),
+									CompletionStatusCode.ERROR.name());
+						}						
+					}
+					
+					if(!toWriteLockDirs.isEmpty())
+					{
+						final List<Directory> writeLockedDirs 
+								= lockAllDirs(toWriteLockDirs, false);
+						if(writeLockedDirs == null ||
+								(writeLockedDirs.size() != toWriteLockDirs.size()))
+						{
+							if(toLockDirs != null && 
+									!toLockDirs.isEmpty())
+							{
+								unlockAllDirs(toLockDirs, true);
+							}
+							
+							return new Message("Not able to write lock the "+ filePath,
+									lastNodeInode.getDataServerInfo().toString(),
+									CompletionStatusCode.ERROR.name());
+						}
+					}
+					
+					return new Message(filePath + " write locked successfully",
+							lastNodeInode.getDataServerInfo().toString(),
+							CompletionStatusCode.SUCCESS.name());
+				}
+				else if(lastNodeInode.getInodeNumber() == null &&
+						(Globals.PATH_FOUND.equals(resultCodeValue) ||
+								Globals.PARTIAL_PATH_FOUND.equals(resultCodeValue)))
+				{
+					toLockDirs.remove(toLockDirs.size() -1);
+					final List<Directory> lockedDirs = lockAllDirs(toLockDirs, true);
+					if(lockedDirs == null ||
+							(lockedDirs.size() != toLockDirs.size()))
+					{
+						if(lockedDirs != null &&
+								!lockedDirs.isEmpty())
+						{
+							unlockAllDirs(lockedDirs, true);
+						}
+						return new Message("Not able to read lock the parent directories in "
+											+ filePath,
+								lastNodeInode.getDataServerInfo().toString(),
+								CompletionStatusCode.ERROR.name());
+					}
+					else
+					{
+						final MetaDataServerInfo mdsServer = getRequiredMdsInfo(lastNodeInode, 
+																true);
+						final Message remoteStatus = remoteExecCommand(Globals.ACQUIRE_WRITE_LOCK, 
+									filePath, 
+									mdsServer, 
+									"");
+						if(remoteStatus != null &&
+								CompletionStatusCode.SUCCESS
+									.equals(remoteStatus.getCompletionCode().toString().trim()))
+						{
+							return remoteStatus;
+						}
+						if(lockedDirs != null &&
+								!lockedDirs.isEmpty())
+						{
+							unlockAllDirs(lockedDirs, true);
+						}
+						return new Message("Not able to write lock the directory in "+ filePath,
+								remoteStatus.getHeader(),
+								CompletionStatusCode.ERROR.name());
+					}
+				}
+				//If partial path found but the inode indicates 
+				//that the path existing in current MDS
+				else if (lastNodeInode.getInodeNumber() != null && 
+						!Globals.PARTIAL_PATH_FOUND.equals(resultCodeValue)) 
+				{
+					return new Message(filePath + " is in an instable state",
+							"",
+							CompletionStatusCode.UNSTABLE.name());
+				} 
+				//If the path not found.
+				else 
+				{
+					return new Message(filePath + " Does not exist",
+							"",
+							CompletionStatusCode.NOT_FOUND.name());
+				}
+			}
+		}
+		catch(Exception ex)
+		{
+			return new Message(ex.getLocalizedMessage(),
+					"",
+					CompletionStatusCode.ERROR.name());
+		}
+		return new Message("Write lock command completed without any errors and proper output",
+				"",
+				CompletionStatusCode.ERROR.name());
 	}
 
 	@Override
-	public Message releaseReadLocks(Directory root, String filePath, String... arguements) {
-		// TODO Auto-generated method stub
-		return null;
+	public Message releaseReadLocks(final Directory root, 
+			final String filePath, 
+			final String... arguments) 
+	{
+		try
+		{
+			String searchablePath;
+			if (arguments != null && 
+					arguments.length > 0 && 
+					(!"/".equals(arguments[0]) && !"root".equals(arguments[0]))) {
+				searchablePath = filePath.substring(arguments[0].length());
+			} else {
+				searchablePath = filePath;
+			}
+			
+			final List<Directory> toUnLockDirs = new ArrayList<>();
+			final StringBuffer resultCode = new StringBuffer();
+			if(searchablePath != null && 
+					!"".equals(searchablePath) &&
+					!"root".equals(searchablePath))
+			{
+				toUnLockDirs.addAll(fetchDirsInPath(
+									root, 
+									filePath, 
+									resultCode));
+			}
+			else
+			{
+				toUnLockDirs.add(root);
+			}
+			if(!toUnLockDirs.isEmpty())
+			{
+				final Directory node = toUnLockDirs.get(toUnLockDirs.size()-1);
+				final Inode lastNodeInode = node.getInode();
+				final String resultCodeValue = resultCode.toString().trim();
+				if(lastNodeInode.getInodeNumber() != null &&
+						Globals.PATH_FOUND.equals(resultCodeValue))
+				{
+					unlockAllDirs(toUnLockDirs, true);					
+					
+					return new Message(filePath + " read locked successfully",
+							lastNodeInode.getDataServerInfo().toString(),
+							CompletionStatusCode.SUCCESS.name());
+				}
+				else if(lastNodeInode.getInodeNumber() == null &&
+						(Globals.PATH_FOUND.equals(resultCodeValue) ||
+								Globals.PARTIAL_PATH_FOUND.equals(resultCodeValue)))
+				{
+					toUnLockDirs.remove(toUnLockDirs.size() -1);
+					unlockAllDirs(toUnLockDirs, true);
+					final MetaDataServerInfo mdsServer = getRequiredMdsInfo(lastNodeInode, 
+															true);
+					final Message remoteStatus = remoteExecCommand(Globals.RELEASE_READ_LOCK, 
+														filePath, 
+														mdsServer, 
+														"");
+					if(remoteStatus != null &&
+							CompletionStatusCode.SUCCESS
+								.equals(remoteStatus.getCompletionCode().toString().trim()))
+					{
+						return remoteStatus;
+					}
+
+					return new Message("Not able to unlock all read locks of all the nodes in "+ filePath,
+							remoteStatus.getHeader(),
+							CompletionStatusCode.ERROR.name());					
+				}
+				//If partial path found but the inode indicates 
+				//that the path existing in current MDS
+				else if (lastNodeInode.getInodeNumber() != null && 
+						!Globals.PARTIAL_PATH_FOUND.equals(resultCodeValue)) 
+				{
+					return new Message(filePath + " is in an instable state",
+							"",
+							CompletionStatusCode.UNSTABLE.name());
+				} 
+				//If the path not found.
+				else 
+				{
+					return new Message(filePath + " Does not exist",
+							"",
+							CompletionStatusCode.NOT_FOUND.name());
+				}
+			}
+		}
+		catch(Exception ex)
+		{
+			return new Message(ex.getLocalizedMessage(),
+					"",
+					CompletionStatusCode.ERROR.name());
+		}
+		return new Message("Read unlock command completed without any errors and proper output",
+				"",
+				CompletionStatusCode.ERROR.name());
 	}
 
 	@Override
-	public Message releaseWriteLocks(Directory root, String filePath, String... arguements) {
-		// TODO Auto-generated method stub
-		return null;
+	public Message releaseWriteLocks(final Directory root, 
+			final String filePath, 
+			final String... arguments) 
+	{
+		try
+		{
+			String searchablePath;
+			if (arguments != null && 
+					arguments.length > 0 && 
+					(!"/".equals(arguments[0]) && !"root".equals(arguments[0]))) {
+				searchablePath = filePath.substring(arguments[0].length());
+			} else {
+				searchablePath = filePath;
+			}
+			
+			final List<Directory> toUnLockDirs = new ArrayList<>();
+			final StringBuffer resultCode = new StringBuffer();
+			if(searchablePath != null && 
+					!"".equals(searchablePath) &&
+					!"root".equals(searchablePath))
+			{
+				toUnLockDirs.addAll(fetchDirsInPath(
+									root, 
+									filePath, 
+									resultCode));
+			}
+			else
+			{
+				toUnLockDirs.add(root);
+			}
+			if(!toUnLockDirs.isEmpty())
+			{
+				final Directory node = toUnLockDirs.get(toUnLockDirs.size()-1);
+				final Inode lastNodeInode = node.getInode();
+				final String resultCodeValue = resultCode.toString().trim();
+				if(lastNodeInode.getInodeNumber() != null &&
+						Globals.PATH_FOUND.equals(resultCodeValue))
+				{
+					final List<Directory> toWriteUnLockDirs = new ArrayList<>();
+					toWriteUnLockDirs.add(toUnLockDirs.remove(toUnLockDirs.size() -1));
+					if(!toUnLockDirs.isEmpty())
+					{
+						unlockAllDirs(toUnLockDirs, true);										
+					}
+					
+					if(!toWriteUnLockDirs.isEmpty())
+					{
+						unlockAllDirs(toWriteUnLockDirs, false);						
+					}
+					
+					return new Message(filePath + " write locked successfully",
+							lastNodeInode.getDataServerInfo().toString(),
+							CompletionStatusCode.SUCCESS.name());
+				}
+				else if(lastNodeInode.getInodeNumber() == null &&
+						(Globals.PATH_FOUND.equals(resultCodeValue) ||
+								Globals.PARTIAL_PATH_FOUND.equals(resultCodeValue)))
+				{										
+					final MetaDataServerInfo mdsServer = getRequiredMdsInfo(lastNodeInode, 
+															true);
+					final Message remoteStatus = remoteExecCommand(Globals.RELEASE_WRITE_LOCK, 
+								filePath, 
+								mdsServer, 
+								"");
+					if(remoteStatus != null &&
+							CompletionStatusCode.SUCCESS
+								.equals(remoteStatus.getCompletionCode().toString().trim()))
+					{
+						toUnLockDirs.remove(toUnLockDirs.size() -1);
+						unlockAllDirs(toUnLockDirs, true);
+						return remoteStatus;
+					}					
+					return new Message("Not able to unlock the write lock in the directory "+ filePath,
+							remoteStatus.getHeader(),
+							CompletionStatusCode.ERROR.name());
+				}
+				//If partial path found but the inode indicates 
+				//that the path existing in current MDS
+				else if (lastNodeInode.getInodeNumber() != null && 
+						!Globals.PARTIAL_PATH_FOUND.equals(resultCodeValue)) 
+				{
+					return new Message(filePath + " is in an instable state",
+							"",
+							CompletionStatusCode.UNSTABLE.name());
+				} 
+				//If the path not found.
+				else 
+				{
+					return new Message(filePath + " Does not exist",
+							"",
+							CompletionStatusCode.NOT_FOUND.name());
+				}
+			}
+		}
+		catch(Exception ex)
+		{
+			return new Message(ex.getLocalizedMessage(),
+					"",
+					CompletionStatusCode.ERROR.name());
+		}
+		return new Message("Write unlock command completed without any errors and proper output",
+				"",
+				CompletionStatusCode.ERROR.name());
 	}
     
 }

@@ -29,6 +29,9 @@ import master.metadata.MetaDataServerInfo;
  */
 public class CephClient {
 	
+	private final Socket				socket;
+	private final ObjectInputStream		inputStream;
+	private final ObjectOutputStream	outputStream;
 	private final HashMap<String,List<MetaDataServerInfo>> cachedServers = new HashMap<>();
 	private final static Logger			LOGGER	= Logger.getLogger(CephClient.class);
 	private static final String         ROOT    = "root";
@@ -55,6 +58,10 @@ public class CephClient {
 		final List<MetaDataServerInfo> rootMdsServers = new ArrayList<>();
 		rootMdsServers.add(rootMds);
 		cachedServers.put("/", rootMdsServers);
+		
+		socket = new Socket(AppConfig.getValue("client.masterIp"), Integer.parseInt(AppConfig.getValue("client.masterPort")));
+		outputStream = new ObjectOutputStream(socket.getOutputStream());
+		inputStream = new ObjectInputStream(socket.getInputStream());
 	}
 	
 	/**
@@ -109,7 +116,10 @@ public class CephClient {
 		// Read commands
 		try (Scanner scanner = new Scanner(System.in)) {
 			while (scanner.hasNext()) {
-				String command = scanner.nextLine();				
+				String command = scanner.nextLine();	
+				boolean readLockAcquired = false;
+				boolean writeLockAcquired = false;
+				final String lockedPath;
 
 				if("EXIT".equals(command))
 				{
@@ -131,6 +141,108 @@ public class CephClient {
 				}
 				
 				final String[] commandParse = command.split(" ");
+				
+				if(command.startsWith(CommandsSupported.LS.name()) || 
+						command.startsWith(CommandsSupported.LSL.name()) ||
+						command.startsWith(CommandsSupported.CD.name()))
+				{										
+					// Send command to master					
+					outputStream.writeObject(new Message(Globals.ACQUIRE_READ_LOCK+" "+
+										command.substring(commandParse[0].length()+1)));
+					outputStream.flush();
+					
+					// Wait and read the reply
+					final Message lockMessage = (Message) inputStream.readObject();
+					if(CompletionStatusCode.SUCCESS.name()
+							.equals(lockMessage.getCompletionCode().toString().trim()))
+					{
+						if(lockMessage.getHeader() != null && 
+								!"".equals(lockMessage.getHeader()))
+						{
+							final List<MetaDataServerInfo> newMdsServers 
+								= MetaDataServerInfo.fromStringToMetadata(
+									lockMessage.getHeader().trim());
+							if(!newMdsServers.isEmpty())
+							{
+								this.cachedServers.put(command.substring(commandParse[0].length()+1), 
+										newMdsServers);
+							}
+						}
+						readLockAcquired = true;
+						lockedPath = command.substring(commandParse[0].length()+1);
+					}				
+					else
+					{
+						LOGGER.error(lockMessage);
+						continue;
+					}
+				}
+				else if(command.startsWith(CommandsSupported.MKDIR.name()) ||
+						command.startsWith(CommandsSupported.RMDIR.name()) ||
+						command.startsWith(CommandsSupported.RMDIRF.name()))
+				{
+					final String executableCommand = commandParse[1].trim();
+					final String name;
+					final String dirPath;
+					if(!"".equals(executableCommand) && 
+							!"/".equals(executableCommand) &&
+							!"root".equals(executableCommand))
+					{
+						final String[] paths = executableCommand.split("/");
+						name = paths[paths.length - 1];
+						dirPath = executableCommand.substring(0,
+									executableCommand.length() - name.length() - 1);
+					}
+					else
+					{
+						dirPath = executableCommand;
+						name = "";
+					}
+					
+					if(command.startsWith(CommandsSupported.MKDIR.name()))
+					{
+						lockedPath = dirPath;
+					}
+					else
+					{
+						lockedPath = executableCommand;
+					}
+					
+					// Send command to master					
+					outputStream.writeObject(new Message(Globals.ACQUIRE_READ_LOCK+" "+
+															lockedPath));
+					outputStream.flush();
+					
+					// Wait and read the reply
+					final Message lockMessage = (Message) inputStream.readObject();
+					if(CompletionStatusCode.SUCCESS.name()
+							.equals(lockMessage.getCompletionCode().toString().trim()))
+					{
+						if(lockMessage.getHeader() != null && 
+								!"".equals(lockMessage.getHeader()))
+						{
+							final List<MetaDataServerInfo> newMdsServers 
+								= MetaDataServerInfo.fromStringToMetadata(
+									lockMessage.getHeader().trim());
+							if(!newMdsServers.isEmpty())
+							{
+								this.cachedServers.put(command.substring(commandParse[0].length()+1), 
+										newMdsServers);
+							}
+						}
+						writeLockAcquired = true;
+					}				
+					else
+					{
+						LOGGER.error(lockMessage);
+						continue;
+					}
+										
+				}
+				else
+				{
+					lockedPath = null;
+				}
 				final StringBuffer partialFilePath = new StringBuffer();
 				
 				final List<MetaDataServerInfo> mdsServers 
@@ -141,12 +253,12 @@ public class CephClient {
 				final Socket mdsServerSocket = getRequiredMdsSocket(mdsServers, true);
 				// Send command to master
 				
-				ObjectInputStream inputStream 
+				ObjectInputStream inputMdsStream 
 							= new ObjectInputStream(mdsServerSocket.getInputStream());
-				ObjectOutputStream outputStream
+				ObjectOutputStream outputMdsStream
 							= new ObjectOutputStream(mdsServerSocket.getOutputStream());
-				outputStream.writeObject(new Message(command));
-				outputStream.flush();
+				outputMdsStream.writeObject(new Message(command));
+				outputMdsStream.flush();
 
 				// Exit if command is exit
 				if (command.equalsIgnoreCase(CommandsSupported.EXIT.name())) {
@@ -155,7 +267,7 @@ public class CephClient {
 				}
 
 				// Wait and read the reply
-				final Message message = (Message) inputStream.readObject();
+				final Message message = (Message) inputMdsStream.readObject();
 				final String reply = message.getContent();
 				final String header = message.getHeader();
 				if(message.getCompletionCode() != null
@@ -187,10 +299,40 @@ public class CephClient {
 
 				number++;
 				mdsServerSocket.close();
+				
+				if(readLockAcquired && lockedPath != null)
+				{
+					outputStream.writeObject(new Message(Globals.RELEASE_READ_LOCK+" "+
+										lockedPath));
+					outputStream.flush();
+				}
+				else if(writeLockAcquired && lockedPath != null)
+				{
+					outputStream.writeObject(new Message(Globals.RELEASE_WRITE_LOCK+" "+
+							lockedPath));
+					outputStream.flush();
+				}
+				
+				final Message unLockMessage = (Message) inputStream.readObject();
+				LOGGER.debug(unLockMessage);
+					
 			}
 		} catch (final IOException | ClassNotFoundException e) {
 			LOGGER.error("Error occured while executing commands", e);
 			System.exit(0);
+		}
+		finally
+		{
+			try
+			{
+				socket.close();
+			}
+			catch(IOException ioexp)
+			{
+				LOGGER.error(new Message(ioexp.getLocalizedMessage(),
+						"",
+						CompletionStatusCode.ERROR.name()));
+			}
 		}
 	}
 

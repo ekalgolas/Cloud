@@ -32,11 +32,7 @@ import commons.dir.ICommandOperations;
  */
 public class Worker implements Runnable {
 	private static final AppWatch	APPWATCH	= new AppWatch();
-	private final static Logger		LOGGER		= Logger.getLogger(Worker.class);
-	private final String 	ACQUIRE_READ_LOCK 	= "ARLCK";
-	private final String 	ACQUIRE_WRITE_LOCK	= "AWLCK";
-	private final String 	RELEASE_READ_LOCK 	= "RRLCK";
-	private final String 	RELEASE_WRITE_LOCK	= "RWLCK";
+	private final static Logger		LOGGER		= Logger.getLogger(Worker.class);	
 	public volatile boolean			isRunning	= true;
 	private final String			listenerType;
 	private final Socket			workerSocket;
@@ -76,7 +72,7 @@ public class Worker implements Runnable {
 				// Read the queried command
 				final Message message = (Message) inputStream.readObject();
 				final String command = message.getContent();
-				System.out.println("command:" + command);
+				LOGGER.debug(message);
 				Message reply = null;
 				Directory root = null;
 				Directory replica = null;
@@ -224,7 +220,7 @@ public class Worker implements Runnable {
 
 				logState(command, root);
 			} 
-			else if(command.startsWith(ACQUIRE_READ_LOCK))
+			else if(command.startsWith(Globals.ACQUIRE_READ_LOCK))
 			{
 				// Command line parameter (directory name) start from index '5'
 				// in the received string
@@ -234,7 +230,7 @@ public class Worker implements Runnable {
 									argument, 
 									partialFilePath.toString());
 			}
-			else if(command.startsWith(ACQUIRE_WRITE_LOCK))
+			else if(command.startsWith(Globals.ACQUIRE_WRITE_LOCK))
 			{
 				// Command line parameter (directory name) start from index '5'
 				// in the received string
@@ -244,7 +240,7 @@ public class Worker implements Runnable {
 									argument, 
 									partialFilePath.toString());
 			}
-			else if(command.startsWith(RELEASE_READ_LOCK))
+			else if(command.startsWith(Globals.RELEASE_READ_LOCK))
 			{
 				// Command line parameter (directory name) start from index '5'
 				// in the received string
@@ -254,7 +250,7 @@ public class Worker implements Runnable {
 									argument, 
 									partialFilePath.toString());
 			}
-			else if(command.startsWith(RELEASE_WRITE_LOCK))
+			else if(command.startsWith(Globals.RELEASE_WRITE_LOCK))
 			{
 				// Command line parameter (directory name) start from index '5'
 				// in the received string

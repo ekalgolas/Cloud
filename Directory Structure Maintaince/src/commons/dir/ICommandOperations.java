@@ -149,7 +149,7 @@ public interface ICommandOperations {
      */
     public Message releaseReadLocks(final Directory root,
     		final String filePath,
-    		final String... arguements);
+    		final String... arguments);
     
     /**
      * Used to release the write locks for the specified destination
@@ -160,5 +160,5 @@ public interface ICommandOperations {
      */
     public Message releaseWriteLocks(final Directory root,
     		final String filePath,
-    		final String... arguements);
+    		final String... arguments);
 }
