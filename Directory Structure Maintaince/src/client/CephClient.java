@@ -90,8 +90,15 @@ public class CephClient {
 		{
 			try
 			{
-				mdsServerSocket = new Socket(serverInfo.getIpAddress(), 
-						Integer.parseInt(AppConfig.getValue("client.masterPort")));
+				if(serverInfo.getIpAddress().equals(AppConfig.getValue("client.masterIp")))
+				{
+					mdsServerSocket = this.socket;
+				}
+				else
+				{
+					mdsServerSocket = new Socket(serverInfo.getIpAddress(), 
+							Integer.parseInt(AppConfig.getValue("client.masterPort")));
+				}
 			}
 			catch (NumberFormatException e) {
 				LOGGER.error("Error occured while executing commands", e);
@@ -102,6 +109,95 @@ public class CephClient {
 			}
 		}
 		return mdsServerSocket;
+	}
+	
+	private boolean acquireLocks(final String command, 
+			final StringBuffer lockedPath,
+			final boolean acquireParentLock,
+			final boolean isReadLock)
+	{
+		boolean status = false;
+		try
+		{			
+			final String[] commandParse = command.split(" ");
+			final String executableCommand = commandParse[1].trim();
+			final String name;
+			final String dirPath;
+			if(!"".equals(executableCommand) && 
+					!"/".equals(executableCommand) &&
+					!"root".equals(executableCommand))
+			{
+				final String[] paths = executableCommand.split("/");
+				name = paths[paths.length - 1];
+				dirPath = executableCommand.substring(0,
+							executableCommand.length() - name.length() - 1);
+			}
+			else
+			{
+				dirPath = executableCommand;
+				name = "";
+			}
+			
+			if(acquireParentLock)
+			{
+				lockedPath.append(dirPath);
+			}
+			else
+			{
+				lockedPath.append(executableCommand);
+			}
+			
+			// Send command to master					
+			outputStream.writeObject(new Message(
+					(isReadLock?Globals.ACQUIRE_READ_LOCK:Globals.ACQUIRE_WRITE_LOCK)
+					+" "+lockedPath.toString()));
+			outputStream.flush();
+			
+			// Wait and read the reply
+			final Message lockMessage = (Message) inputStream.readObject();
+			if(CompletionStatusCode.SUCCESS.name()
+					.equals(lockMessage.getCompletionCode().toString().trim()))
+			{
+				if(lockMessage.getHeader() != null && 
+						!"".equals(lockMessage.getHeader()))
+				{
+					final List<MetaDataServerInfo> newMdsServers 
+						= MetaDataServerInfo.fromStringToMetadata(
+							lockMessage.getHeader().trim());
+					if(!newMdsServers.isEmpty())
+					{
+						this.cachedServers.put(lockedPath.toString(), 
+								newMdsServers);
+					}
+				}
+				status = true;
+			}
+			else if(CompletionStatusCode.NOT_FOUND.name()
+					.equals(lockMessage.getCompletionCode().toString().trim()))
+			{
+				LOGGER.error(lockMessage);
+				this.cachedServers.remove(lockedPath.toString());
+				status = false;
+			}				
+			else
+			{
+				LOGGER.error(lockMessage);
+				status = false;
+			}
+		}
+		catch(ClassNotFoundException cnfexp)
+		{
+			LOGGER.error(new Message(cnfexp.getLocalizedMessage(),
+					"",
+					CompletionStatusCode.ERROR.name()));
+		}
+		catch(IOException ioexp)
+		{
+			LOGGER.error(new Message(ioexp.getLocalizedMessage(),
+					"",
+					CompletionStatusCode.ERROR.name()));
+		}		
+		return status;
 	}
 	
 	/**
@@ -145,35 +241,19 @@ public class CephClient {
 				if(command.startsWith(CommandsSupported.LS.name()) || 
 						command.startsWith(CommandsSupported.LSL.name()) ||
 						command.startsWith(CommandsSupported.CD.name()))
-				{										
-					// Send command to master					
-					outputStream.writeObject(new Message(Globals.ACQUIRE_READ_LOCK+" "+
-										command.substring(commandParse[0].length()+1)));
-					outputStream.flush();
-					
-					// Wait and read the reply
-					final Message lockMessage = (Message) inputStream.readObject();
-					if(CompletionStatusCode.SUCCESS.name()
-							.equals(lockMessage.getCompletionCode().toString().trim()))
+				{								
+					final StringBuffer lockedPathBuf = new StringBuffer();
+					final boolean lockStatus = acquireLocks(command, 
+							lockedPathBuf, 
+							false, 
+							true);
+					if(lockStatus)
 					{
-						if(lockMessage.getHeader() != null && 
-								!"".equals(lockMessage.getHeader()))
-						{
-							final List<MetaDataServerInfo> newMdsServers 
-								= MetaDataServerInfo.fromStringToMetadata(
-									lockMessage.getHeader().trim());
-							if(!newMdsServers.isEmpty())
-							{
-								this.cachedServers.put(command.substring(commandParse[0].length()+1), 
-										newMdsServers);
-							}
-						}
 						readLockAcquired = true;
-						lockedPath = command.substring(commandParse[0].length()+1);
-					}				
+						lockedPath = lockedPathBuf.toString();
+					}
 					else
 					{
-						LOGGER.error(lockMessage);
 						continue;
 					}
 				}
@@ -181,67 +261,49 @@ public class CephClient {
 						command.startsWith(CommandsSupported.RMDIR.name()) ||
 						command.startsWith(CommandsSupported.RMDIRF.name()))
 				{
-					final String executableCommand = commandParse[1].trim();
-					final String name;
-					final String dirPath;
-					if(!"".equals(executableCommand) && 
-							!"/".equals(executableCommand) &&
-							!"root".equals(executableCommand))
+					final StringBuffer lockedPathBuf = new StringBuffer();
+					final boolean lockStatus = acquireLocks(command, 
+							lockedPathBuf, 
+							command.startsWith(CommandsSupported.MKDIR.name()), 
+							false);
+					if(lockStatus)
 					{
-						final String[] paths = executableCommand.split("/");
-						name = paths[paths.length - 1];
-						dirPath = executableCommand.substring(0,
-									executableCommand.length() - name.length() - 1);
-					}
-					else
-					{
-						dirPath = executableCommand;
-						name = "";
-					}
-					
-					if(command.startsWith(CommandsSupported.MKDIR.name()))
-					{
-						lockedPath = dirPath;
-					}
-					else
-					{
-						lockedPath = executableCommand;
-					}
-					
-					// Send command to master					
-					outputStream.writeObject(new Message(Globals.ACQUIRE_READ_LOCK+" "+
-															lockedPath));
-					outputStream.flush();
-					
-					// Wait and read the reply
-					final Message lockMessage = (Message) inputStream.readObject();
-					if(CompletionStatusCode.SUCCESS.name()
-							.equals(lockMessage.getCompletionCode().toString().trim()))
-					{
-						if(lockMessage.getHeader() != null && 
-								!"".equals(lockMessage.getHeader()))
-						{
-							final List<MetaDataServerInfo> newMdsServers 
-								= MetaDataServerInfo.fromStringToMetadata(
-									lockMessage.getHeader().trim());
-							if(!newMdsServers.isEmpty())
-							{
-								this.cachedServers.put(command.substring(commandParse[0].length()+1), 
-										newMdsServers);
-							}
-						}
 						writeLockAcquired = true;
-					}				
+						lockedPath = lockedPathBuf.toString();
+					}
 					else
 					{
-						LOGGER.error(lockMessage);
 						continue;
-					}
-										
+					}									
 				}
 				else
 				{
-					lockedPath = null;
+					final StringBuffer lockedPathBuf = new StringBuffer();
+					final boolean lockFullPathStatus = acquireLocks(command, 
+							lockedPathBuf, 
+							false, 
+							false);
+					if(lockFullPathStatus)
+					{
+						writeLockAcquired = true;
+						lockedPath = lockedPathBuf.toString();
+					}
+					else
+					{
+						final boolean lockParent = acquireLocks(command, 
+								lockedPathBuf, 
+								true, 
+								false);
+						if(lockParent)
+						{
+							writeLockAcquired = true;
+							lockedPath = lockedPathBuf.toString();
+						}
+						else
+						{
+							continue;
+						}
+					}
 				}
 				final StringBuffer partialFilePath = new StringBuffer();
 				
@@ -249,7 +311,7 @@ public class CephClient {
 								= MetaDataServerInfo.findClosestServer(command
 								.substring(commandParse[0].length()+1), 
 								partialFilePath, this.cachedServers);
-				
+								
 				final Socket mdsServerSocket = getRequiredMdsSocket(mdsServers, true);
 				// Send command to master
 				
@@ -298,7 +360,10 @@ public class CephClient {
 				LOGGER.info(reply + "\n");
 
 				number++;
-				mdsServerSocket.close();
+				if(mdsServerSocket != this.socket)
+				{
+					mdsServerSocket.close();
+				}				
 				
 				if(readLockAcquired && lockedPath != null)
 				{
