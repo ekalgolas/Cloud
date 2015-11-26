@@ -87,13 +87,13 @@ public class NFSDirectoryOperations implements ICommandOperations {
 	}
 
 	@Override
-	public Message releaseReadLocks(Directory root, String filePath, String... arguements) {
+	public Message releaseReadLocks(Directory root, String filePath, String... arguments) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public Message releaseWriteLocks(Directory root, String filePath, String... arguements) {
+	public Message releaseWriteLocks(Directory root, String filePath, String... arguments) {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -41,4 +41,10 @@ public class Globals {
 	
 	public static final String 					OVERALL_INITIATOR_MDS	= "MDS1";
 	public static final String 					MDS_SERVER_ID_START		= "MDS";
+	
+	//File Lock Commands
+	public static final String 					ACQUIRE_READ_LOCK 		= "ARLCK";
+	public static final String 					ACQUIRE_WRITE_LOCK		= "AWLCK";
+	public static final String 					RELEASE_READ_LOCK 		= "RRLCK";
+	public static final String 					RELEASE_WRITE_LOCK		= "RWLCK";
 }
