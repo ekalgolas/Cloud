@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -13,7 +14,6 @@ import java.util.Scanner;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.google.common.io.Files;
 import commons.AppConfig;
 import commons.dir.Directory;
 import commons.dir.DirectoryParser;
@@ -25,7 +25,13 @@ import commons.dir.DirectoryParser;
  */
 public class NFSDirectoryParser extends DirectoryParser {
 	private final static Logger					LOGGER				= Logger.getLogger(NFSDirectoryParser.class);
+	
+	/**
+	 * Shared NFS folder among all the cluster nodes
+	 */
+	private static final String NFS_SHARE = "/mnt/nfs/cloudsharedc3";
 
+	private static final String ROOT = "root";
 	/**
 	 * Mapping for directory and level of hierarchy
 	 */
@@ -42,15 +48,14 @@ public class NFSDirectoryParser extends DirectoryParser {
 	public static HashMap<String, File> parseText(final int cutLevel)
 			throws IOException {
 		// Get a temp folder
-		final File folder = Files.createTempDir();
-		final File root = new File(folder.getAbsolutePath() + "/root.txt");
-		folder.deleteOnExit();
+
+		final File root = new File(Paths.get(NFS_SHARE, "root.txt").toString());
 
 		// Put root file initially
-		final Directory rootDirectory = new Directory("root", false, new ArrayList<>());
+		final Directory rootDirectory = new Directory(ROOT, false, new ArrayList<>());
 		levelDirectoryMap.put(0, rootDirectory);
 		final HashMap<String, File> fileMap = new HashMap<>();
-		fileMap.put("root", root);
+		fileMap.put(ROOT, root);
 
 		// For each level, parse
 		try (final Scanner scanner = new Scanner(new File(AppConfig.getValue("server.inputFile")))) {
@@ -121,7 +126,7 @@ public class NFSDirectoryParser extends DirectoryParser {
 					}
 
 					// Create a level file with the cut path
-					levelfile = new File(folder.getAbsolutePath() + "/" + filename + ".txt");
+					levelfile = new File(Paths.get(NFS_SHARE, filename + ".txt").toString());
 					if (currentLevel > 0) {
 						// Get the parent path
 						String ppathName = "";
