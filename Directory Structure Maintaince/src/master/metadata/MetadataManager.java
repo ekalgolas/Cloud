@@ -251,64 +251,68 @@ public class MetadataManager {
 
 		HashMap<String,String> pathtoMdsMapping = new HashMap<>();
 		String mdsParititionSetting = AppConfig.getValue("mds.partition.config");
-		String[] mdsPartitions = mdsParititionSetting.split(":");
-		ArrayList<String> paths = new ArrayList<String>();
-		for(String paritition:mdsPartitions)
+		final ArrayList<Directory> cutDirs = new ArrayList<Directory>();
+		if(mdsParititionSetting != null &&
+				!"".equals(mdsParititionSetting))
 		{
-			String[] mdsPathSplit = paritition.split("#");			
-			pathtoMdsMapping.put(mdsPathSplit[1], mdsPathSplit[0]);			
-			paths.add(mdsPathSplit[1]);			
-		}
-				
-		ArrayList<Directory> cutDirs = new ArrayList<Directory>();						
-
-		for (String path : paths) {			
-			StringBuffer partition = new StringBuffer();
-			Directory currentDirNode = MetaDataServerInfo.findClosestNode(path, partition, pathMap);
-			if(currentDirNode == null)
-				currentDirNode = root;
-			Directory parentDirNode = null;
-			String[] pathElem = path.split("/");
-			for(int i = 1; i < pathElem.length; i++) {
-				for (Directory dir : currentDirNode.getChildren()) {
-					if(dir.getName().equalsIgnoreCase(pathElem[i])) {
-						parentDirNode = currentDirNode;
-						currentDirNode = dir;
-						break;
+			String[] mdsPartitions = mdsParititionSetting.split(":");
+			ArrayList<String> paths = new ArrayList<String>();
+			for(String paritition:mdsPartitions)
+			{
+				String[] mdsPathSplit = paritition.split("#");			
+				pathtoMdsMapping.put(mdsPathSplit[1], mdsPathSplit[0]);			
+				paths.add(mdsPathSplit[1]);			
+			}														
+	
+			for (String path : paths) {			
+				StringBuffer partition = new StringBuffer();
+				Directory currentDirNode = MetaDataServerInfo.findClosestNode(path, partition, pathMap);
+				if(currentDirNode == null)
+					currentDirNode = root;
+				Directory parentDirNode = null;
+				String[] pathElem = path.split("/");
+				for(int i = 1; i < pathElem.length; i++) {
+					for (Directory dir : currentDirNode.getChildren()) {
+						if(dir.getName().equalsIgnoreCase(pathElem[i])) {
+							parentDirNode = currentDirNode;
+							currentDirNode = dir;
+							break;
+						}
 					}
 				}
-			}
-			cutDirs.add(currentDirNode);
-			pathMap.put(path, currentDirNode);
-			parentDirNode.getChildren().remove(currentDirNode);
-			Directory childPointer = new Directory(currentDirNode.getName(),					
-					currentDirNode.isFile(), null);
-			Inode childInode = new Inode();
-			ArrayList<MetaDataServerInfo> metaDataList = new ArrayList<>();
-			MetaDataServerInfo primaryMds = new MetaDataServerInfo();
-			primaryMds.setServerName(pathtoMdsMapping.get(path));
-			primaryMds.setIpAddress(clusterMap.get(pathtoMdsMapping.get(path)));
-			primaryMds.setServerType(Globals.PRIMARY_MDS);
-			primaryMds.setStatus(Globals.ALIVE_STATUS);
-			metaDataList.add(primaryMds);
-			if(primaryToReplicaMap.get(primaryMds.getServerName()) != null)
-			{
-				for(String replicaName:primaryToReplicaMap.get(primaryMds.getServerName()))
+				cutDirs.add(currentDirNode);
+				pathMap.put(path, currentDirNode);
+				parentDirNode.getChildren().remove(currentDirNode);
+				Directory childPointer = new Directory(currentDirNode.getName(),					
+						currentDirNode.isFile(), null);
+				Inode childInode = new Inode();
+				ArrayList<MetaDataServerInfo> metaDataList = new ArrayList<>();
+				MetaDataServerInfo primaryMds = new MetaDataServerInfo();
+				primaryMds.setServerName(pathtoMdsMapping.get(path));
+				primaryMds.setIpAddress(clusterMap.get(pathtoMdsMapping.get(path)));
+				primaryMds.setServerType(Globals.PRIMARY_MDS);
+				primaryMds.setStatus(Globals.ALIVE_STATUS);
+				metaDataList.add(primaryMds);
+				if(primaryToReplicaMap.get(primaryMds.getServerName()) != null)
 				{
-					MetaDataServerInfo replicaServer = new MetaDataServerInfo();
-					replicaServer.setServerName(replicaName);
-					replicaServer.setIpAddress(clusterMap.get(replicaName));
-					replicaServer.setServerType(Globals.REPLICA_MDS);
-					replicaServer.setStatus(Globals.ALIVE_STATUS);
-					metaDataList.add(replicaServer);
+					for(String replicaName:primaryToReplicaMap.get(primaryMds.getServerName()))
+					{
+						MetaDataServerInfo replicaServer = new MetaDataServerInfo();
+						replicaServer.setServerName(replicaName);
+						replicaServer.setIpAddress(clusterMap.get(replicaName));
+						replicaServer.setServerType(Globals.REPLICA_MDS);
+						replicaServer.setStatus(Globals.ALIVE_STATUS);
+						metaDataList.add(replicaServer);
+					}
 				}
-			}
-			childInode.setInodeNumber(new Long(-1));
-			childInode.getDataServerInfo().addAll(metaDataList);
-			childPointer.setInode(childInode);
-			parentDirNode.getChildren().add(childPointer);
-		}		
-		
+				childInode.setInodeNumber(new Long(-1));
+				childInode.getDataServerInfo().addAll(metaDataList);
+				childPointer.setInode(childInode);
+				parentDirNode.getChildren().add(childPointer);
+			}		
+			
+		}
+			
 		cutDirs.add(root);
 		pathMap.put("root", root);		
 		pathtoMdsMapping.put("root","MDS1");
@@ -328,6 +332,6 @@ public class MetadataManager {
 		for(String mds:mdsPartitionDetails.keySet())
 		{
 			serializeObject(mdsPartitionDetails.get(mds), mds);
-		}		
+		}				
 	}
 }

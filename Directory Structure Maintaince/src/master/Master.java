@@ -132,7 +132,6 @@ public class Master {
 
 		try {
 			LOGGER.debug("Master Started");
-			System.out.println("Master Started");
 			// Generate metadata for existing directory structure
 			final Directory directory = MetadataManager.generateGFSMetadata();
 //			final HashMap<String, File> fileMap = MetadataManager.generateDHTMetadata();
@@ -148,11 +147,9 @@ public class Master {
 			Globals.gfsMetadataCopy = replica;
 
 			LOGGER.debug("Generating MDS Metadata");
-			System.out.println("Generating MDS Metadata");
 			if(Globals.OVERALL_INITIATOR_MDS.equals(mdsServerId))
 			{
 				LOGGER.debug("Initial MDS");
-				System.out.println("Initial MDS");
 				MetadataManager.generateOverallCephPartition();
 				sendToMDS("MDS2","MDS2");
 				sendToMDS("MDS3","MDS3");

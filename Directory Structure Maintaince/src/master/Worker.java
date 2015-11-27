@@ -80,6 +80,7 @@ public class Worker implements Runnable {
 				try {
 					final ICommandOperations directoryOperations;
 					final GFSMetadataReplicationOperations replicationOperations;
+					LOGGER.debug("listenerType:"+listenerType);
 
 					// Figure out the command and call the operations
 					if (Globals.GFS_MODE.equalsIgnoreCase(listenerType)) {
@@ -88,12 +89,14 @@ public class Worker implements Runnable {
 						root = Globals.gfsMetadataRoot;
 						replica = Globals.gfsMetadataCopy;
 					} else if (Globals.MDS_MODE.equalsIgnoreCase(listenerType)) {
+						LOGGER.debug("Ceph Directory Operation");
 						directoryOperations = new CephDirectoryOperations();
 						replicationOperations = null;
 						final String[] commandParse = command.split(" ");
 						root = MetaDataServerInfo.findClosestNode(command.substring(commandParse[0].length() + 1),
 								partialFilePath,
 								Globals.subTreePartitionList);
+						LOGGER.debug(partialFilePath.toString());
 					} else {
 						directoryOperations = new NFSDirectoryOperations();
 						replicationOperations = null;
@@ -153,6 +156,7 @@ public class Worker implements Runnable {
 		Message reply = null;
 		String argument = "";
 		try {
+			LOGGER.debug("partialFilePath:"+partialFilePath);
 			if (command.startsWith(CommandsSupported.LSL.name())) {
 				// Command line parameter (directory name) start from index '4'
 				// in the received string
@@ -175,7 +179,7 @@ public class Worker implements Runnable {
 					replicationOperations.replicateMkdir(root, replica, argument);
 				}
 
-				logState(command, root);
+				//logState(command, root);
 			} else if (command.startsWith(CommandsSupported.TOUCH.name())) {
 				// Command line parameter (directory name) start from index '6'
 				// in the received string
@@ -186,7 +190,7 @@ public class Worker implements Runnable {
 					replicationOperations.replicateTouch(root, replica, argument);
 				}
 
-				logState(command, root);
+				//logState(command, root);
 			} else if (command.startsWith(CommandsSupported.RMDIRF.name())) {
 				// Command line parameter (directory name) start from index '7'
 				// in the received string
@@ -198,7 +202,7 @@ public class Worker implements Runnable {
 					replicationOperations.replicateRmdir(replica, argument);
 				}
 
-				logState(command, root);
+				//logState(command, root);
 			} else if (command.startsWith(CommandsSupported.RMDIR.name())) {
 				// Command line parameter (directory name) start from index '6'
 				// in the received string
@@ -210,7 +214,7 @@ public class Worker implements Runnable {
 					replicationOperations.replicateRmdir(replica, argument);
 				}
 
-				logState(command, root);
+				//logState(command, root);
 			} else if (command.startsWith(CommandsSupported.CD.name())) {
 				// Command line parameter (directory name) start from index '3'
 				// in the received string
@@ -222,9 +226,11 @@ public class Worker implements Runnable {
 			} 
 			else if(command.startsWith(Globals.ACQUIRE_READ_LOCK))
 			{
-				// Command line parameter (directory name) start from index '5'
+				LOGGER.debug("Calling Acquire Read lock");
+				// Command line parameter (directory name) start from index '6'
 				// in the received string
-				argument = command.substring(5);
+				argument = command.substring(6);
+				LOGGER.debug("argument:"+argument);
 
 				reply = directoryOperations.acquireReadLocks(root, 
 									argument, 
@@ -232,9 +238,10 @@ public class Worker implements Runnable {
 			}
 			else if(command.startsWith(Globals.ACQUIRE_WRITE_LOCK))
 			{
-				// Command line parameter (directory name) start from index '5'
+				LOGGER.debug("Calling Acquire Write lock");
+				// Command line parameter (directory name) start from index '6'
 				// in the received string
-				argument = command.substring(5);
+				argument = command.substring(6);
 
 				reply = directoryOperations.acquireWriteLocks(root, 
 									argument, 
@@ -242,9 +249,9 @@ public class Worker implements Runnable {
 			}
 			else if(command.startsWith(Globals.RELEASE_READ_LOCK))
 			{
-				// Command line parameter (directory name) start from index '5'
+				// Command line parameter (directory name) start from index '6'
 				// in the received string
-				argument = command.substring(5);
+				argument = command.substring(6);
 
 				reply = directoryOperations.releaseReadLocks(root, 
 									argument, 
@@ -252,9 +259,9 @@ public class Worker implements Runnable {
 			}
 			else if(command.startsWith(Globals.RELEASE_WRITE_LOCK))
 			{
-				// Command line parameter (directory name) start from index '5'
+				// Command line parameter (directory name) start from index '6'
 				// in the received string
-				argument = command.substring(5);
+				argument = command.substring(6);
 
 				reply = directoryOperations.releaseWriteLocks(root, 
 									argument, 
@@ -271,6 +278,7 @@ public class Worker implements Runnable {
 			directoryOperations.releaseParentReadLocks(root, argument);
 		}
 
+		LOGGER.debug(reply);
 		return reply;
 	}
 
