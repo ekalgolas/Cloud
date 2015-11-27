@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
 import java.util.List;
@@ -256,9 +257,17 @@ public class CephClient {
 				}
 				else if(command.startsWith(CommandsSupported.CD.name()))
 				{
-					final String argument = command.substring(3);
-					if(!argument.startsWith(ROOT)) {
-						command = new String(Paths.get(pwd, argument).toString());
+					if(command.length() > 2)
+					{
+						final String argument = command.substring(3);
+						if(!argument.startsWith(ROOT)) {
+							command = CommandsSupported.CD.name() + " " 
+									+Paths.get(pwd, argument).toString();
+						}
+					}
+					else
+					{
+						command = CommandsSupported.CD.name() + " " + ROOT; 
 					}
 				}
 				else if(command.startsWith(CommandsSupported.PWD.name())) 
@@ -268,6 +277,33 @@ public class CephClient {
 					number++;
 					continue;
 				}
+				else
+				{
+					final String[] argument = command.split(" ");
+					LOGGER.debug("argument:"+Arrays.toString(argument));
+					if(argument != null && argument.length >1)
+					{
+						if(!argument[1].startsWith(ROOT))
+						{
+							command = argument[0]+" "
+										+Paths.get(pwd, command.substring(argument[0].length()+1)).toString();
+							LOGGER.debug("appended command:"+command);
+						}
+					}
+					else if((command.startsWith(CommandsSupported.LS.name()) ||
+							command.startsWith(CommandsSupported.LSL.name())) && 
+							argument != null && (argument.length == 1))
+					{
+						command = argument[0] + " " + pwd;
+					}
+					else
+					{
+						LOGGER.error(new Message("Argument Expected for the command "+ command,
+									"",
+									CompletionStatusCode.ERROR.name()));
+					}
+				}
+					
 				
 				final String[] commandParse = command.split(" ");
 				

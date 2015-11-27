@@ -12,6 +12,8 @@ import java.util.Date;
 import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlElementDecl.GLOBAL;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -607,6 +609,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 			String... arguments) 
 			throws InvalidPropertiesFormatException 
 	{
+		LOGGER.debug("Processing TOUCH");
 		// Extract the relative path for the current partition.
 		String searchablePath;
 		if (arguments != null && 
@@ -623,6 +626,9 @@ public class CephDirectoryOperations implements ICommandOperations {
 		final String[] paths = searchablePath.split("/");
 		final String name = paths[paths.length - 1];
 		final String dirPath = searchablePath.substring(0, searchablePath.length() - name.length() - 1);
+		
+		LOGGER.debug("name:"+name);
+		LOGGER.debug("dirPath:"+dirPath);
 		
 		//Check this is a primary to replica update command.
 		boolean primaryMessage = false;
@@ -1614,6 +1620,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 			else
 			{
 				toLockDirs.add(root);
+				resultCode.append(Globals.PATH_FOUND);
 			}
 			
 			if(!toLockDirs.isEmpty())
@@ -1743,6 +1750,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 			else
 			{
 				toLockDirs.add(root);
+				resultCode.append(Globals.PATH_FOUND);
 			}
 			if(!toLockDirs.isEmpty())
 			{
@@ -1896,6 +1904,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 			else
 			{
 				toUnLockDirs.add(root);
+				resultCode.append(Globals.PATH_FOUND);
 			}
 			if(!toUnLockDirs.isEmpty())
 			{
@@ -1993,6 +2002,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 			else
 			{
 				toUnLockDirs.add(root);
+				resultCode.append(Globals.PATH_FOUND);
 			}
 			if(!toUnLockDirs.isEmpty())
 			{
