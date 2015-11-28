@@ -179,7 +179,7 @@ public class Worker implements Runnable {
 					replicationOperations.replicateMkdir(root, replica, argument);
 				}
 
-				//logState(command, root);
+				logState(command, root);
 			} else if (command.startsWith(CommandsSupported.TOUCH.name())) {
 				// Command line parameter (directory name) start from index '6'
 				// in the received string
@@ -190,7 +190,7 @@ public class Worker implements Runnable {
 					replicationOperations.replicateTouch(root, replica, argument);
 				}
 
-				//logState(command, root);
+				logState(command, root);
 			} else if (command.startsWith(CommandsSupported.RMDIRF.name())) {
 				// Command line parameter (directory name) start from index '7'
 				// in the received string
@@ -202,7 +202,7 @@ public class Worker implements Runnable {
 					replicationOperations.replicateRmdir(replica, argument);
 				}
 
-				//logState(command, root);
+				logState(command, root);
 			} else if (command.startsWith(CommandsSupported.RMDIR.name())) {
 				// Command line parameter (directory name) start from index '6'
 				// in the received string
@@ -214,7 +214,7 @@ public class Worker implements Runnable {
 					replicationOperations.replicateRmdir(replica, argument);
 				}
 
-				//logState(command, root);
+				logState(command, root);
 			} else if (command.startsWith(CommandsSupported.CD.name())) {
 				// Command line parameter (directory name) start from index '3'
 				// in the received string

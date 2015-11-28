@@ -149,10 +149,11 @@ public class CephDirectoryOperations implements ICommandOperations {
 				final ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
 				outputStream.writeObject(new Message(command + " " + filePath,
 									messageHeader));
-				outputStream.flush();
+				outputStream.flush();				
 
 				// Wait and read the reply
-				final Message message = (Message) inputStream.readObject();				
+				final Message message = (Message) inputStream.readObject();
+				outputStream.close();
 				socket.close();
 				return message;
 			} 
@@ -331,7 +332,6 @@ public class CephDirectoryOperations implements ICommandOperations {
 		}
 		catch(Exception exp)
 		{
-			exp.printStackTrace();
 			return new Message(exp.getLocalizedMessage()+" error occurred",
 					"",
 					CompletionStatusCode.ERROR.name());
@@ -901,8 +901,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 				{
 					final MetaDataServerInfo metadata = getRequiredMdsInfo(child.getInode(), true);
 					if(child.getInode().getInodeNumber() != null &&
-							(metadata != null && 
-							Master.getMdsServerIpAddress().equals(metadata.getIpAddress())) &&
+							((primaryMessage) || (metadata != null && 
+							Master.getMdsServerIpAddress().equals(metadata.getIpAddress()))) &&
 							(child.isFile() || child.isEmptyDirectory()))
 					{
 						localEmptyChildDirs.add(child);
@@ -917,7 +917,6 @@ public class CephDirectoryOperations implements ICommandOperations {
 					}
 				}
 				removeDir.getChildren().removeAll(localEmptyChildDirs);
-				LOGGER.debug(removeDir);
 				for(final Directory child:localNonEmptyChildDirs)
 				{
 					final String fullPathchild 
@@ -932,7 +931,6 @@ public class CephDirectoryOperations implements ICommandOperations {
 						CompletionStatusCode.SUCCESS.name()
 							.equals(localStatus.getCompletionCode().toString().trim()));
 				}
-				LOGGER.debug(removeDir);
 				for(final String path:Globals.subTreePartitionList.keySet())
 				{				
 					if(path.startsWith(fullPath))
@@ -974,7 +972,10 @@ public class CephDirectoryOperations implements ICommandOperations {
 						}
 					}
 				}
-				LOGGER.debug(removeDir);
+				else
+				{
+					removeDir.getChildren().removeAll(remoteChildDirs);
+				}
 				if(removeDir.isEmptyDirectory())
 				{
 					if(parentDir != null)
@@ -1008,7 +1009,6 @@ public class CephDirectoryOperations implements ICommandOperations {
 		}
 		catch(Exception exp)
 		{
-			exp.printStackTrace();
 			return new Message(exp.getLocalizedMessage(),
 					"",
 					CompletionStatusCode.ERROR.name());

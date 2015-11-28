@@ -15,7 +15,9 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import commons.AppConfig;
+import commons.CompletionStatusCode;
 import commons.Globals;
+import commons.Message;
 import commons.dir.Directory;
 
 /**
@@ -114,7 +116,9 @@ public class Master {
 		}
 		catch(final IOException ioexp)
 		{
-			ioexp.printStackTrace();
+			LOGGER.error(new Message(ioexp.getLocalizedMessage(),
+					"",
+					CompletionStatusCode.ERROR.name()));
 		}
 	}
 
