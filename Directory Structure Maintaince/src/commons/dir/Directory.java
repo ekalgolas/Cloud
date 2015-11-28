@@ -3,6 +3,7 @@ package commons.dir;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
+import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
@@ -68,6 +69,16 @@ public class Directory implements Serializable, Cloneable {
      * Write lock on the directory
      */
 	private WriteLock writeLock;
+	
+	/**
+	 * Set of client having read lock on this directory
+	 */
+	private final TreeSet<String> readLockClients;
+	
+	/**
+	 * Client having write lock on this directory
+	 */
+	private String writeLockClient;
 
 	/**
 	 * Constructor
@@ -84,6 +95,8 @@ public class Directory implements Serializable, Cloneable {
 		this.isFile = isFile;
 		this.children = children;
 		setupLocks();
+		readLockClients = new TreeSet<>();
+		writeLockClient = null;
 	}
 
 	/**
@@ -108,6 +121,8 @@ public class Directory implements Serializable, Cloneable {
 		this.modifiedTimeStamp = modifiedTimeStamp;
 		this.size = size;
 		setupLocks();
+		readLockClients = new TreeSet<>();
+		writeLockClient = null;
 	}
 
 	/**
@@ -308,4 +323,28 @@ public class Directory implements Serializable, Cloneable {
         return writeLock;
     }
 
+    /**
+     * Get the set of clients having lock on this directory
+     * @return set of client ids
+     */
+	public TreeSet<String> getReadLockClients() {
+		return readLockClients;
+	}	
+
+	/**
+	 * Get the id of the client having write lock on this directory
+	 * @return
+	 */
+	public String getWriteLockClient() {
+		return writeLockClient;
+	}
+
+	/**
+	 * Set the client ids having write lock on this directory
+	 * @param writeLockClient
+	 */
+	public void setWriteLockClient(String writeLockClient) {
+		this.writeLockClient = writeLockClient;
+	}
+    
 }

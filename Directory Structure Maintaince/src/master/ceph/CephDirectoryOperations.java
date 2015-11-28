@@ -12,8 +12,6 @@ import java.util.Date;
 import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlElementDecl.GLOBAL;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -80,7 +78,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 					if (child.getName()
 							.equals(path)) {
 						root = child;
-						found = true;					
+						found = true;	
+						countLevel++;
 						Long operationCounter = child.getOperationCounter();
 						operationCounter++;
 						child.setOperationCounter(operationCounter);
@@ -249,8 +248,9 @@ public class CephDirectoryOperations implements ICommandOperations {
 							if(isDetailed) {
 							    output.addRow(type,
 							            child.getName(),
-							            child.getSize().toString(),
-							            child.getModifiedTimeStamp().toString());
+							            (child.getSize() == null)?"0":child.getSize().toString(),
+							            (child.getModifiedTimeStamp() == null)?
+							            		"0":child.getModifiedTimeStamp().toString());
 							}
 							else
 							{
@@ -1463,57 +1463,7 @@ public class CephDirectoryOperations implements ICommandOperations {
         // TODO Auto-generated method stub
         return null;
     }
-    
-    private void unlockAllDirs(final List<Directory> directories,
-    		final boolean readLock)
-    {
-    	if(directories != null)
-    	{
-			for(final Directory dir:directories)
-			{
-				if(readLock)
-				{
-					dir.getReadLock().unlock();
-				}
-				else
-				{
-					dir.getWriteLock().unlock();
-				}
-			}
-    	}
-    }
-    
-    private List<Directory> lockAllDirs(final List<Directory> directories,
-    		final boolean readLock)
-    {
-    	final List<Directory> lockedDirs = new ArrayList<>();
-    	boolean status = true;
-    	if(directories != null)
-    	{
-    		for(final Directory dir:directories)
-    		{
-    			if(readLock)
-    			{
-    				status &= dir.getReadLock().tryLock();
-    			}
-    			else
-    			{
-    				status &= dir.getWriteLock().tryLock();
-    			}
-    			
-    			if(status)
-    			{
-    				lockedDirs.add(dir);
-    			}
-    			else
-    			{
-    				break;
-    			}    				
-    		}
-    	}    	
-    	return lockedDirs;
-    }
-    
+     
     /**
 	 * Performs a tree search from the {@literal root} on the directory
 	 * structure corresponding to the {@literal filePath}
@@ -1558,11 +1508,12 @@ public class CephDirectoryOperations implements ICommandOperations {
 			if(curNode.getChildren() != null)
 			{
 				// Check if the path corresponds to any child in this directory
-				for (final Directory child : curNode.getChildren()) {					
+				for (final Directory child : curNode.getChildren()) {	
 					if (child.getName()
 							.equals(path)) {
 						curNode = child;
-						found = true;			
+						found = true;		
+						countLevel++;
 						dirsInPath.add(curNode);
 						Long operationCounter = child.getOperationCounter();
 						operationCounter++;
@@ -1608,13 +1559,16 @@ public class CephDirectoryOperations implements ICommandOperations {
 			LOGGER.debug("searchablePath:"+searchablePath);
 			final List<Directory> toLockDirs = new ArrayList<>();
 			final StringBuffer resultCode = new StringBuffer();
+			
+			final String clientId = arguments[arguments.length -1];
+			
 			if(searchablePath != null && 
 					!"".equals(searchablePath) &&
 					!"root".equals(searchablePath))
 			{
 				toLockDirs.addAll(fetchDirsInPath(
 									root, 
-									filePath, 
+									searchablePath, 
 									resultCode));
 			}
 			else
@@ -1630,16 +1584,13 @@ public class CephDirectoryOperations implements ICommandOperations {
 				final String resultCodeValue = resultCode.toString().trim();
 				if(lastNodeInode.getInodeNumber() != null &&
 						Globals.PATH_FOUND.equals(resultCodeValue))
-				{
-					final List<Directory> lockedDirs = lockAllDirs(toLockDirs, true);
-					if(lockedDirs == null ||
-							(lockedDirs.size() != toLockDirs.size()))
+				{				
+					final boolean lockStatus 
+						= CephDirectoryOperations.lockDirectories(toLockDirs, 
+																	null, 
+																	clientId);
+					if(!lockStatus)
 					{
-						if(lockedDirs != null &&
-								!lockedDirs.isEmpty())
-						{
-							unlockAllDirs(lockedDirs, true);
-						}
 						return new Message("Not able to read lock all the directories in "+ filePath,
 								lastNodeInode.getDataServerInfo().toString(),
 								CompletionStatusCode.ERROR.name());
@@ -1654,15 +1605,12 @@ public class CephDirectoryOperations implements ICommandOperations {
 								Globals.PARTIAL_PATH_FOUND.equals(resultCodeValue)))
 				{
 					toLockDirs.remove(toLockDirs.size() -1);
-					final List<Directory> lockedDirs = lockAllDirs(toLockDirs, true);
-					if(lockedDirs == null ||
-							(lockedDirs.size() != toLockDirs.size()))
+					final boolean lockStatus 
+						= CephDirectoryOperations.lockDirectories(toLockDirs, 
+																	null, 
+																	clientId);
+					if(!lockStatus)
 					{
-						if(lockedDirs != null &&
-								!lockedDirs.isEmpty())
-						{
-							unlockAllDirs(lockedDirs, true);
-						}
 						return new Message("Not able to read lock all the directories in "+ filePath,
 								lastNodeInode.getDataServerInfo().toString(),
 								CompletionStatusCode.ERROR.name());
@@ -1675,16 +1623,19 @@ public class CephDirectoryOperations implements ICommandOperations {
 									filePath, 
 									mdsServer, 
 									"");
+						
 						if(remoteStatus != null &&
-								CompletionStatusCode.SUCCESS
+								CompletionStatusCode.SUCCESS.name()
 									.equals(remoteStatus.getCompletionCode().toString().trim()))
 						{
 							return remoteStatus;
 						}
-						if(lockedDirs != null &&
-								!lockedDirs.isEmpty())
+						if(toLockDirs != null && 
+								!toLockDirs.isEmpty())
 						{
-							unlockAllDirs(lockedDirs, true);
+							CephDirectoryOperations.unlockDirectories(toLockDirs, 
+																		null, 
+																		clientId);
 						}
 						return new Message("Not able to read lock all the nodes in "+ filePath,
 								remoteStatus.getHeader(),
@@ -1736,6 +1687,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 				searchablePath = filePath;
 			}
 			
+			final String clientId = arguments[arguments.length -1];
+			
 			final List<Directory> toLockDirs = new ArrayList<>();
 			final StringBuffer resultCode = new StringBuffer();
 			if(searchablePath != null && 
@@ -1744,7 +1697,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 			{
 				toLockDirs.addAll(fetchDirsInPath(
 									root, 
-									filePath, 
+									searchablePath, 
 									resultCode));
 			}
 			else
@@ -1759,44 +1712,21 @@ public class CephDirectoryOperations implements ICommandOperations {
 				final String resultCodeValue = resultCode.toString().trim();
 				if(lastNodeInode.getInodeNumber() != null &&
 						Globals.PATH_FOUND.equals(resultCodeValue))
-				{
-					final List<Directory> toWriteLockDirs = new ArrayList<>();
-					toWriteLockDirs.add(toLockDirs.remove(toLockDirs.size() -1));
+				{				
 					if(!toLockDirs.isEmpty())
 					{
-						final List<Directory> readLockedDirs = lockAllDirs(toLockDirs, true);					
-						if(readLockedDirs == null ||
-								(readLockedDirs.size() != toLockDirs.size()))
+						final Directory writeLockDir = toLockDirs.remove(toLockDirs.size() -1);
+						final boolean lockStatus 
+							= CephDirectoryOperations.lockDirectories(toLockDirs, 
+																		writeLockDir, 
+																		clientId);
+						if(!lockStatus)
 						{
-							if(readLockedDirs != null &&
-									!readLockedDirs.isEmpty())
-							{
-								unlockAllDirs(readLockedDirs, true);
-							}
-							return new Message("Not able to read lock all the parent directories in "+ filePath,
-									lastNodeInode.getDataServerInfo().toString(),
-									CompletionStatusCode.ERROR.name());
-						}						
-					}
-					
-					if(!toWriteLockDirs.isEmpty())
-					{
-						final List<Directory> writeLockedDirs 
-								= lockAllDirs(toWriteLockDirs, false);
-						if(writeLockedDirs == null ||
-								(writeLockedDirs.size() != toWriteLockDirs.size()))
-						{
-							if(toLockDirs != null && 
-									!toLockDirs.isEmpty())
-							{
-								unlockAllDirs(toLockDirs, true);
-							}
-							
-							return new Message("Not able to write lock the "+ filePath,
+							return new Message("Not able to complete write lock the "+ filePath,
 									lastNodeInode.getDataServerInfo().toString(),
 									CompletionStatusCode.ERROR.name());
 						}
-					}
+					}					
 					
 					return new Message(filePath + " write locked successfully",
 							lastNodeInode.getDataServerInfo().toString(),
@@ -1807,17 +1737,13 @@ public class CephDirectoryOperations implements ICommandOperations {
 								Globals.PARTIAL_PATH_FOUND.equals(resultCodeValue)))
 				{
 					toLockDirs.remove(toLockDirs.size() -1);
-					final List<Directory> lockedDirs = lockAllDirs(toLockDirs, true);
-					if(lockedDirs == null ||
-							(lockedDirs.size() != toLockDirs.size()))
+					final boolean lockStatus 
+						= CephDirectoryOperations.lockDirectories(toLockDirs, 
+																	null, 
+																	clientId);
+					if(!lockStatus)
 					{
-						if(lockedDirs != null &&
-								!lockedDirs.isEmpty())
-						{
-							unlockAllDirs(lockedDirs, true);
-						}
-						return new Message("Not able to read lock the parent directories in "
-											+ filePath,
+						return new Message("Not able to write lock all the directories in "+ filePath,
 								lastNodeInode.getDataServerInfo().toString(),
 								CompletionStatusCode.ERROR.name());
 					}
@@ -1830,15 +1756,17 @@ public class CephDirectoryOperations implements ICommandOperations {
 									mdsServer, 
 									"");
 						if(remoteStatus != null &&
-								CompletionStatusCode.SUCCESS
+								CompletionStatusCode.SUCCESS.name()
 									.equals(remoteStatus.getCompletionCode().toString().trim()))
 						{
 							return remoteStatus;
 						}
-						if(lockedDirs != null &&
-								!lockedDirs.isEmpty())
+						if(toLockDirs != null && 
+								!toLockDirs.isEmpty())
 						{
-							unlockAllDirs(lockedDirs, true);
+							CephDirectoryOperations.unlockDirectories(toLockDirs, 
+																		null, 
+																		clientId);
 						}
 						return new Message("Not able to write lock the directory in "+ filePath,
 								remoteStatus.getHeader(),
@@ -1890,6 +1818,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 				searchablePath = filePath;
 			}
 			
+			final String clientId = arguments[arguments.length -1];
+			
 			final List<Directory> toUnLockDirs = new ArrayList<>();
 			final StringBuffer resultCode = new StringBuffer();
 			if(searchablePath != null && 
@@ -1898,7 +1828,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 			{
 				toUnLockDirs.addAll(fetchDirsInPath(
 									root, 
-									filePath, 
+									searchablePath, 
 									resultCode));
 			}
 			else
@@ -1914,7 +1844,9 @@ public class CephDirectoryOperations implements ICommandOperations {
 				if(lastNodeInode.getInodeNumber() != null &&
 						Globals.PATH_FOUND.equals(resultCodeValue))
 				{
-					unlockAllDirs(toUnLockDirs, true);					
+					CephDirectoryOperations.unlockDirectories(toUnLockDirs, 
+																null, 
+																clientId);
 					
 					return new Message(filePath + " read unlocked successfully",
 							lastNodeInode.getDataServerInfo().toString(),
@@ -1925,7 +1857,9 @@ public class CephDirectoryOperations implements ICommandOperations {
 								Globals.PARTIAL_PATH_FOUND.equals(resultCodeValue)))
 				{
 					toUnLockDirs.remove(toUnLockDirs.size() -1);
-					unlockAllDirs(toUnLockDirs, true);
+					CephDirectoryOperations.unlockDirectories(toUnLockDirs, 
+																null, 
+																clientId);
 					final MetaDataServerInfo mdsServer = getRequiredMdsInfo(lastNodeInode, 
 															true);
 					final Message remoteStatus = remoteExecCommand(Globals.RELEASE_READ_LOCK, 
@@ -1933,7 +1867,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 														mdsServer, 
 														"");
 					if(remoteStatus != null &&
-							CompletionStatusCode.SUCCESS
+							CompletionStatusCode.SUCCESS.name()
 								.equals(remoteStatus.getCompletionCode().toString().trim()))
 					{
 						return remoteStatus;
@@ -1988,6 +1922,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 				searchablePath = filePath;
 			}
 			
+			final String clientId = arguments[arguments.length -1];
+			
 			final List<Directory> toUnLockDirs = new ArrayList<>();
 			final StringBuffer resultCode = new StringBuffer();
 			if(searchablePath != null && 
@@ -1996,7 +1932,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 			{
 				toUnLockDirs.addAll(fetchDirsInPath(
 									root, 
-									filePath, 
+									searchablePath, 
 									resultCode));
 			}
 			else
@@ -2012,17 +1948,10 @@ public class CephDirectoryOperations implements ICommandOperations {
 				if(lastNodeInode.getInodeNumber() != null &&
 						Globals.PATH_FOUND.equals(resultCodeValue))
 				{
-					final List<Directory> toWriteUnLockDirs = new ArrayList<>();
-					toWriteUnLockDirs.add(toUnLockDirs.remove(toUnLockDirs.size() -1));
-					if(!toUnLockDirs.isEmpty())
-					{
-						unlockAllDirs(toUnLockDirs, true);										
-					}
-					
-					if(!toWriteUnLockDirs.isEmpty())
-					{
-						unlockAllDirs(toWriteUnLockDirs, false);						
-					}
+					final Directory writeUnlockDir = toUnLockDirs.remove(toUnLockDirs.size() -1);
+					CephDirectoryOperations.unlockDirectories(toUnLockDirs, 
+																writeUnlockDir, 
+																clientId);
 					
 					return new Message(filePath + " write unlocked successfully",
 							lastNodeInode.getDataServerInfo().toString(),
@@ -2039,11 +1968,13 @@ public class CephDirectoryOperations implements ICommandOperations {
 								mdsServer, 
 								"");
 					if(remoteStatus != null &&
-							CompletionStatusCode.SUCCESS
+							CompletionStatusCode.SUCCESS.name()
 								.equals(remoteStatus.getCompletionCode().toString().trim()))
 					{
 						toUnLockDirs.remove(toUnLockDirs.size() -1);
-						unlockAllDirs(toUnLockDirs, true);
+						CephDirectoryOperations.unlockDirectories(toUnLockDirs, 
+																	null, 
+																	clientId);
 						return remoteStatus;
 					}					
 					return new Message("Not able to unlock the write lock in the directory "+ filePath,
@@ -2078,5 +2009,81 @@ public class CephDirectoryOperations implements ICommandOperations {
 				"",
 				CompletionStatusCode.ERROR.name());
 	}
+	
+	private static synchronized boolean lockDirectories(final List<Directory> readLockDirs,
+			final Directory writeLockDir,
+			final String clientId)
+	{
+		boolean finalStatus = true;
+		if(readLockDirs != null && !readLockDirs.isEmpty())
+		{
+			for(final Directory dir:readLockDirs)
+			{				
+				if(dir.getWriteLockClient() == null)
+				{
+					dir.getReadLockClients().add(clientId);
+					finalStatus &= true;
+				}
+				else
+				{
+					finalStatus = false;
+					break;
+				}
+			}
+		}
+		if(!finalStatus)
+		{
+			if(readLockDirs != null)
+			{
+				for(final Directory dir:readLockDirs)
+				{				
+					dir.getReadLockClients().remove(clientId);
+				}
+			}
+		}
+		if(finalStatus && writeLockDir != null)
+		{
+			if(writeLockDir.getWriteLockClient() == null)
+			{
+				writeLockDir.setWriteLockClient(clientId);
+				finalStatus &= true;
+			}
+			else
+			{
+				if(readLockDirs != null)
+				{
+					for(final Directory dir:readLockDirs)
+					{				
+						dir.getReadLockClients().remove(clientId);
+					}
+				}
+				finalStatus = false;
+			}
+		}
+		return finalStatus;
+	}
     
+	private static synchronized boolean unlockDirectories(final List<Directory> readLockDirs,
+			final Directory writeUnLockDir,
+			final String clientId)
+	{
+		boolean finalStatus = true;
+		if(readLockDirs != null && !readLockDirs.isEmpty())
+		{
+			for(final Directory dir:readLockDirs)
+			{				
+				dir.getReadLockClients().add(clientId);
+				finalStatus &= true;
+			}
+		}
+		if(finalStatus && writeUnLockDir != null)
+		{
+			if(writeUnLockDir.getWriteLockClient() != null &&
+					writeUnLockDir.getWriteLockClient().equals(clientId))
+			{
+				writeUnLockDir.setWriteLockClient(null);
+			}			
+		}
+		return finalStatus;
+	}
 }

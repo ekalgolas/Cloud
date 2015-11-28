@@ -37,6 +37,7 @@ public class CephClient {
 	private final static Logger			LOGGER	= Logger.getLogger(CephClient.class);
 	private static final String         ROOT    = "root";
 	private static String               pwd     = ROOT;
+	private final String 				clientId;
 	
 	/**
 	 * Constructor
@@ -63,6 +64,7 @@ public class CephClient {
 		socket = new Socket(AppConfig.getValue("client.masterIp"), Integer.parseInt(AppConfig.getValue("client.masterPort")));
 		outputStream = new ObjectOutputStream(socket.getOutputStream());
 		inputStream = new ObjectInputStream(socket.getInputStream());
+		clientId = AppConfig.getValue("client.id");
 	}
 	
 	/**
@@ -176,12 +178,13 @@ public class CephClient {
 			else
 			{
 				lockedPath.append(executableCommand);
-			}
+			}		
 			
 			// Send command to master					
 			outputStream.writeObject(new Message(
 					(isReadLock?Globals.ACQUIRE_READ_LOCK:Globals.ACQUIRE_WRITE_LOCK)
-					+" "+lockedPath.toString()));
+					+" "+lockedPath.toString(),
+					clientId));
 			outputStream.flush();
 			
 			// Wait and read the reply
@@ -355,17 +358,21 @@ public class CephClient {
 							lockedPathBuf, 
 							false, 
 							false);
+					LOGGER.debug("lockFullPathStatus:"+lockFullPathStatus);
 					if(lockFullPathStatus)
 					{
 						writeLockAcquired = true;
 						lockedPath = lockedPathBuf.toString();
 					}
 					else
-					{
+					{						
+						lockedPathBuf.delete(0, lockedPathBuf.length());
 						final boolean lockParent = acquireLocks(command, 
 								lockedPathBuf, 
 								true, 
 								false);
+						LOGGER.debug("lockParent:"+lockParent);
+						LOGGER.debug("lockedPathBuf:"+lockedPathBuf.toString());
 						if(lockParent)
 						{
 							writeLockAcquired = true;
@@ -476,13 +483,15 @@ public class CephClient {
 				if(readLockAcquired && lockedPath != null)
 				{
 					outputStream.writeObject(new Message(Globals.RELEASE_READ_LOCK+" "+
-										lockedPath));
+										lockedPath,
+										clientId));
 					outputStream.flush();
 				}
 				else if(writeLockAcquired && lockedPath != null)
 				{
 					outputStream.writeObject(new Message(Globals.RELEASE_WRITE_LOCK+" "+
-							lockedPath));
+							lockedPath,
+							clientId));
 					outputStream.flush();
 				}
 				

@@ -15,7 +15,9 @@ import master.nfs.NFSDirectoryParser;
 import org.apache.log4j.Logger;
 
 import commons.AppConfig;
+import commons.CompletionStatusCode;
 import commons.Globals;
+import commons.Message;
 import commons.dir.Directory;
 import commons.dir.DirectoryParser;
 
@@ -144,12 +146,15 @@ public class MetadataManager {
 	         fileIn.close();
 	      }catch(IOException i)
 	      {
-	         i.printStackTrace();
+	    	  LOGGER.error(new Message(i.getLocalizedMessage(),
+		    			 "",
+		    			 CompletionStatusCode.ERROR.name()));
 	         return null;
 	      }catch(ClassNotFoundException c)
 	      {
-	         System.out.println("Object class not found");
-	         c.printStackTrace();
+	    	 LOGGER.error(new Message(c.getLocalizedMessage(),
+	    			 "",
+	    			 CompletionStatusCode.ERROR.name()));
 	         return null;
 	      }
 	      return mdsRoots;

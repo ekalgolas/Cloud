@@ -42,6 +42,7 @@ public class DirectoryParser {
 	public static Directory parseText(final String filePath) {
 		// Create the root directory first
 		final Directory directory = new Directory("root", false, new ArrayList<>());
+		directory.setSize(0L);
 		levelDirectoryMap.put(0, directory);
 
 		try (final Scanner scanner = new Scanner(new File(filePath))) {
