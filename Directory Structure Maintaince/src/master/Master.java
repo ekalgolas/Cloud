@@ -146,7 +146,6 @@ public class Master {
 
 			LOGGER.debug("Generating MDS Metadata");
 			generateMDSMetadata();
-
 		} catch (ClassNotFoundException | IOException e) {
 			LOGGER.error("", e);
 		}

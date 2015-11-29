@@ -26,17 +26,16 @@ import commons.dir.DirectoryParser;
 public class NFSDirectoryParser extends DirectoryParser {
 	private final static Logger					LOGGER				= Logger.getLogger(NFSDirectoryParser.class);
 	
-	/**
-	 * Shared NFS folder among all the cluster nodes
-	 */
-	private static final String NFS_SHARE = "/mnt/nfs/cloudsharedc3";
-
 	private static final String ROOT = "root";
+
+	private static final String NFS_FOLDER = "/Users/sahith/Desktop/cloudsharedc3";
+
 	/**
 	 * Mapping for directory and level of hierarchy
 	 */
 	private static HashMap<Integer, Directory>	levelDirectoryMap	= new HashMap<>();
 
+	
 	/**
 	 * Parses the pre-configured input file in the server to construct nfs directory structure
 	 *
@@ -49,7 +48,11 @@ public class NFSDirectoryParser extends DirectoryParser {
 			throws IOException {
 		// Get a temp folder
 
-		final File root = new File(Paths.get(NFS_SHARE, "root.txt").toString());
+		//final File folder = Files.createTempDir();
+		
+		final File root = new File(Paths.get(NFS_FOLDER, "root.txt").toString());
+		//folder.deleteOnExit();
+
 
 		// Put root file initially
 		final Directory rootDirectory = new Directory(ROOT, false, new ArrayList<>());
@@ -126,7 +129,11 @@ public class NFSDirectoryParser extends DirectoryParser {
 					}
 
 					// Create a level file with the cut path
-					levelfile = new File(Paths.get(NFS_SHARE, filename + ".txt").toString());
+
+					levelfile = new File(Paths.get(NFS_FOLDER, filename + ".txt").toString());
+//					if(!isFile)
+//						appendRecord(directory, directory.getName(), levelfile);
+					
 					if (currentLevel > 0) {
 						// Get the parent path
 						String ppathName = "";
@@ -206,8 +213,12 @@ public class NFSDirectoryParser extends DirectoryParser {
 			final File file) {
 		try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file, true)))) {
 			out.print(path);
+			if(!directory.isFile()){
+				out.print("/");
+			}
 			out.print("@" + directory.getSize());
 			out.print("@" + directory.getModifiedTimeStamp());
+			
 			out.println();
 			out.close();
 		} catch (final Exception e) {
