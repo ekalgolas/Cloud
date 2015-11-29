@@ -20,6 +20,8 @@ public class Globals {
 	public static HashMap<String, Directory>	subTreePartitionList	= null;
 	public static HashMap<String, File>			nfsFileMap				= null;
 
+	public static final String					NFS_FOLDER				= AppConfig.getValue("server.nfs.folder");
+
 	public static final String					GFS_SERVER_PORT			= "gfs.server.port";
 	public static final String					MDS_SERVER_PORT			= "mds.server.port";
 	public static final String					NFS_SERVER_PORT			= "nfs.server.port";
@@ -39,12 +41,12 @@ public class Globals {
 	public static final String					PARTIAL_PATH_FOUND		= "PPF";
 	public static final String					PATH_FOUND				= "PF";
 
-	public static final String 					OVERALL_INITIATOR_MDS	= "MDS1";
-	public static final String 					MDS_SERVER_ID_START		= "MDS";
+	public static final String					OVERALL_INITIATOR_MDS	= "MDS1";
+	public static final String					MDS_SERVER_ID_START		= "MDS";
 
-	//File Lock Commands
-	public static final String 					ACQUIRE_READ_LOCK 		= "ARLCK";
-	public static final String 					ACQUIRE_WRITE_LOCK		= "AWLCK";
-	public static final String 					RELEASE_READ_LOCK 		= "RRLCK";
-	public static final String 					RELEASE_WRITE_LOCK		= "RWLCK";
+	// File Lock Commands
+	public static final String					ACQUIRE_READ_LOCK		= "ARLCK";
+	public static final String					ACQUIRE_WRITE_LOCK		= "AWLCK";
+	public static final String					RELEASE_READ_LOCK		= "RRLCK";
+	public static final String					RELEASE_WRITE_LOCK		= "RWLCK";
 }
