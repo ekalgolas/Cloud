@@ -32,15 +32,12 @@ import commons.dir.Directory;
 import commons.dir.ICommandOperations;
 
 public class NFSDirectoryOperations implements ICommandOperations {
-	private final static Logger	LOGGER		= Logger.getLogger(NFSDirectoryOperations.class);
-	private static final int	CUT_LEVEL	= Integer.parseInt(AppConfig.getValue("server.nfs.cutLevel"));
+	private final static Logger LOGGER = Logger.getLogger(NFSDirectoryOperations.class);
+	private static final int CUT_LEVEL = Integer.parseInt(AppConfig.getValue("server.nfs.cutLevel"));
 
 	@Override
-	public Message ls(final Directory root,
-			String filePath,
-			final String... arguments)
-					throws InvalidPropertiesFormatException,
-					InvalidDataException {
+	public Message ls(final Directory root, String filePath, final String... arguments)
+			throws InvalidPropertiesFormatException, InvalidDataException {
 		filePath = filePath.replace(" ", "-");
 
 		String line;
@@ -63,6 +60,7 @@ public class NFSDirectoryOperations implements ICommandOperations {
 		}
 
 		String filenameduplicate = "";
+		int counter = 0;
 		final String name = names.get(names.size() - 1);
 		try {
 			final File file = new File(Paths.get(Globals.NFS_FOLDER, path + ".txt").toString());
@@ -74,15 +72,28 @@ public class NFSDirectoryOperations implements ICommandOperations {
 				final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
 				while ((line = bufferedReader.readLine()) != null) {
 					// For each line that contains the pathname
-					if (line.contains(pathname)) {
+					if (line.contains(pathname) ){
 						final String[] split = line.split("@");
 						String filename;
+					//	String child;
 
 						// Get the child after the pathname
-						final String child = split[0].substring(split[0].lastIndexOf(name) + name.length()).trim();
+					
+						String child = split[0].substring(split[0].lastIndexOf(name) + name.length()).trim();
+						
 						if (child == null || child.equals("") || child.equals("/")) {
 							// If child is null, it means it is a file
-							continue;
+							if(counter == 0){
+								counter++;
+								continue;
+							}
+							if(counter == 1){
+								counter++;
+							filename = name;
+							}
+							else
+								continue;
+							
 						} else if (child.contains("/")) {
 							// If a directory get the next child
 							filename = child.split("/")[1];
@@ -95,7 +106,8 @@ public class NFSDirectoryOperations implements ICommandOperations {
 							continue;
 						}
 
-						// Figure out if child is a file or directory and write output
+						// Figure out if child is a file or directory and write
+						// output
 						filenameduplicate = filename;
 						final String type = line.contains("/@") ? "Directory" : "File";
 						final String size = split[1];
@@ -123,14 +135,13 @@ public class NFSDirectoryOperations implements ICommandOperations {
 		}
 
 		builder.appendContent(output.toString());
+		System.out.println(builder);
 		return builder;
 	}
 
 	@Override
-	public Message mkdir(final Directory root,
-			final String filepath,
-			final String... arguments)
-					throws InvalidPropertiesFormatException {
+	public Message mkdir(final Directory root, final String filepath, final String... arguments)
+			throws InvalidPropertiesFormatException {
 		final Directory directory = new Directory("", false, null, System.currentTimeMillis(), (long) 4096);
 		final List<String> names = new ArrayList<String>();
 		final String filePath = getFilePath(filepath, names);
@@ -155,6 +166,7 @@ public class NFSDirectoryOperations implements ICommandOperations {
 					final String trimmedLine = currentLine.trim();
 					if (trimmedLine.contains(linename)) {
 						reader.close();
+						fileChannel.close();
 						throw new InvalidPathException(filePath, " directory already present");
 					}
 				}
@@ -212,8 +224,19 @@ public class NFSDirectoryOperations implements ICommandOperations {
 		String line = "", currentLine = "";
 		final File temp = new File(file.getAbsolutePath() + ".tmp");
 		try {
-			reader = new BufferedReader(new FileReader(file));
-			writer = new PrintWriter(new BufferedWriter(new FileWriter(temp)));
+			final FileInputStream inputStream = new FileInputStream(file);
+			final FileChannel fileChannel = inputStream.getChannel();
+			final FileLock lock = fileChannel.lock(0, Long.MAX_VALUE, true);
+			
+			final FileOutputStream outputStream = new FileOutputStream(temp, true);
+			final FileChannel fileChanneltemp = outputStream.getChannel();
+			final FileLock templock = fileChanneltemp.lock(0, Long.MAX_VALUE, false);
+			
+			if (lock.isValid() && templock.isValid()) {
+				
+			reader = new BufferedReader(new InputStreamReader(inputStream));	
+			writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream)));
+			
 			while ((currentLine = reader.readLine()) != null) {
 				String trimmedLine = currentLine.trim();
 				if (trimmedLine.contains(pathname)) {
@@ -266,11 +289,16 @@ public class NFSDirectoryOperations implements ICommandOperations {
 				} else {
 					writer.close();
 					reader.close();
+					fileChannel.close();
+					fileChanneltemp.close();
 					throw new InvalidPathException(filePath, "cannot create a file inside a file");
 				}
 			}
 
 			reader.close();
+			}
+			fileChannel.close();
+			fileChanneltemp.close();
 		} catch (final IOException e) {
 			throw new InvalidPropertiesFormatException("Failed to modify metadata in local");
 		}
@@ -278,98 +306,99 @@ public class NFSDirectoryOperations implements ICommandOperations {
 
 	}
 
-	// public Message rmdir(final Directory root,
-	// final String filepath,
-	// final String... arguments){
-	// int counter = 0;
-	// BufferedReader reader;
-	// PrintWriter writer;
-	// String currentLine;
-	//
-	// StringBuilder pathname = new StringBuilder();
-	// List<String> names = new ArrayList<>();
-	// //
-	// // if (filepath.contains("/")) {
-	// // names.addAll(Arrays.asList(filepath.split("/")));
-	// // } else {
-	// // names.add(filepath);
-	// // }
-	// final String filePath = getFilePath(filepath, names);
-	// final String path ;
-	// String linename;
-	//
-	// if((names.size()-1) % CUT_LEVEL == 0){
-	// path = getPath( filepath,pathname,names,names.size() - 1) ;
-	// linename = pathname.toString();
-	//
-	// }
-	// else{
-	// path = getPath( filePath,pathname,names,names.size() - 2) ;
-	// linename = pathname + "/"+ names.get(names.size()-1) + "/";
-	//
-	// }
-	//
-	// File file = new File(Paths.get(Globals.NFS_FOLDER, path + ".txt").toString());
-	//
-	// if (!file.exists()) {
-	// throw new InvalidPathException(filePath, "Does not exist");
-	// }
-	//
-	// final File temp = new File(file.getAbsolutePath() + ".tmp");
-	//
-	// try {
-	// reader = new BufferedReader(new FileReader(file));
-	// writer = new PrintWriter(new BufferedWriter(new FileWriter(temp)));
-	//
-	//
-	//
-	// while ((currentLine = reader.readLine()) != null) {
-	// final String trimmedLine = currentLine.trim();
-	//
-	// if (trimmedLine.contains(linename)) {
-	// counter++;
-	//
-	// if(counter == 2 ){
-	// temp.delete();
-	// writer.close();
-	// reader.close();
-	// throw new InvalidPathException(filepath, "contains files");
-	// }
-	//
-	// continue;
-	// }
-	// writer.println(currentLine);
-	// }
-	//
-	// if(counter == 0){
-	// temp.delete();
-	// writer.close();
-	// reader.close();
-	// throw new InvalidPathException(filepath, "is not a valid directory");
-	// }
-	// else{
-	// file.delete();
-	// writer.close();
-	// reader.close();
-	//
-	// final boolean successful = temp.renameTo(file);
-	// if (successful == false) {
-	// System.out.println("not succesfully renamed");
-	// }
-	// }
-	// }
-	// catch (final IOException e) {
-	// System.out.println("execption");
-	// }
-	//
-	// return new Message("rmdir Successful");
-	// }
+	public Message rmdir(final Directory root, final String filepath, final String... arguments) {
+		int counter = 0;
+		BufferedReader reader;
+		PrintWriter writer;
+		String currentLine;
 
-	@Override
-	public Message rmdir(final Directory root,
-			final String filePath,
-			final String... arguments)
-					throws InvalidPropertiesFormatException {
+		StringBuilder pathname = new StringBuilder();
+		List<String> names = new ArrayList<>();
+
+		final String filePath = getFilePath(filepath, names);
+		final String path;
+		String linename;
+
+		if ((names.size() - 1) % CUT_LEVEL == 0) {
+			path = getPath(filepath, pathname, names, names.size() - 1);
+			linename = pathname.toString();
+
+		} else {
+			path = getPath(filePath, pathname, names, names.size() - 2);
+			linename = pathname + "/" + names.get(names.size() - 1) + "/";
+
+		}
+
+		File file = new File(Paths.get(Globals.NFS_FOLDER, path + ".txt").toString());
+
+		if (!file.exists()) {
+			throw new InvalidPathException(filePath, "Does not exist");
+		}
+
+		final File temp = new File(file.getAbsolutePath() + ".tmp");
+
+		try {
+			final FileInputStream inputStream = new FileInputStream(file);
+			final FileChannel fileChannel = inputStream.getChannel();
+			final FileLock lock = fileChannel.lock(0, Long.MAX_VALUE, true);
+			
+			final FileOutputStream outputStream = new FileOutputStream(temp, true);
+			final FileChannel fileChanneltemp = outputStream.getChannel();
+			final FileLock templock = fileChanneltemp.lock(0, Long.MAX_VALUE, false);
+			
+			if (lock.isValid() && templock.isValid()) {
+			reader = new BufferedReader(new InputStreamReader(inputStream));
+			writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream)));
+
+			while ((currentLine = reader.readLine()) != null) {
+				final String trimmedLine = currentLine.trim();
+
+				if (trimmedLine.contains(linename)) {
+					counter++;
+
+					if (counter == 2) {
+						temp.delete();
+						writer.close();
+						reader.close();
+						fileChannel.close();
+						fileChanneltemp.close();
+						throw new InvalidPathException(filepath, "contains files");
+					}
+
+					continue;
+				}
+				writer.println(currentLine);
+			}
+
+			if (counter == 0) {
+				temp.delete();
+				writer.close();
+				reader.close();
+				fileChannel.close();
+				fileChanneltemp.close();
+				throw new InvalidPathException(filepath, "is not a valid directory");
+			} else {
+				file.delete();
+				writer.close();
+				reader.close();
+				
+				final boolean successful = temp.renameTo(file);
+				if (successful == false) {
+					System.out.println("not succesfully renamed");
+				}
+				fileChannel.close();
+				fileChanneltemp.close();
+			}
+			}
+		} catch (final IOException e) {
+			System.out.println("execption");
+		}
+
+		return new Message("rmdir Successful");
+	}
+
+	public Message rmdirf(final Directory root, final String filePath, final String... arguments)
+			throws InvalidPropertiesFormatException {
 		final StringBuilder pathname = new StringBuilder();
 		final List<String> names = new ArrayList<>();
 
@@ -386,8 +415,7 @@ public class NFSDirectoryOperations implements ICommandOperations {
 		path = getPath(filepath, pathname, names, names.size() - 2);
 		linename = pathname + "/" + names.get(names.size() - 1) + "/";
 
-		final File file = new File(Paths.get(Globals.NFS_FOLDER, path + ".txt")
-				.toString());
+		final File file = new File(Paths.get(Globals.NFS_FOLDER, path + ".txt").toString());
 
 		if (!file.exists()) {
 			throw new InvalidPathException(filePath, "Does not exist");
@@ -411,7 +439,7 @@ public class NFSDirectoryOperations implements ICommandOperations {
 					if (split[0].matches(getRegex())) {
 
 						if (split[0].matches(getRegex() + ".*/")) {
-							rmdir(root, split[0], arguments);
+							rmdirf(root, split[0], arguments);
 
 						}
 
@@ -438,18 +466,14 @@ public class NFSDirectoryOperations implements ICommandOperations {
 	}
 
 	@Override
-	public void rm(final Directory root,
-			final String path,
-			final String... arguments)
-					throws InvalidPropertiesFormatException {
+	public void rm(final Directory root, final String path, final String... arguments)
+			throws InvalidPropertiesFormatException {
 
 	}
 
 	@Override
-	public Message cd(final Directory root,
-			final String filePath,
-			final String... arguments)
-					throws InvalidPropertiesFormatException {
+	public Message cd(final Directory root, final String filePath, final String... arguments)
+			throws InvalidPropertiesFormatException {
 
 		final List<String> names = new ArrayList<String>();
 		final String filepath = getFilePath(filePath, names);
@@ -458,8 +482,7 @@ public class NFSDirectoryOperations implements ICommandOperations {
 
 		final String path = getPath(filepath, pathname, names, names.size() - 2);
 
-		final File file = new File(Paths.get(Globals.NFS_FOLDER, path + ".txt")
-				.toString());
+		final File file = new File(Paths.get(Globals.NFS_FOLDER, path + ".txt").toString());
 
 		if (!file.exists()) {
 			throw new InvalidPathException(filePath, "Does not exist");
@@ -469,7 +492,13 @@ public class NFSDirectoryOperations implements ICommandOperations {
 		int counter = 0;
 		final String line = pathname + "/" + names.get(names.size() - 1) + "/";
 		try {
-			reader = new BufferedReader(new FileReader(file));
+			
+			final FileInputStream inputStream = new FileInputStream(file);
+			final FileChannel fileChannel = inputStream.getChannel();
+			final FileLock lock = fileChannel.lock(0, Long.MAX_VALUE, true);
+			if(lock.isValid()){
+			
+			reader = new BufferedReader(new InputStreamReader(inputStream));
 
 			while ((currentLine = reader.readLine()) != null) {
 				final String trimmedLine = currentLine.trim();
@@ -480,10 +509,12 @@ public class NFSDirectoryOperations implements ICommandOperations {
 
 			}
 			reader.close();
+			}
+			
 			if (counter == 0) {
-
 				throw new InvalidPathException(filePath, "Does not exist");
 			}
+			fileChannel.close();
 		} catch (final FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (final IOException e) {
@@ -506,9 +537,7 @@ public class NFSDirectoryOperations implements ICommandOperations {
 	 *            Index in the names array
 	 * @return Path as string
 	 */
-	private String getPath(final String filePath,
-			final StringBuilder pathname,
-			final List<String> names,
+	private String getPath(final String filePath, final StringBuilder pathname, final List<String> names,
 			final int index) {
 
 		String path;
@@ -528,10 +557,8 @@ public class NFSDirectoryOperations implements ICommandOperations {
 				}
 			}
 
-			path = pathname.toString()
-					.split("/")[0];
-			if (filePath.substring(filePath.length() - 1)
-					.equals("/")) {
+			path = pathname.toString().split("/")[0];
+			if (filePath.substring(filePath.length() - 1).equals("/")) {
 				final String key = filePath.substring(0, filePath.length() - pathname.length() - 1);
 				path = (key + path).replace("/", "+");
 			} else {
@@ -551,8 +578,7 @@ public class NFSDirectoryOperations implements ICommandOperations {
 	 *            Array of path names
 	 * @return File path
 	 */
-	private static String getFilePath(final String path,
-			final List<String> names) {
+	private static String getFilePath(final String path, final List<String> names) {
 
 		String filePath = "";
 		if (path.contains("/")) {
@@ -575,15 +601,14 @@ public class NFSDirectoryOperations implements ICommandOperations {
 	}
 
 	/**
-	 * Appends the {@literal file} with parameters from {@link path} and {@link directory}
+	 * Appends the {@literal file} with parameters from {@link path} and
+	 * {@link directory}
 	 *
 	 * @param directory
 	 * @param path
 	 * @param file
 	 */
-	private static void appendRecord(final Directory directory,
-			final String path,
-			final File file) {
+	private static void appendRecord(final Directory directory, final String path, final File file) {
 		try {
 			final FileOutputStream outputStream = new FileOutputStream(file, true);
 			final FileChannel fileChannel = outputStream.getChannel();
@@ -624,36 +649,27 @@ public class NFSDirectoryOperations implements ICommandOperations {
 	}
 
 	@Override
-	public Directory releaseParentReadLocks(final Directory root,
-			final String filePath) {
+	public Directory releaseParentReadLocks(final Directory root, final String filePath) {
 		return null;
 	}
 
 	@Override
-	public Message acquireReadLocks(final Directory root,
-			final String filePath,
-			final String... arguments) {
+	public Message acquireReadLocks(final Directory root, final String filePath, final String... arguments) {
 		return null;
 	}
 
 	@Override
-	public Message acquireWriteLocks(final Directory root,
-			final String filePath,
-			final String... arguments) {
+	public Message acquireWriteLocks(final Directory root, final String filePath, final String... arguments) {
 		return null;
 	}
 
 	@Override
-	public Message releaseReadLocks(final Directory root,
-			final String filePath,
-			final String... arguments) {
+	public Message releaseReadLocks(final Directory root, final String filePath, final String... arguments) {
 		return null;
 	}
 
 	@Override
-	public Message releaseWriteLocks(final Directory root,
-			final String filePath,
-			final String... arguments) {
+	public Message releaseWriteLocks(final Directory root, final String filePath, final String... arguments) {
 		return null;
 	}
 
