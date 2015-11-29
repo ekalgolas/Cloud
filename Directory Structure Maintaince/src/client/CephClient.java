@@ -13,6 +13,8 @@ import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 import java.util.Scanner;
 
+import master.metadata.MetaDataServerInfo;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -21,221 +23,170 @@ import commons.CommandsSupported;
 import commons.CompletionStatusCode;
 import commons.Globals;
 import commons.Message;
-import master.metadata.MetaDataServerInfo;
 
 /**
  * This client takes care of ceph command execution and caching.
- * @author jaykay
  *
+ * @author jaykay
  */
 public class CephClient {
-	
-	private final Socket				socket;
-	private final ObjectInputStream		inputStream;
-	private final ObjectOutputStream	outputStream;
-	private final HashMap<String,List<MetaDataServerInfo>> cachedServers = new HashMap<>();
-	private final static Logger			LOGGER	= Logger.getLogger(CephClient.class);
-	private static final String         ROOT    = "root";
-	private static String               pwd     = ROOT;
-	private final String 				clientId;
-	
+
+	private final Socket									socket;
+	private final ObjectInputStream							inputStream;
+	private final ObjectOutputStream						outputStream;
+	private final HashMap<String, List<MetaDataServerInfo>>	cachedServers	= new HashMap<>();
+	private final static Logger								LOGGER			= Logger.getLogger(CephClient.class);
+	private static final String								ROOT			= "root";
+	private static String									pwd				= ROOT;
+	private final String									clientId;
+
 	/**
 	 * Constructor
-	 * @throws InvalidPropertiesFormatException 
 	 *
+	 * @throws InvalidPropertiesFormatException
 	 * @throws UnknownHostException
 	 * @throws IOException
 	 */
-	public CephClient() throws IOException
-	{
+	public CephClient() throws IOException {
 		// Initialize configuration
 		new AppConfig("conf");
 		LOGGER.setLevel(Level.DEBUG);
-		
+
 		final MetaDataServerInfo rootMds = new MetaDataServerInfo();
 		rootMds.setIpAddress(AppConfig.getValue("client.ceph.root"));
 		rootMds.setStatus("Alive");
 		rootMds.setServerName("");
-		
+
 		final List<MetaDataServerInfo> rootMdsServers = new ArrayList<>();
 		rootMdsServers.add(rootMds);
 		cachedServers.put("/", rootMdsServers);
-		
+
 		socket = new Socket(AppConfig.getValue("client.masterIp"), Integer.parseInt(AppConfig.getValue("client.masterPort")));
 		outputStream = new ObjectOutputStream(socket.getOutputStream());
 		inputStream = new ObjectInputStream(socket.getInputStream());
 		clientId = AppConfig.getValue("client.id");
 	}
-	
+
 	/**
-	 * Get the MDS server info to forward the command (read/write) to the
-	 * respective MDS.
-	 * 
+	 * Get the MDS server info to forward the command (read/write) to the respective MDS.
+	 *
 	 * @param inode
 	 * @param isWrite
 	 * @return MDS information
 	 */
-	private Socket getRequiredMdsSocket(
-			final List<MetaDataServerInfo> mdsServers, 
+	private Socket getRequiredMdsSocket(final List<MetaDataServerInfo> mdsServers,
 			final boolean isWrite) {
 		MetaDataServerInfo serverInfo = null;
 		Socket mdsServerSocket = null;
-		for (final MetaDataServerInfo info : mdsServers) 
-		{
-			if (Globals.ALIVE_STATUS.equalsIgnoreCase(info.getStatus()) && 
-					(isWrite && Globals.PRIMARY_MDS.equals(info.getServerType()) || 
-							!isWrite)) {
+		for (final MetaDataServerInfo info : mdsServers) {
+			if (Globals.ALIVE_STATUS.equalsIgnoreCase(info.getStatus()) && (isWrite && Globals.PRIMARY_MDS.equals(info.getServerType()) || !isWrite)) {
 				serverInfo = info;
 				break;
 			}
 		}
-		if(serverInfo != null)
-		{
-			try
-			{
-				if(serverInfo.getIpAddress().equals(AppConfig.getValue("client.masterIp")))
-				{
+		if (serverInfo != null) {
+			try {
+				if (serverInfo.getIpAddress()
+						.equals(AppConfig.getValue("client.masterIp"))) {
 					LOGGER.debug("Assigning the root Socket");
-					mdsServerSocket = this.socket;
-				}
-				else
-				{
+					mdsServerSocket = socket;
+				} else {
 					LOGGER.debug("Assigning a new Socket");
-					mdsServerSocket = new Socket(serverInfo.getIpAddress(), 
-							Integer.parseInt(AppConfig.getValue("client.masterPort")));
+					mdsServerSocket = new Socket(serverInfo.getIpAddress(), Integer.parseInt(AppConfig.getValue("client.masterPort")));
 				}
-			}
-			catch (NumberFormatException e) {
+			} catch (final NumberFormatException e) {
 				LOGGER.error("Error occured while executing commands", e);
 				System.exit(0);
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				LOGGER.error("Error occured while executing commands", e);
 				System.exit(0);
 			}
 		}
 		return mdsServerSocket;
 	}
-	
-	private String getparent(final String path)
-	{
+
+	private String getparent(final String path) {
 		final String parentPath;
-		if(path != null && !"".equals(path))
-		{			
+		if (path != null && !"".equals(path)) {
 			final String executableCommand = path.trim();
 			final String name;
-			if(!"".equals(executableCommand) && 
-					!"/".equals(executableCommand) &&
-					!"root".equals(executableCommand))
-			{
+			if (!"".equals(executableCommand) && !"/".equals(executableCommand) && !"root".equals(executableCommand)) {
 				final String[] paths = executableCommand.split("/");
 				name = paths[paths.length - 1];
-				parentPath = executableCommand.substring(0,
-							executableCommand.length() - name.length() - 1);
+				parentPath = executableCommand.substring(0, executableCommand.length() - name.length() - 1);
+			} else {
+				parentPath = executableCommand;
 			}
-			else
-			{
-				parentPath = executableCommand;				
-			}
-		}
-		else
-		{
+		} else {
 			parentPath = "";
 		}
 		return parentPath;
 	}
-	
-	private boolean acquireLocks(final String command, 
+
+	private boolean acquireLocks(final String command,
 			final StringBuffer lockedPath,
 			final boolean acquireParentLock,
-			final boolean isReadLock)
-	{
+			final boolean isReadLock) {
 		boolean status = false;
-		try
-		{			
+		try {
 			final String[] commandParse = command.split(" ");
 			final String executableCommand = commandParse[1].trim();
 			final String name;
 			final String dirPath;
-			if(!"".equals(executableCommand) && 
-					!"/".equals(executableCommand) &&
-					!"root".equals(executableCommand))
-			{
+			if (!"".equals(executableCommand) && !"/".equals(executableCommand) && !"root".equals(executableCommand)) {
 				final String[] paths = executableCommand.split("/");
 				name = paths[paths.length - 1];
-				dirPath = executableCommand.substring(0,
-							executableCommand.length() - name.length() - 1);
-			}
-			else
-			{
+				dirPath = executableCommand.substring(0, executableCommand.length() - name.length() - 1);
+			} else {
 				dirPath = executableCommand;
 				name = "";
 			}
-			
-			if(acquireParentLock)
-			{
+
+			if (acquireParentLock) {
 				lockedPath.append(dirPath);
-			}
-			else
-			{
+			} else {
 				lockedPath.append(executableCommand);
-			}		
-			
-			// Send command to master					
-			outputStream.writeObject(new Message(
-					(isReadLock?Globals.ACQUIRE_READ_LOCK:Globals.ACQUIRE_WRITE_LOCK)
-					+" "+lockedPath.toString(),
-					clientId));
+			}
+
+			// Send command to master
+			outputStream.writeObject(new Message((isReadLock ? Globals.ACQUIRE_READ_LOCK : Globals.ACQUIRE_WRITE_LOCK) + " " + lockedPath.toString(), clientId));
 			outputStream.flush();
-			
+
 			// Wait and read the reply
 			final Message lockMessage = (Message) inputStream.readObject();
 			LOGGER.debug(lockMessage);
-			if(CompletionStatusCode.SUCCESS.name()
-					.equals(lockMessage.getCompletionCode().toString().trim()))
-			{
+			if (CompletionStatusCode.SUCCESS.name()
+					.equals(lockMessage.getCompletionCode()
+							.toString()
+							.trim())) {
 				LOGGER.debug("Setting the status to true");
-				if(lockMessage.getHeader() != null && 
-						!"".equals(lockMessage.getHeader()))
-				{
-					final List<MetaDataServerInfo> newMdsServers 
-						= MetaDataServerInfo.fromStringToMetadata(
-							lockMessage.getHeader().trim());
-					if(!newMdsServers.isEmpty())
-					{
-						this.cachedServers.put(lockedPath.toString(), 
-								newMdsServers);
+				if (lockMessage.getHeader() != null && !"".equals(lockMessage.getHeader())) {
+					final List<MetaDataServerInfo> newMdsServers = MetaDataServerInfo.fromStringToMetadata(lockMessage.getHeader()
+							.trim());
+					if (!newMdsServers.isEmpty()) {
+						cachedServers.put(lockedPath.toString(), newMdsServers);
 					}
 				}
 				status = true;
-			}
-			else if(CompletionStatusCode.NOT_FOUND.name()
-					.equals(lockMessage.getCompletionCode().toString().trim()))
-			{
-				LOGGER.error("lockMessage:"+lockMessage);
-				this.cachedServers.remove(lockedPath.toString());
+			} else if (CompletionStatusCode.NOT_FOUND.name()
+					.equals(lockMessage.getCompletionCode()
+							.toString()
+							.trim())) {
+				LOGGER.error("lockMessage:" + lockMessage);
+				cachedServers.remove(lockedPath.toString());
 				status = false;
-			}				
-			else
-			{
-				LOGGER.error("lockMessage:"+lockMessage);
+			} else {
+				LOGGER.error("lockMessage:" + lockMessage);
 				status = false;
 			}
+		} catch (final ClassNotFoundException cnfexp) {
+			LOGGER.error(new Message(cnfexp.getLocalizedMessage(), "", CompletionStatusCode.ERROR.name()));
+		} catch (final IOException ioexp) {
+			LOGGER.error(new Message(ioexp.getLocalizedMessage(), "", CompletionStatusCode.ERROR.name()));
 		}
-		catch(ClassNotFoundException cnfexp)
-		{
-			LOGGER.error(new Message(cnfexp.getLocalizedMessage(),
-					"",
-					CompletionStatusCode.ERROR.name()));
-		}
-		catch(IOException ioexp)
-		{
-			LOGGER.error(new Message(ioexp.getLocalizedMessage(),
-					"",
-					CompletionStatusCode.ERROR.name()));
-		}		
 		return status;
 	}
-	
+
 	/**
 	 * Execute commands listed in a file
 	 *
@@ -247,178 +198,123 @@ public class CephClient {
 
 		// Read commands
 		try (Scanner scanner = new Scanner(System.in)) {
-			while (scanner.hasNext()) {				
+			while (scanner.hasNext()) {
 				String command = scanner.nextLine();
-				LOGGER.debug("command:"+command);
+				LOGGER.debug("command:" + command);
 				boolean readLockAcquired = false;
 				boolean writeLockAcquired = false;
 				String lockedPath;
 
-				if("EXIT".equals(command))
-				{
+				if ("EXIT".equals(command)) {
 					break;
-				}
-				else if(command.startsWith(CommandsSupported.CD.name()))
-				{
-					if(command.length() > 2)
-					{
+				} else if (command.startsWith(CommandsSupported.CD.name())) {
+					if (command.length() > 2) {
 						final String argument = command.substring(3);
-						if(!argument.startsWith(ROOT)) {
-							command = CommandsSupported.CD.name() + " " 
-									+Paths.get(pwd, argument).toString();
+						if (!argument.startsWith(ROOT)) {
+							command = CommandsSupported.CD.name() + " " + Paths.get(pwd, argument)
+									.toString();
 						}
+					} else {
+						command = CommandsSupported.CD.name() + " " + ROOT;
 					}
-					else
-					{
-						command = CommandsSupported.CD.name() + " " + ROOT; 
-					}
-				}
-				else if(command.startsWith(CommandsSupported.PWD.name())) 
-				{
+				} else if (command.startsWith(CommandsSupported.PWD.name())) {
 					LOGGER.info("Command " + number + " : " + command);
 					LOGGER.info(pwd + "\n");
 					number++;
 					continue;
-				}
-				else
-				{
+				} else {
 					final String[] argument = command.split(" ");
-					LOGGER.debug("argument:"+Arrays.toString(argument));
-					if(argument != null && argument.length >1)
-					{
-						if(!argument[1].startsWith(ROOT))
-						{
-							command = argument[0]+" "
-										+Paths.get(pwd, command.substring(argument[0].length()+1)).toString();
-							LOGGER.debug("appended command:"+command);
+					LOGGER.debug("argument:" + Arrays.toString(argument));
+					if (argument != null && argument.length > 1) {
+						if (!argument[1].startsWith(ROOT)) {
+							command = argument[0] + " " + Paths.get(pwd, command.substring(argument[0].length() + 1))
+									.toString();
+							LOGGER.debug("appended command:" + command);
 						}
-					}
-					else if((command.startsWith(CommandsSupported.LS.name()) ||
-							command.startsWith(CommandsSupported.LSL.name())) && 
-							argument != null && (argument.length == 1))
-					{
+					} else if ((command.startsWith(CommandsSupported.LS.name()) || command.startsWith(CommandsSupported.LSL.name())) && argument != null &&
+							argument.length == 1) {
 						command = argument[0] + " " + pwd;
-					}
-					else
-					{
-						LOGGER.error(new Message("Argument Expected for the command "+ command,
-									"",
-									CompletionStatusCode.ERROR.name()));
+					} else {
+						LOGGER.error(new Message("Argument Expected for the command " + command, "", CompletionStatusCode.ERROR.name()));
 					}
 				}
-					
-				
+
 				final String[] commandParse = command.split(" ");
-				
-				if(command.startsWith(CommandsSupported.LS.name()) || 
-						command.startsWith(CommandsSupported.LSL.name()) ||
-						command.startsWith(CommandsSupported.CD.name()))
-				{								
-					LOGGER.debug("Getting Read lock for "+ command);
+
+				if (command.startsWith(CommandsSupported.LS.name()) || command.startsWith(CommandsSupported.LSL.name()) ||
+						command.startsWith(CommandsSupported.CD.name())) {
+					LOGGER.debug("Getting Read lock for " + command);
 					final StringBuffer lockedPathBuf = new StringBuffer();
-					final boolean lockStatus = acquireLocks(command, 
-							lockedPathBuf, 
-							false, 
-							true);
-					LOGGER.debug("lockstatus:"+lockStatus);
-					if(lockStatus)
-					{
+					final boolean lockStatus = acquireLocks(command, lockedPathBuf, false, true);
+					LOGGER.debug("lockstatus:" + lockStatus);
+					if (lockStatus) {
 						readLockAcquired = true;
 						lockedPath = lockedPathBuf.toString();
-					}
-					else
-					{
+					} else {
 						continue;
 					}
-				}
-				else if(command.startsWith(CommandsSupported.MKDIR.name()) ||
-						command.startsWith(CommandsSupported.RMDIR.name()) ||
-						command.startsWith(CommandsSupported.RMDIRF.name()))
-				{
-					LOGGER.debug("Getting write lock for "+ command);
+				} else if (command.startsWith(CommandsSupported.MKDIR.name()) || command.startsWith(CommandsSupported.RMDIR.name()) ||
+						command.startsWith(CommandsSupported.RMDIRF.name())) {
+					LOGGER.debug("Getting write lock for " + command);
 					final StringBuffer lockedPathBuf = new StringBuffer();
-					final boolean lockStatus = acquireLocks(command, 
-							lockedPathBuf, 
-							command.startsWith(CommandsSupported.MKDIR.name()), 
-							false);
-					if(lockStatus)
-					{
+					final boolean lockStatus = acquireLocks(command, lockedPathBuf, command.startsWith(CommandsSupported.MKDIR.name()), false);
+					if (lockStatus) {
 						writeLockAcquired = true;
 						lockedPath = lockedPathBuf.toString();
-					}
-					else
-					{
+					} else {
 						continue;
-					}									
-				}
-				else
-				{
+					}
+				} else {
 					final StringBuffer lockedPathBuf = new StringBuffer();
-					final boolean lockFullPathStatus = acquireLocks(command, 
-							lockedPathBuf, 
-							false, 
-							false);
-					LOGGER.debug("lockFullPathStatus:"+lockFullPathStatus);
-					if(lockFullPathStatus)
-					{
+					final boolean lockFullPathStatus = acquireLocks(command, lockedPathBuf, false, false);
+					LOGGER.debug("lockFullPathStatus:" + lockFullPathStatus);
+					if (lockFullPathStatus) {
 						writeLockAcquired = true;
 						lockedPath = lockedPathBuf.toString();
-					}
-					else
-					{						
+					} else {
 						lockedPathBuf.delete(0, lockedPathBuf.length());
-						final boolean lockParent = acquireLocks(command, 
-								lockedPathBuf, 
-								true, 
-								false);
-						LOGGER.debug("lockParent:"+lockParent);
-						LOGGER.debug("lockedPathBuf:"+lockedPathBuf.toString());
-						if(lockParent)
-						{
+						final boolean lockParent = acquireLocks(command, lockedPathBuf, true, false);
+						LOGGER.debug("lockParent:" + lockParent);
+						LOGGER.debug("lockedPathBuf:" + lockedPathBuf.toString());
+						if (lockParent) {
 							writeLockAcquired = true;
 							lockedPath = lockedPathBuf.toString();
-						}
-						else
-						{
+						} else {
 							continue;
 						}
 					}
-				}				
-				
+				}
+
 				final StringBuffer partialFilePath = new StringBuffer();
-				
-				final List<MetaDataServerInfo> mdsServers 
-								= MetaDataServerInfo.findClosestServer(command
-								.substring(commandParse[0].length()+1), 
-								partialFilePath, this.cachedServers);
-				
-				LOGGER.debug("mdsservers test:"+mdsServers);
-								
+
+				final List<MetaDataServerInfo> mdsServers = MetaDataServerInfo.findClosestServer(command.substring(commandParse[0].length() + 1),
+						partialFilePath,
+						cachedServers);
+
+				LOGGER.debug("mdsservers test:" + mdsServers);
+
 				final Socket mdsServerSocket = getRequiredMdsSocket(mdsServers, true);
 				// Send command to master
-				
-				LOGGER.debug("mdsServerSocket:"+mdsServerSocket);
-				
+
+				LOGGER.debug("mdsServerSocket:" + mdsServerSocket);
+
 				final ObjectInputStream inputMdsStream;
 				final ObjectOutputStream outputMdsStream;
-				if(mdsServerSocket.equals(socket))
-				{
+				if (mdsServerSocket.equals(socket)) {
 					LOGGER.debug("Reassigning sockets input output");
 					inputMdsStream = inputStream;
 					outputMdsStream = outputStream;
-				}
-				else
-				{
-					inputMdsStream = new ObjectInputStream(mdsServerSocket.getInputStream());				
-								
+				} else {
+					inputMdsStream = new ObjectInputStream(mdsServerSocket.getInputStream());
+
 					outputMdsStream = new ObjectOutputStream(mdsServerSocket.getOutputStream());
 				}
-				LOGGER.debug("inputMdsStream:"+inputMdsStream);
-				LOGGER.debug("outputMdsStream:"+outputMdsStream);
+				LOGGER.debug("inputMdsStream:" + inputMdsStream);
+				LOGGER.debug("outputMdsStream:" + outputMdsStream);
 				outputMdsStream.writeObject(new Message(command));
 				outputMdsStream.flush();
-				
-				LOGGER.debug("command executed:"+command);
+
+				LOGGER.debug("command executed:" + command);
 
 				// Exit if command is exit
 				if (command.equalsIgnoreCase(CommandsSupported.EXIT.name())) {
@@ -428,97 +324,77 @@ public class CephClient {
 
 				// Wait and read the reply
 				final Message message = (Message) inputMdsStream.readObject();
-				LOGGER.debug("message obtained:"+message);
+				LOGGER.debug("message obtained:" + message);
 				final String reply = message.getContent();
 				final String header = message.getHeader();
-				if(message.getCompletionCode() != null
-						&& !"".equals(message.getCompletionCode().toString().trim())
-						&& CompletionStatusCode.SUCCESS.name()
-							.equals(message.getCompletionCode().toString().trim())
-						&& header != null 
-						&& !"".equals(header.trim()))
-				{
+				if (message.getCompletionCode() != null && !"".equals(message.getCompletionCode()
+						.toString()
+						.trim()) && CompletionStatusCode.SUCCESS.name()
+						.equals(message.getCompletionCode()
+								.toString()
+								.trim()) && header != null && !"".equals(header.trim())) {
 					LOGGER.debug("Updating Cache");
-					//Update the client cache of MDS cluster map.
-					final List<MetaDataServerInfo> newMdsServers 
-						= MetaDataServerInfo.fromStringToMetadata(header.trim());
-					if(!newMdsServers.isEmpty())
-					{
-						this.cachedServers.put(command
-								.substring(commandParse[0].length()+1)
-								, newMdsServers);
+					// Update the client cache of MDS cluster map.
+					final List<MetaDataServerInfo> newMdsServers = MetaDataServerInfo.fromStringToMetadata(header.trim());
+					if (!newMdsServers.isEmpty()) {
+						cachedServers.put(command.substring(commandParse[0].length() + 1), newMdsServers);
 					}
-					//Update the pwd if the executed command is CD
-					if(command.startsWith(CommandsSupported.CD.name())) {
+					// Update the pwd if the executed command is CD
+					if (command.startsWith(CommandsSupported.CD.name())) {
 						final String argument = command.substring(3);
-						pwd = argument.startsWith(ROOT)
-								? argument
-										: Paths.get(pwd, argument).toString();						
+						pwd = argument.startsWith(ROOT) ? argument : Paths.get(pwd, argument)
+								.toString();
 					}
 				}
 				LOGGER.info("Command " + number + " : " + command);
 				LOGGER.info(reply + "\n");
 
 				number++;
-				if(mdsServerSocket != this.socket)
-				{
+				if (mdsServerSocket != socket) {
 					LOGGER.debug("Closing temp socket");
 					mdsServerSocket.close();
-				}				
-				
-				if(command.startsWith(CommandsSupported.RMDIR.name()) || 
-						command.startsWith(CommandsSupported.RMDIRF.name()))
-				{
-					if((message.getCompletionCode() != null) && 
-						!"".equals(message.getCompletionCode().toString().trim()) &&
-						CompletionStatusCode.SUCCESS.name()
-							.equals(message.getCompletionCode().toString().trim()))
-					{
+				}
+
+				if (command.startsWith(CommandsSupported.RMDIR.name()) || command.startsWith(CommandsSupported.RMDIRF.name())) {
+					if (message.getCompletionCode() != null && !"".equals(message.getCompletionCode()
+							.toString()
+							.trim()) && CompletionStatusCode.SUCCESS.name()
+							.equals(message.getCompletionCode()
+									.toString()
+									.trim())) {
 						writeLockAcquired = false;
 						readLockAcquired = true;
 						lockedPath = getparent(lockedPath);
 					}
 				}
-				
-				if(readLockAcquired && lockedPath != null)
-				{
-					outputStream.writeObject(new Message(Globals.RELEASE_READ_LOCK+" "+
-										lockedPath,
-										clientId));
+
+				if (readLockAcquired && lockedPath != null) {
+					outputStream.writeObject(new Message(Globals.RELEASE_READ_LOCK + " " + lockedPath, clientId));
+					outputStream.flush();
+				} else if (writeLockAcquired && lockedPath != null) {
+					outputStream.writeObject(new Message(Globals.RELEASE_WRITE_LOCK + " " + lockedPath, clientId));
 					outputStream.flush();
 				}
-				else if(writeLockAcquired && lockedPath != null)
-				{
-					outputStream.writeObject(new Message(Globals.RELEASE_WRITE_LOCK+" "+
-							lockedPath,
-							clientId));
-					outputStream.flush();
-				}
-				
+
 				final Message unLockMessage = (Message) inputStream.readObject();
-				LOGGER.debug("unLockMessage:"+unLockMessage);
-					
+				LOGGER.debug("unLockMessage:" + unLockMessage);
+
+				// Write results to file
+				CSVFileWriter.writeToFile(message, command);
 			}
 		} catch (final IOException | ClassNotFoundException e) {
 			LOGGER.error("Error occured while executing commands", e);
 			System.exit(0);
-		}
-		finally
-		{
-			try
-			{
+		} finally {
+			try {
 				socket.close();
-			}
-			catch(IOException ioexp)
-			{
-				LOGGER.error(new Message(ioexp.getLocalizedMessage(),
-						"",
-						CompletionStatusCode.ERROR.name()));
+			} catch (final IOException ioexp) {
+				LOGGER.error(new Message(ioexp.getLocalizedMessage(), "", CompletionStatusCode.ERROR.name()));
 			}
 		}
 	}
 
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		// Create ceph client
 		CephClient client = null;
 		try {
@@ -544,7 +420,7 @@ public class CephClient {
 		}
 
 		// Execute these commands
-		client.executeCommands(AppConfig.getValue("client.commandsFile"));		
+		client.executeCommands(AppConfig.getValue("client.commandsFile"));
 	}
 
 }

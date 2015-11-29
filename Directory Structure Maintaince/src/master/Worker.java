@@ -113,9 +113,9 @@ public class Worker implements Runnable {
 					reply.appendCompletionCode(CompletionStatusCode.ERROR.name());
 				}
 
+				// Log performance
 				final String performance = APPWATCH.stopAndLogTime("Command execution completed");
 				reply.appendHeader(performance);
-				System.out.println(reply.toString());
 
 				// Write reply to the socket output stream
 				outputStream.writeObject(reply);
