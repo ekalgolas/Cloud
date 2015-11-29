@@ -105,9 +105,6 @@ public class Worker implements Runnable {
 					APPWATCH.startWatch("Command execution started...");
 					reply = executeCommand(command, root, replica, partialFilePath, directoryOperations, replicationOperations, message);
 
-					final String performance = APPWATCH.stopAndLogTime("Command execution completed");
-					reply.appendHeader(performance);
-
 					// Append completion code
 					reply.appendCompletionCode(CompletionStatusCode.SUCCESS.name());
 				} catch (final Exception e) {
@@ -116,6 +113,8 @@ public class Worker implements Runnable {
 					reply.appendCompletionCode(CompletionStatusCode.ERROR.name());
 				}
 
+				final String performance = APPWATCH.stopAndLogTime("Command execution completed");
+				reply.appendHeader(performance);
 				System.out.println(reply.toString());
 
 				// Write reply to the socket output stream

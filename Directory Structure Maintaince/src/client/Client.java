@@ -92,9 +92,10 @@ public class Client {
 				LOGGER.info(reply + "\n");
 				number++;
 
-				Thread.sleep(100);
+				// Write results to file
+				CSVFileWriter.writeToFile(message, command);
 			}
-		} catch (final IOException | ClassNotFoundException | InterruptedException e) {
+		} catch (final IOException | ClassNotFoundException e) {
 			LOGGER.error("Error occured while executing commands", e);
 			System.exit(0);
 		}
