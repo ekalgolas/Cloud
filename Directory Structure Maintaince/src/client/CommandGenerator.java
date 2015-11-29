@@ -8,18 +8,16 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.distribution.ZipfDistribution;
 
 import com.sun.media.sound.InvalidDataException;
-
 import commons.AppConfig;
 import commons.CommandsSupported;
 import commons.dir.Directory;
@@ -45,14 +43,10 @@ public class CommandGenerator {
 			FileNotFoundException,
 			IOException {
 		// Get list of commands supported
-		final List<String> values = Stream.of(CommandsSupported.values())
-				.map(CommandsSupported::name)
-				.filter(x -> x != CommandsSupported.EXIT.name())
-				.collect(Collectors.toList());
-		final String[] commands = values.toArray(new String[values.size()]);
+		final List<String> values = Arrays.asList(AppConfig.getValue("client.commandList").split(","));
 
 		// Get paths
-		String[] paths = getAllPaths(DirectoryParser.parseText(AppConfig.getValue("client.inputFile")));
+		ArrayList<String> paths = getAllPaths(DirectoryParser.parseText(AppConfig.getValue("client.inputFile")));
 
 		// Distribute paths
 		paths = createZipfDistribution(paths);
@@ -62,8 +56,20 @@ public class CommandGenerator {
 			final Random random = new Random();
 			while (size-- > 0) {
 				// Get random path and command
-				final String path = paths[random.nextInt(paths.length)];
-				final String command = commands[random.nextInt(commands.length)];
+				String path = paths.get(random.nextInt(paths.size()));
+				final String command = values.get(random.nextInt(values.size()));
+
+				// If the command is create, create test directory and add this path
+				if (path.charAt(path.length() - 1) == '/' && command.equals(CommandsSupported.MKDIR.name())) {
+					path += "test/";
+					paths.add(path);
+				} else if (path.charAt(path.length() - 1) != '/' && command.equals(CommandsSupported.TOUCH.name())) {
+					path += "test";
+					paths.add(path);
+				} else if (path.charAt(path.length() - 1) == '/' && command.equals(CommandsSupported.RMDIR.name())) {
+					// If command is remove, remove this directory
+					paths.remove(path);
+				}
 
 				// Write the line obtained
 				writer.write(command + " " + path + "\n");
@@ -85,7 +91,7 @@ public class CommandGenerator {
 	 * @return Array of paths as strings
 	 * @throws InvalidDataException
 	 */
-	String[] getAllPaths(final Directory root)
+	ArrayList<String> getAllPaths(final Directory root)
 			throws InvalidDataException {
 		// Create a list
 		final Set<String> paths = new HashSet<>();
@@ -99,7 +105,7 @@ public class CommandGenerator {
 		traverse(root, paths, new ArrayList<>(), 0);
 
 		// Return the array derived from the list
-		return paths.toArray(new String[paths.size()]);
+		return new ArrayList<String>(paths);
 	}
 
 	/**
@@ -151,22 +157,22 @@ public class CommandGenerator {
 	 * NOTE: default for unit testing
 	 * </pre>
 	 *
-	 * @param collection
+	 * @param paths
 	 *            Array to randomize
 	 * @return Weighted distribution of the array
 	 */
-	String[] createZipfDistribution(final String[] collection) {
+	ArrayList<String> createZipfDistribution(final ArrayList<String> paths) {
 		// Create an array for distribution
-		final String[] distribution = new String[collection.length];
+		final ArrayList<String> distribution = new ArrayList<>();
 
 		// Initialize a zipf distribution
-		final ZipfDistribution zipfDistribution = new ZipfDistribution(collection.length, 1);
-		for (int i = 0; i < collection.length; i++) {
+		final ZipfDistribution zipfDistribution = new ZipfDistribution(paths.size(), 1);
+		for (int i = 0; i < paths.size(); i++) {
 			// Take a sample from the distribution
 			final int random = zipfDistribution.sample();
 
 			// Select the sample index from the collection and assign it to current index of distributed array
-			distribution[i] = collection[random - 1];
+			distribution.add(paths.get(random - 1));
 		}
 
 		// Return the distribution

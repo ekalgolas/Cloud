@@ -1,5 +1,7 @@
 package client;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -53,7 +55,7 @@ public class Client {
 		int number = 0;
 
 		// Read commands
-		try (Scanner scanner = new Scanner(System.in)) {
+		try (Scanner scanner = new Scanner(new FileInputStream(new File(inputFileName)))) {
 			while (scanner.hasNext()) {
 				String command = scanner.nextLine();
 
@@ -82,17 +84,17 @@ public class Client {
 					final boolean isValid = reply.startsWith("true");
 					if(isValid) {
 						final String argument = command.substring(3);
-						pwd = argument.startsWith(ROOT)
-								? argument
-										: Paths.get(pwd, argument).toString();
+						pwd = argument.startsWith(ROOT) ? argument : Paths.get(pwd, argument).toString();
 					}
 				}
+
 				LOGGER.info("Command " + number + " : " + command);
 				LOGGER.info(reply + "\n");
-
 				number++;
+
+				Thread.sleep(100);
 			}
-		} catch (final IOException | ClassNotFoundException e) {
+		} catch (final IOException | ClassNotFoundException | InterruptedException e) {
 			LOGGER.error("Error occured while executing commands", e);
 			System.exit(0);
 		}
