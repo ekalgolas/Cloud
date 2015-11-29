@@ -19,7 +19,7 @@ import commons.dir.Directory;
 import commons.dir.DirectoryParser;
 
 /**
- * Parses DHT directory structure
+ * Parses nfs directory structure
  *
  * @author sahith
  */
@@ -38,11 +38,11 @@ public class NFSDirectoryParser extends DirectoryParser {
 	private static HashMap<Integer, Directory>	levelDirectoryMap	= new HashMap<>();
 
 	/**
-	 * Parses the pre-configured input file in the server to construct DHT directory structure
+	 * Parses the pre-configured input file in the server to construct nfs directory structure
 	 *
 	 * @param cutLevel
-	 *            Cut level for DHT
-	 * @return Map of paths to DHT files
+	 *            Cut level for nfs
+	 * @return Map of paths to nfs files
 	 * @throws IOException
 	 */
 	public static HashMap<String, File> parseText(final int cutLevel)

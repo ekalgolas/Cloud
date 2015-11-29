@@ -1,5 +1,6 @@
 package master;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -33,7 +34,7 @@ import commons.dir.Directory;
 public class Master {
 	private static ServerSocket	gfsListenerSocket	= null;
 	private static ServerSocket	mdsListenerSocket	= null;
-	private static ServerSocket	dhtListenerSocket	= null;
+	private static ServerSocket	nfsListenerSocket	= null;
 	private final static Logger	LOGGER				= Logger.getLogger(Master.class);
 	private static Long currentInodeNumber;
 	private static String mdsServerId;
@@ -49,7 +50,7 @@ public class Master {
 		LOGGER.setLevel(Level.DEBUG);
 
 		// Do nothing if socket already initialized
-		if (gfsListenerSocket != null && mdsListenerSocket != null && dhtListenerSocket != null) {
+		if (gfsListenerSocket != null && mdsListenerSocket != null && nfsListenerSocket != null) {
 			return;
 		}
 
@@ -61,9 +62,10 @@ public class Master {
 			if (mdsListenerSocket == null) {
 				mdsListenerSocket = new ServerSocket(Integer.parseInt(AppConfig.getValue(Globals.MDS_SERVER_PORT)));
 			}
-			if (dhtListenerSocket == null) {
-				dhtListenerSocket = new ServerSocket(Integer.parseInt(AppConfig.getValue(Globals.DHT_SERVER_PORT)));
+			if (nfsListenerSocket == null) {
+				nfsListenerSocket = new ServerSocket(Integer.parseInt(AppConfig.getValue(Globals.NFS_SERVER_PORT)));
 			}
+
 			mdsServerId = AppConfig.getValue("mds.server.id");
 		} catch (final IOException e) {
 			LOGGER.error("", e);
@@ -138,11 +140,11 @@ public class Master {
 			LOGGER.debug("Master Started");
 			// Generate metadata for existing directory structure
 			final Directory directory = MetadataManager.generateGFSMetadata();
-//			final HashMap<String, File> fileMap = MetadataManager.generateDHTMetadata();
+			final HashMap<String, File> fileMap = MetadataManager.generateNFSMetadata();
 
 			// Set the globals root
 			Globals.gfsMetadataRoot = directory;
-//			Globals.dhtFileMap = fileMap;
+			Globals.nfsFileMap = fileMap;
 
 			// Create metadata replica
 			final Directory replica = MetadataManager.generateGFSMetadata();
@@ -215,15 +217,15 @@ public class Master {
 		final Thread mdsListenerThread = new Thread(mdsListener);
 		mdsListenerThread.start();
 
-		final Listener dhtListener = new Listener(dhtListenerSocket, Globals.DHT_MODE);
-		final Thread dhtListenerThread = new Thread(dhtListener);
-		dhtListenerThread.start();
+		final Listener nfsListener = new Listener(nfsListenerSocket, Globals.NFS_MODE);
+		final Thread nfsListenerThread = new Thread(nfsListener);
+		nfsListenerThread.start();
 
 		// Wait for listener thread to finish
 		try {
 			gfsListenerThread.join();
 			mdsListenerThread.join();
-			dhtListenerThread.join();
+			nfsListenerThread.join();
 		} catch (final InterruptedException e) {
 			Thread.currentThread().interrupt();
 			LOGGER.error("", e);

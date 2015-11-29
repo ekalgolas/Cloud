@@ -36,8 +36,7 @@ public class CSVFileWriter {
 		final Matcher matcher = p.matcher(message.getHeader());
 		String time = null;
 		if (matcher.find()) {
-			final String[] match = matcher.group(1)
-					.split(" ");
+			final String[] match = matcher.group(1).split(" ");
 			time = match[0];
 		}
 
@@ -51,8 +50,7 @@ public class CSVFileWriter {
 		String type = null;
 		if (port.equals(AppConfig.getValue(Globals.GFS_SERVER_PORT))) {
 			type = "GFS";
-		}
-		if (port.equals(AppConfig.getValue(Globals.DHT_SERVER_PORT))) {
+		} else if (port.equals(AppConfig.getValue(Globals.NFS_SERVER_PORT))) {
 			type = "NFS";
 		} else {
 			type = "CEPH";
