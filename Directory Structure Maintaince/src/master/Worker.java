@@ -17,7 +17,6 @@ import org.apache.log4j.Logger;
 import com.sun.media.sound.InvalidDataException;
 import commons.AppWatch;
 import commons.CommandsSupported;
-import commons.CompletionStatusCode;
 import commons.Globals;
 import commons.Message;
 import commons.dir.Directory;
@@ -105,11 +104,11 @@ public class Worker implements Runnable {
 					reply = executeCommand(command, root, replica, partialFilePath, directoryOperations, replicationOperations, message);
 
 					// Append completion code
-					reply.appendCompletionCode(CompletionStatusCode.SUCCESS.name());
+					// reply.appendCompletionCode(CompletionStatusCode.SUCCESS.name());
 				} catch (final Exception e) {
 					// If any command threw errors, propagate the error to the client
 					reply = new Message(e.getMessage() + " error occurred");
-					reply.appendCompletionCode(CompletionStatusCode.ERROR.name());
+					// reply.appendCompletionCode(CompletionStatusCode.ERROR.name());
 				}
 
 				// Log performance
@@ -153,9 +152,9 @@ public class Worker implements Runnable {
 			final ICommandOperations directoryOperations,
 			final GFSMetadataReplicationOperations replicationOperations,
 			final Message message)
-					throws InvalidPropertiesFormatException,
-					InvalidDataException,
-					CloneNotSupportedException {
+			throws InvalidPropertiesFormatException,
+			InvalidDataException,
+			CloneNotSupportedException {
 		Message reply = null;
 		String argument = "";
 		try {
