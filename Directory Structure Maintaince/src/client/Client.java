@@ -23,9 +23,9 @@ public class Client {
 	private final ObjectInputStream		inputStream;
 	private final ObjectOutputStream	outputStream;
 	private final static Logger			LOGGER	= Logger.getLogger(Client.class);
-	private static final String         ROOT    = "root";
+	private static final String			ROOT	= "root";
 
-	private static String               pwd     = ROOT;
+	private static String				pwd		= ROOT;
 
 	/**
 	 * Constructor
@@ -57,14 +57,14 @@ public class Client {
 			while (scanner.hasNext()) {
 				String command = scanner.nextLine();
 
-				if(command.equals(CommandsSupported.EXIT.name())) {
+				if (command.equals(CommandsSupported.EXIT.name())) {
 					break;
-				} else if(command.startsWith(CommandsSupported.CD.name())) {
+				} else if (command.startsWith(CommandsSupported.CD.name())) {
 					final String argument = command.substring(3);
-					if(!argument.startsWith(ROOT)) {
+					if (!argument.startsWith(ROOT)) {
 						command = new String(Paths.get(pwd, argument).toString());
 					}
-				} else if(command.startsWith(CommandsSupported.PWD.name())) {
+				} else if (command.startsWith(CommandsSupported.PWD.name())) {
 					LOGGER.info("Command " + number + " : " + command);
 					LOGGER.info(pwd + "\n");
 					number++;
@@ -78,19 +78,20 @@ public class Client {
 				// Wait and read the reply
 				final Message message = (Message) inputStream.readObject();
 				final String reply = message.getContent();
-				if(command.startsWith(CommandsSupported.CD.name())) {
+				if (command.startsWith(CommandsSupported.CD.name())) {
 					final boolean isValid = reply.startsWith("true");
-					if(isValid) {
+					if (isValid) {
 						final String argument = command.substring(3);
-						pwd = argument.startsWith(ROOT)
-								? argument
-										: Paths.get(pwd, argument).toString();
+						pwd = argument.startsWith(ROOT) ? argument : Paths.get(pwd, argument).toString();
 					}
 				}
+
 				LOGGER.info("Command " + number + " : " + command);
 				LOGGER.info(reply + "\n");
-
 				number++;
+
+				// Write results to file
+				CSVFileWriter.writeToFile(message, command);
 			}
 		} catch (final IOException | ClassNotFoundException e) {
 			LOGGER.error("Error occured while executing commands", e);

@@ -1,7 +1,5 @@
 package commons;
 
-import java.util.Date;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -31,13 +29,9 @@ public class AppWatchTest {
 		// Create the watch
 		final AppWatch watch = new AppWatch();
 
-		// Start and check if the watch was created with null tag
-		watch.startWatch(null);
-		Assert.assertNull("Tag incorrect", watch.getWatch().getTag());
-
 		// Start and check if the watch was created with a tag
 		watch.startWatch("test");
-		Assert.assertEquals("Tag incorrect", "test", watch.getWatch().getTag());
+		Assert.assertNotNull("Got null time", watch.getWatch().pop());
 	}
 
 	/**
@@ -49,15 +43,8 @@ public class AppWatchTest {
 		final AppWatch watch = new AppWatch();
 		watch.startWatch("Test start");
 
-		// Try to stop the watch with null tag
-		final Date date = new Date(watch.getWatch().getStartTime());
-		String log = watch.stopAndLogTime(null);
-		double elapsed = watch.getWatch().getElapsedTime() / 1000.0;
-		Assert.assertEquals("Log incorrect", date + " - [" + elapsed + " seconds] null", log);
-
 		// Try to stop the watch with a tag
-		log = watch.stopAndLogTime("Test stop");
-		elapsed = watch.getWatch().getElapsedTime() / 1000.0;
-		Assert.assertEquals("Log incorrect", date + " - [" + elapsed + " seconds] Test stop", log);
+		final String log = watch.stopAndLogTime("Test stop");
+		Assert.assertNotNull("Got null log", log);
 	}
 }

@@ -1,5 +1,6 @@
 package master;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -33,10 +34,10 @@ import commons.dir.Directory;
 public class Master {
 	private static ServerSocket	gfsListenerSocket	= null;
 	private static ServerSocket	mdsListenerSocket	= null;
-	private static ServerSocket	dhtListenerSocket	= null;
+	private static ServerSocket	nfsListenerSocket	= null;
 	private final static Logger	LOGGER				= Logger.getLogger(Master.class);
-	private static Long currentInodeNumber;
-	private static String mdsServerId;
+	private static Long			currentInodeNumber;
+	private static String		mdsServerId;
 
 	/**
 	 * Setup the listener socket
@@ -49,7 +50,7 @@ public class Master {
 		LOGGER.setLevel(Level.DEBUG);
 
 		// Do nothing if socket already initialized
-		if (gfsListenerSocket != null && mdsListenerSocket != null && dhtListenerSocket != null) {
+		if (gfsListenerSocket != null && mdsListenerSocket != null && nfsListenerSocket != null) {
 			return;
 		}
 
@@ -61,9 +62,10 @@ public class Master {
 			if (mdsListenerSocket == null) {
 				mdsListenerSocket = new ServerSocket(Integer.parseInt(AppConfig.getValue(Globals.MDS_SERVER_PORT)));
 			}
-			if (dhtListenerSocket == null) {
-				dhtListenerSocket = new ServerSocket(Integer.parseInt(AppConfig.getValue(Globals.DHT_SERVER_PORT)));
+			if (nfsListenerSocket == null) {
+				nfsListenerSocket = new ServerSocket(Integer.parseInt(AppConfig.getValue(Globals.NFS_SERVER_PORT)));
 			}
+
 			mdsServerId = AppConfig.getValue("mds.server.id");
 		} catch (final IOException e) {
 			LOGGER.error("", e);
@@ -74,51 +76,43 @@ public class Master {
 
 	/**
 	 * Get the server id for the mds.
+	 *
 	 * @return mds server id
 	 */
-	public static String getMdsServerId()
-	{
+	public static String getMdsServerId() {
 		return mdsServerId;
 	}
 
-	public static String getMdsServerIpAddress()
-	{
-		return AppConfig.getValue("mds."+mdsServerId+".ip");
+	public static String getMdsServerIpAddress() {
+		return AppConfig.getValue("mds." + mdsServerId + ".ip");
 	}
 
 	/**
 	 * Get the current inode number for a new node.
+	 *
 	 * @return current inode number
 	 */
-	public static Long getInodeNumber()
-	{
+	public static Long getInodeNumber() {
 		final Long startInodeNumber = Long.valueOf(AppConfig.getValue("mds.inode.start"));
 		final Long endInodeNumber = Long.valueOf(AppConfig.getValue("mds.inode.end"));
-		if(currentInodeNumber <= endInodeNumber &&
-				currentInodeNumber >=startInodeNumber)
-		{
+		if (currentInodeNumber <= endInodeNumber && currentInodeNumber >= startInodeNumber) {
 			return currentInodeNumber++;
 		}
 		return new Long(-1);
 	}
 
-	private static void sendToMDS(final String mdsServerId, final String fileName)
-	{
-		try
-		{
-			System.out.println("Connecting to "+AppConfig.getValue("mds."+mdsServerId+".ip"));
-			final Socket initalSetupListener = new Socket(AppConfig.getValue("mds."+mdsServerId+".ip"),
+	private static void sendToMDS(final String mdsServerId,
+			final String fileName) {
+		try {
+			System.out.println("Connecting to " + AppConfig.getValue("mds." + mdsServerId + ".ip"));
+			final Socket initalSetupListener = new Socket(AppConfig.getValue("mds." + mdsServerId + ".ip"),
 					Integer.parseInt(AppConfig.getValue("mds.initial.port")));
 			final ObjectOutputStream outputStream = new ObjectOutputStream(initalSetupListener.getOutputStream());
-			outputStream.writeObject(MetadataManager.deserializeObject(fileName+".img"));
+			outputStream.writeObject(MetadataManager.deserializeObject(fileName + ".img"));
 			outputStream.flush();
 			initalSetupListener.close();
-		}
-		catch(final IOException ioexp)
-		{
-			LOGGER.error(new Message(ioexp.getLocalizedMessage(),
-					"",
-					CompletionStatusCode.ERROR.name()));
+		} catch (final IOException ioexp) {
+			LOGGER.error(new Message(ioexp.getLocalizedMessage(), "", CompletionStatusCode.ERROR.name()));
 		}
 	}
 
@@ -138,11 +132,11 @@ public class Master {
 			LOGGER.debug("Master Started");
 			// Generate metadata for existing directory structure
 			final Directory directory = MetadataManager.generateGFSMetadata();
-//			final HashMap<String, File> fileMap = MetadataManager.generateDHTMetadata();
+			final HashMap<String, File> fileMap = MetadataManager.generateNFSMetadata();
 
 			// Set the globals root
 			Globals.gfsMetadataRoot = directory;
-//			Globals.dhtFileMap = fileMap;
+			Globals.nfsFileMap = fileMap;
 
 			// Create metadata replica
 			final Directory replica = MetadataManager.generateGFSMetadata();
@@ -151,57 +145,7 @@ public class Master {
 			Globals.gfsMetadataCopy = replica;
 
 			LOGGER.debug("Generating MDS Metadata");
-			if(Globals.OVERALL_INITIATOR_MDS.equals(mdsServerId))
-			{
-				LOGGER.debug("Initial MDS");
-				MetadataManager.generateOverallCephPartition();
-				sendToMDS("MDS2","MDS2");
-				sendToMDS("MDS3","MDS3");
-				Globals.subTreePartitionList = (HashMap<String,Directory>) MetadataManager.deserializeObject("MDS1.img");
-				MetadataManager.populateInodeDetails();
-				MetadataManager.serializeObject(Globals.subTreePartitionList, mdsServerId);
-				final HashMap<String, String> clusterMap = new HashMap<>();
-				final HashMap<String, ArrayList<String>> primaryToReplicaMap = new HashMap<>();
-				MetadataManager.parseClusterMapDetails(clusterMap, primaryToReplicaMap);
-				if(primaryToReplicaMap.get(mdsServerId) != null)
-				{
-					for(final String replicaName:	primaryToReplicaMap.get(mdsServerId))
-					{
-						sendToMDS(replicaName,mdsServerId);
-					}
-				}
-			}
-			else if(mdsServerId.startsWith(Globals.MDS_SERVER_ID_START))
-			{
-				final ServerSocket initialReplicaLoad = new ServerSocket(Integer.parseInt(AppConfig.getValue("mds.initial.port")));
-				final Socket primarySocket = initialReplicaLoad.accept();
-				final ObjectInputStream inputStream = new ObjectInputStream(
-						primarySocket.getInputStream());
-				Globals.subTreePartitionList = (HashMap<String,Directory>)inputStream.readObject();
-				initialReplicaLoad.close();
-				MetadataManager.populateInodeDetails();
-				MetadataManager.serializeObject(Globals.subTreePartitionList, mdsServerId);
-				final HashMap<String, String> clusterMap = new HashMap<>();
-				final HashMap<String, ArrayList<String>> primaryToReplicaMap = new HashMap<>();
-				MetadataManager.parseClusterMapDetails(clusterMap, primaryToReplicaMap);
-				if(primaryToReplicaMap.get(mdsServerId) != null)
-				{
-					for(final String replicaName:	primaryToReplicaMap.get(mdsServerId))
-					{
-						sendToMDS(replicaName,mdsServerId);
-					}
-				}
-			}
-			else
-			{
-				final ServerSocket initialReplicaLoad = new ServerSocket(Integer.parseInt(AppConfig.getValue("mds.initial.port")));
-				final Socket primarySocket = initialReplicaLoad.accept();
-				final ObjectInputStream inputStream = new ObjectInputStream(
-						primarySocket.getInputStream());
-				Globals.subTreePartitionList = (HashMap<String,Directory>)inputStream.readObject();
-				initialReplicaLoad.close();
-			}
-
+			generateMDSMetadata();
 		} catch (ClassNotFoundException | IOException e) {
 			LOGGER.error("", e);
 		}
@@ -215,18 +159,69 @@ public class Master {
 		final Thread mdsListenerThread = new Thread(mdsListener);
 		mdsListenerThread.start();
 
-		final Listener dhtListener = new Listener(dhtListenerSocket, Globals.DHT_MODE);
-		final Thread dhtListenerThread = new Thread(dhtListener);
-		dhtListenerThread.start();
+		final Listener nfsListener = new Listener(nfsListenerSocket, Globals.NFS_MODE);
+		final Thread nfsListenerThread = new Thread(nfsListener);
+		nfsListenerThread.start();
 
 		// Wait for listener thread to finish
 		try {
 			gfsListenerThread.join();
 			mdsListenerThread.join();
-			dhtListenerThread.join();
+			nfsListenerThread.join();
 		} catch (final InterruptedException e) {
 			Thread.currentThread().interrupt();
 			LOGGER.error("", e);
+		}
+	}
+
+	/**
+	 * Generates MDS metadata for Ceph
+	 *
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
+	@SuppressWarnings("unchecked")
+	private static void generateMDSMetadata()
+			throws IOException,
+			ClassNotFoundException {
+		if (Globals.OVERALL_INITIATOR_MDS.equals(mdsServerId)) {
+			LOGGER.debug("Initial MDS");
+			MetadataManager.generateOverallCephPartition();
+			sendToMDS("MDS2", "MDS2");
+			sendToMDS("MDS3", "MDS3");
+			Globals.subTreePartitionList = (HashMap<String, Directory>) MetadataManager.deserializeObject("MDS1.img");
+			MetadataManager.populateInodeDetails();
+			MetadataManager.serializeObject(Globals.subTreePartitionList, mdsServerId);
+			final HashMap<String, String> clusterMap = new HashMap<>();
+			final HashMap<String, ArrayList<String>> primaryToReplicaMap = new HashMap<>();
+			MetadataManager.parseClusterMapDetails(clusterMap, primaryToReplicaMap);
+			if (primaryToReplicaMap.get(mdsServerId) != null) {
+				for (final String replicaName : primaryToReplicaMap.get(mdsServerId)) {
+					sendToMDS(replicaName, mdsServerId);
+				}
+			}
+		} else if (mdsServerId.startsWith(Globals.MDS_SERVER_ID_START)) {
+			final ServerSocket initialReplicaLoad = new ServerSocket(Integer.parseInt(AppConfig.getValue("mds.initial.port")));
+			final Socket primarySocket = initialReplicaLoad.accept();
+			final ObjectInputStream inputStream = new ObjectInputStream(primarySocket.getInputStream());
+			Globals.subTreePartitionList = (HashMap<String, Directory>) inputStream.readObject();
+			initialReplicaLoad.close();
+			MetadataManager.populateInodeDetails();
+			MetadataManager.serializeObject(Globals.subTreePartitionList, mdsServerId);
+			final HashMap<String, String> clusterMap = new HashMap<>();
+			final HashMap<String, ArrayList<String>> primaryToReplicaMap = new HashMap<>();
+			MetadataManager.parseClusterMapDetails(clusterMap, primaryToReplicaMap);
+			if (primaryToReplicaMap.get(mdsServerId) != null) {
+				for (final String replicaName : primaryToReplicaMap.get(mdsServerId)) {
+					sendToMDS(replicaName, mdsServerId);
+				}
+			}
+		} else {
+			final ServerSocket initialReplicaLoad = new ServerSocket(Integer.parseInt(AppConfig.getValue("mds.initial.port")));
+			final Socket primarySocket = initialReplicaLoad.accept();
+			final ObjectInputStream inputStream = new ObjectInputStream(primarySocket.getInputStream());
+			Globals.subTreePartitionList = (HashMap<String, Directory>) inputStream.readObject();
+			initialReplicaLoad.close();
 		}
 	}
 }

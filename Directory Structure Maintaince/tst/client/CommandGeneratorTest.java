@@ -7,6 +7,7 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -90,8 +91,8 @@ public class CommandGeneratorTest {
 		assertEquals("Could not get all paths correctly", 9, paths.size());
 
 		// Call get all paths
-		final String[] result = generator.getAllPaths(rootNode);
-		assertEquals("Could not get list of paths correctly", 9, result.length);
+		final ArrayList<String> result = generator.getAllPaths(rootNode);
+		assertEquals("Could not get list of paths correctly", 9, result.size());
 	}
 
 	/**
@@ -106,7 +107,7 @@ public class CommandGeneratorTest {
 		}
 
 		// Create zipf distribution
-		final String[] dist = generator.createZipfDistribution(array);
+		final ArrayList<String> dist = generator.createZipfDistribution((ArrayList<String>) Arrays.asList(array));
 
 		// Test for weighted randomness
 		final Set<String> set = new HashSet<>();
@@ -120,7 +121,7 @@ public class CommandGeneratorTest {
 		}
 
 		// Test if set contains repeated elements as it is weighted distribution
-		assertTrue("Number of unique elements in weighted distribution should be lesser than the original collection", set.size() < dist.length);
+		assertTrue("Number of unique elements in weighted distribution should be lesser than the original collection", set.size() < dist.size());
 	}
 
 	/**
