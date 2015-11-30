@@ -17,7 +17,6 @@ import commons.dir.ICommandOperations;
  * Class to implement various directory master.metadata operations
  */
 public class GFSDirectoryOperations implements ICommandOperations {
-
 	private static final long	DEFAULT_SIZE	= 0L;
 
 	/*
@@ -26,11 +25,17 @@ public class GFSDirectoryOperations implements ICommandOperations {
 	 */
 	@Override
 	public Message ls(Directory root,
-			final String filePath,
+			String filePath,
 			final String... arguments)
 			throws InvalidPropertiesFormatException,
 			InvalidDataException {
-		root = search(root, filePath);
+		// Check if path is valid
+		if (filePath.charAt(filePath.length() - 1) != '/') {
+			throw new InvalidPropertiesFormatException("Argument invalid: Path should contain a '/' at the end");
+		}
+
+		filePath = filePath.substring(0, filePath.length() - 2);
+		root = search(root, filePath.substring(0, filePath.length() - 2));
 
 		// If search returns null, return
 		if (root == null) {
@@ -104,19 +109,16 @@ public class GFSDirectoryOperations implements ICommandOperations {
 			final String path = paths[i];
 			// Match the root
 			boolean found = false;
-			if (root.getName()
-				.equals(path)) {
+			if (root.getName().equals(path)) {
 				found = true;
 			}
 
 			// Check if the path corresponds to any child in this directory
 			for (final Directory child : root.getChildren()) {
-				if (child.getName()
-					.equals(path)) {
+				if (child.getName().equals(path)) {
 					// Try acquiring read lock on the parent
 					if (i != paths.length - 1) {
-						child.getReadLock()
-							.lock();
+						child.getReadLock().lock();
 					}
 					root = child;
 					found = true;
@@ -155,19 +157,18 @@ public class GFSDirectoryOperations implements ICommandOperations {
 			final String path = paths[i];
 			// Match the root
 			boolean found = false;
-			if (root.getName()
-				.equals(path)) {
+			if (root.getName().equals(path)) {
 				found = true;
 			}
 
 			// Check if the path corresponds to any child in this directory
 			for (final Directory child : root.getChildren()) {
-				if (child.getName()
-					.equals(path)) {
+				if (child.getName().equals(path)) {
 					if (i != paths.length - 1) {
 						// Release the read lock on the parent
-						child.getReadLock()
-							.unlock();
+						if (Thread.holdsLock(child)) {
+							child.getReadLock().unlock();
+						}
 					}
 					root = child;
 					found = true;
@@ -301,8 +302,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		}
 
 		// Try acquiring write lock on the directory
-		directory.getWriteLock()
-			.lock();
+		directory.getWriteLock().lock();
 
 		// Add file if isFile is true
 		if (isFile) {
@@ -315,8 +315,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		}
 
 		// Release the lock
-		directory.getWriteLock()
-			.unlock();
+		directory.getWriteLock().unlock();
 	}
 
 	/*
@@ -328,7 +327,6 @@ public class GFSDirectoryOperations implements ICommandOperations {
 			final String path,
 			final String... arguments)
 			throws InvalidPropertiesFormatException {
-
 		// Check if path is valid
 		if (path.charAt(path.length() - 1) != '/') {
 			throw new InvalidPropertiesFormatException("Argument invalid: Path should contain a '/' at the end");
@@ -428,9 +426,15 @@ public class GFSDirectoryOperations implements ICommandOperations {
 	 */
 	@Override
 	public Message cd(final Directory root,
-			final String filePath,
+			String filePath,
 			final String... arguments)
 			throws InvalidPropertiesFormatException {
+		// Check if path is valid
+		if (filePath.charAt(filePath.length() - 1) != '/') {
+			throw new InvalidPropertiesFormatException("Argument invalid: Path should contain a '/' at the end");
+		}
+
+		filePath = filePath.substring(0, filePath.length() - 2);
 		final Directory directory = search(root, filePath);
 
 		// If search returns null, return

@@ -60,10 +60,13 @@ public class CommandGenerator {
 				final String command = values.get(random.nextInt(values.size()));
 
 				// If the command is create, create test directory and add this path
-				if (path.charAt(path.length() - 1) == '/' && command.equals(CommandsSupported.MKDIR.name())) {
+				if (command.equals(CommandsSupported.LS.name())) {
+					path += "/";
+					paths.add(path);
+				} else if (path.charAt(path.length() - 1) == '/' && command.equals(CommandsSupported.MKDIR.name())) {
 					path += "test/";
 					paths.add(path);
-				} else if (path.charAt(path.length() - 1) != '/' && command.equals(CommandsSupported.TOUCH.name())) {
+				} else if (path.charAt(path.length() - 1) == '/' && command.equals(CommandsSupported.TOUCH.name())) {
 					path += "test";
 					paths.add(path);
 				} else if (path.charAt(path.length() - 1) == '/' && command.equals(CommandsSupported.RMDIR.name())) {
@@ -133,10 +136,11 @@ public class CommandGenerator {
 		}
 
 		// Add this node to the current path
+		final String value = root.getName();
 		if (path.size() > index) {
-			path.set(index, root.getName());
+			path.set(index, value);
 		} else {
-			path.add(root.getName());
+			path.add(value);
 		}
 
 		// Increment index for the next child
