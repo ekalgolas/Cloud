@@ -7,7 +7,6 @@ import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 
 import com.sun.media.sound.InvalidDataException;
-import commons.CompletionStatusCode;
 import commons.Message;
 import commons.OutputFormatter;
 import commons.dir.Directory;
@@ -34,8 +33,8 @@ public class GFSDirectoryOperations implements ICommandOperations {
 			throw new InvalidPropertiesFormatException("Argument invalid: Path should contain a '/' at the end");
 		}
 
-		filePath = filePath.substring(0, filePath.length() - 2);
-		root = search(root, filePath.substring(0, filePath.length() - 2));
+		filePath = filePath.substring(0, filePath.length() - 1);
+		root = search(root, filePath);
 
 		// If search returns null, return
 		if (root == null) {
@@ -120,6 +119,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 					if (i != paths.length - 1) {
 						child.getReadLock().lock();
 					}
+
 					root = child;
 					found = true;
 					break;
@@ -166,7 +166,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 				if (child.getName().equals(path)) {
 					if (i != paths.length - 1) {
 						// Release the read lock on the parent
-						if (Thread.holdsLock(child)) {
+						if (child.isReadLocked()) {
 							child.getReadLock().unlock();
 						}
 					}
@@ -208,7 +208,6 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		// Create the directory
 		create(root, dirPath, name, false);
 		final Message returnMessage = new Message("Directory Creation Succesful");
-		returnMessage.appendCompletionCode(CompletionStatusCode.SUCCESS.name());
 		return returnMessage;
 	}
 
@@ -302,7 +301,9 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		}
 
 		// Try acquiring write lock on the directory
-		directory.getWriteLock().lock();
+		if (!directory.getWriteLock().isHeldByCurrentThread()) {
+			directory.getWriteLock().lock();
+		}
 
 		// Add file if isFile is true
 		if (isFile) {
@@ -316,6 +317,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 
 		// Release the lock
 		directory.getWriteLock().unlock();
+		releaseParentReadLocks(root, path);
 	}
 
 	/*
@@ -367,23 +369,22 @@ public class GFSDirectoryOperations implements ICommandOperations {
 
 		// If path was not found, throw exception
 		if (directory == null) {
+			releaseParentReadLocks(root, path);
 			throw new InvalidPathException(path, "Path was not found");
 		}
 
 		// Try acquiring write lock on the directory
-		directory.getWriteLock()
-			.lock();
+		directory.getWriteLock().lock();
 
 		Directory directoryToRemove = null;
 		final List<Directory> subDirectories = directory.getChildren();
 		for (final Directory childDirectory : subDirectories) {
-			if (childDirectory.getName()
-				.equals(name)) {
+			if (childDirectory.getName().equals(name)) {
 				if (childDirectory.isFile() != isFile) {
 					// Release the lock
-					directory.getWriteLock()
-						.unlock();
+					directory.getWriteLock().unlock();
 					final String message = isFile ? "Provided argument is a file, directory expected" : "Provided argument is a directory, file expected";
+					releaseParentReadLocks(root, path);
 					throw new IllegalArgumentException(message);
 				} else {
 					directoryToRemove = childDirectory;
@@ -393,19 +394,24 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		}
 
 		// Remove only if directory is empty or force removal is asked
-		final boolean canRemove = isForceRemove || directoryToRemove.isEmptyDirectory();
+		final boolean canRemove = isForceRemove || directoryToRemove != null && directoryToRemove.isEmptyDirectory();
 		if (canRemove) {
 			subDirectories.remove(directoryToRemove);
+		} else if (directoryToRemove == null) {
+			// Release the lock
+			directory.getWriteLock().unlock();
+			releaseParentReadLocks(root, path);
+			throw new IllegalStateException("Directory does not exist.");
 		} else {
 			// Release the lock
-			directory.getWriteLock()
-				.unlock();
+			directory.getWriteLock().unlock();
+			releaseParentReadLocks(root, path);
 			throw new IllegalStateException("Directory is not empty. Cannot remove.");
 		}
 
 		// Release the lock
-		directory.getWriteLock()
-			.unlock();
+		directory.getWriteLock().unlock();
+		releaseParentReadLocks(root, path);
 	}
 
 	/*
@@ -434,7 +440,7 @@ public class GFSDirectoryOperations implements ICommandOperations {
 			throw new InvalidPropertiesFormatException("Argument invalid: Path should contain a '/' at the end");
 		}
 
-		filePath = filePath.substring(0, filePath.length() - 2);
+		filePath = filePath.substring(0, filePath.length() - 1);
 		final Directory directory = search(root, filePath);
 
 		// If search returns null, return

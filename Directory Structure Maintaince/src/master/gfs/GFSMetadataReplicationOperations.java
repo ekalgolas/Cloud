@@ -23,8 +23,8 @@ public class GFSMetadataReplicationOperations extends GFSDirectoryOperations {
 	public void replicateMkdir(final Directory primaryRoot,
 			final Directory replicaRoot,
 			final String path)
-					throws InvalidPropertiesFormatException,
-					CloneNotSupportedException {
+			throws InvalidPropertiesFormatException,
+			CloneNotSupportedException {
 		// Check if path is valid
 		if (path.charAt(path.length() - 1) != '/') {
 			throw new InvalidPropertiesFormatException("Argument invalid: Path should contain a '/' at the end");
@@ -37,21 +37,21 @@ public class GFSMetadataReplicationOperations extends GFSDirectoryOperations {
 
 		final Directory createdDir = search(primaryRoot, path);
 		if (createdDir == null) {
-			releaseParentReadLocks(primaryRoot, path);
 			throw new InvalidPathException(path, "Does not exist in primary metadata");
 		}
 
+		releaseParentReadLocks(primaryRoot, path);
 		final Directory replicaParentDir = search(replicaRoot, dirPath);
 		if (replicaParentDir == null) {
-			releaseParentReadLocks(primaryRoot, path);
 			throw new InvalidPathException(dirPath, "Does not exist in replica metadata");
 		}
 
 		replicaParentDir.getWriteLock().lock();
 		final Directory dir = (Directory) createdDir.clone();
 		replicaParentDir.getChildren().add(dir);
-		replicaParentDir.getWriteLock().lock();
-		releaseParentReadLocks(primaryRoot, path);
+
+		replicaParentDir.getWriteLock().unlock();
+		releaseParentReadLocks(replicaRoot, dirPath);
 	}
 
 	/**
@@ -65,7 +65,7 @@ public class GFSMetadataReplicationOperations extends GFSDirectoryOperations {
 	 */
 	public void replicateRmdir(final Directory replicaRoot,
 			final String path, final boolean isForceRemove)
-					throws InvalidPropertiesFormatException {
+			throws InvalidPropertiesFormatException {
 		// Check if path is valid
 		if (path.charAt(path.length() - 1) != '/') {
 			throw new InvalidPropertiesFormatException("Argument invalid: Path should contain a '/' at the end");
@@ -85,23 +85,24 @@ public class GFSMetadataReplicationOperations extends GFSDirectoryOperations {
 		}
 
 		Directory directoryToRemove = null;
+		replicaParentDir.getWriteLock().lock();
 		final List<Directory> subDirectories = replicaParentDir.getChildren();
 		for (final Directory childDirectory : subDirectories) {
 			if (childDirectory.getName().equals(name)) {
 				directoryToRemove = childDirectory;
-				directoryToRemove.getWriteLock().lock();
 				break;
 			}
 		}
 
 		// Remove only if directory is empty or force removal is asked
-		final boolean canRemove = isForceRemove || directoryToRemove.isEmptyDirectory();
-
+		final boolean canRemove = isForceRemove || directoryToRemove != null && directoryToRemove.isEmptyDirectory();
 		if (canRemove) {
 			subDirectories.remove(directoryToRemove);
 		}
+
 		// Release the lock
-		directoryToRemove.getWriteLock().unlock();
+		replicaParentDir.getWriteLock().unlock();
+		releaseParentReadLocks(replicaRoot, dirPath);
 	}
 
 	/**
@@ -119,8 +120,8 @@ public class GFSMetadataReplicationOperations extends GFSDirectoryOperations {
 	public void replicateTouch(final Directory primaryRoot,
 			final Directory replicaRoot,
 			final String path)
-					throws InvalidPropertiesFormatException,
-					CloneNotSupportedException {
+			throws InvalidPropertiesFormatException,
+			CloneNotSupportedException {
 		// Check if path is valid
 		if (path.charAt(path.length() - 1) == '/') {
 			throw new InvalidPropertiesFormatException("Argument invalid: Path should not contain a '/' at the end");

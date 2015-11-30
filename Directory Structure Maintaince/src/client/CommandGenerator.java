@@ -56,14 +56,10 @@ public class CommandGenerator {
 			final Random random = new Random();
 			while (size-- > 0) {
 				// Get random path and command
-				String path = paths.get(random.nextInt(paths.size()));
+				String path = paths.get(random.nextInt(paths.size())).replaceAll("\\/\\/", "\\/");
 				final String command = values.get(random.nextInt(values.size()));
 
-				// If the command is create, create test directory and add this path
-				if (command.equals(CommandsSupported.LS.name())) {
-					path += "/";
-					paths.add(path);
-				} else if (path.charAt(path.length() - 1) == '/' && command.equals(CommandsSupported.MKDIR.name())) {
+				if (path.charAt(path.length() - 1) == '/' && command.equals(CommandsSupported.MKDIR.name())) {
 					path += "test/";
 					paths.add(path);
 				} else if (path.charAt(path.length() - 1) == '/' && command.equals(CommandsSupported.TOUCH.name())) {
@@ -131,16 +127,17 @@ public class CommandGenerator {
 			final List<String> path,
 			int index) {
 		// If root is null, just exit
-		if (root == null) {
+		if (root == null || root.isFile()) {
 			return;
 		}
 
 		// Add this node to the current path
 		final String value = root.getName();
+		final String directory = "/";
 		if (path.size() > index) {
-			path.set(index, value);
+			path.set(index, value + directory);
 		} else {
-			path.add(value);
+			path.add(value + directory);
 		}
 
 		// Increment index for the next child
