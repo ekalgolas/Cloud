@@ -1,8 +1,10 @@
 package commons;
 
-import java.util.Date;
+import java.util.Stack;
 
-import org.perf4j.StopWatch;
+import master.Master;
+
+import org.apache.log4j.Logger;
 
 /**
  * Class to log performance using stop watch
@@ -13,13 +15,14 @@ public class AppWatch {
 	/**
 	 * Watch variable
 	 */
-	private final StopWatch	watch;
+	private final Stack<Long>	watch;
+	private final static Logger	LOGGER	= Logger.getLogger(Master.class);
 
 	/**
 	 * Default constructor
 	 */
 	public AppWatch() {
-		this.watch = new StopWatch();
+		watch = new Stack<>();
 	}
 
 	/**
@@ -32,7 +35,8 @@ public class AppWatch {
 	 *            Tag this watch
 	 */
 	public void startWatch(final String tag) {
-		this.watch.start(tag);
+		watch.push(System.nanoTime());
+		LOGGER.info(tag);
 	}
 
 	/**
@@ -46,7 +50,8 @@ public class AppWatch {
 	 * @return
 	 */
 	public String stopWatch(final String tag) {
-		return this.watch.stop(tag);
+		final double time = (System.nanoTime() - watch.pop()) / Math.pow(10, 6);
+		return String.valueOf(time);
 	}
 
 	/**
@@ -61,17 +66,14 @@ public class AppWatch {
 	 */
 	public String stopAndLogTime(final String tag) {
 		// Stop the watch
-		this.stopWatch(tag);
-		final Date date = new Date(this.watch.getStartTime());
-		final double time = this.watch.getElapsedTime() / 1000.0;
-
-		return date + " - " + "[" + time + " seconds]" + " " + this.watch.getTag();
+		final String time = stopWatch(tag);
+		return tag + " - [" + time + " milliseconds]";
 	}
 
 	/**
 	 * @return the watch
 	 */
-	public final StopWatch getWatch() {
-		return this.watch;
+	public final Stack<Long> getWatch() {
+		return watch;
 	}
 }

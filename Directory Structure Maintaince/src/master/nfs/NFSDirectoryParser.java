@@ -15,41 +15,36 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import commons.AppConfig;
+import commons.Globals;
 import commons.dir.Directory;
 import commons.dir.DirectoryParser;
 
 /**
- * Parses DHT directory structure
+ * Parses nfs directory structure
  *
  * @author sahith
  */
 public class NFSDirectoryParser extends DirectoryParser {
 	private final static Logger					LOGGER				= Logger.getLogger(NFSDirectoryParser.class);
-	
-	/**
-	 * Shared NFS folder among all the cluster nodes
-	 */
-	private static final String NFS_SHARE = "/mnt/nfs/cloudsharedc3";
 
-	private static final String ROOT = "root";
+	private static final String					ROOT				= "root";
+
 	/**
 	 * Mapping for directory and level of hierarchy
 	 */
 	private static HashMap<Integer, Directory>	levelDirectoryMap	= new HashMap<>();
 
 	/**
-	 * Parses the pre-configured input file in the server to construct DHT directory structure
+	 * Parses the pre-configured input file in the server to construct nfs directory structure
 	 *
 	 * @param cutLevel
-	 *            Cut level for DHT
-	 * @return Map of paths to DHT files
+	 *            Cut level for nfs
+	 * @return Map of paths to nfs files
 	 * @throws IOException
 	 */
 	public static HashMap<String, File> parseText(final int cutLevel)
 			throws IOException {
-		// Get a temp folder
-
-		final File root = new File(Paths.get(NFS_SHARE, "root.txt").toString());
+		final File root = new File(Paths.get(Globals.NFS_FOLDER, "root.txt").toString());
 
 		// Put root file initially
 		final Directory rootDirectory = new Directory(ROOT, false, new ArrayList<>());
@@ -91,9 +86,9 @@ public class NFSDirectoryParser extends DirectoryParser {
 
 				// Extract other info from first part of the split
 				final String details = split[0].substring(StringUtils.lastIndexOf(split[0], "[") + 1).trim();
-                final String[] detail = details.split(" ");
-                final String size = detail[0].trim();
-                final String readableTimeStamp = detail[1].trim();
+				final String[] detail = details.split(" ");
+				final String size = detail[0].trim();
+				final String readableTimeStamp = detail[1].trim();
 
 				// Create a new directory object handling spaces
 				final Directory directory = new Directory(name.replace(" ", "-"),
@@ -126,7 +121,12 @@ public class NFSDirectoryParser extends DirectoryParser {
 					}
 
 					// Create a level file with the cut path
-					levelfile = new File(Paths.get(NFS_SHARE, filename + ".txt").toString());
+
+					levelfile = new File(Paths.get(Globals.NFS_FOLDER, filename + ".txt").toString());
+					if (!isFile) {
+						appendRecord(directory, directory.getName(), levelfile);
+					}
+
 					if (currentLevel > 0) {
 						// Get the parent path
 						String ppathName = "";
@@ -141,7 +141,7 @@ public class NFSDirectoryParser extends DirectoryParser {
 						// Get the parent file and update it
 						final String[] paths = levelfile.getName().replace("+", "/").split("/");
 						final String pPath = StringUtils.join(Arrays.asList(paths)
-								.subList(0, paths.length - cutLevel), "/");
+							.subList(0, paths.length - cutLevel), "/");
 
 						previouslevelfile = fileMap.get(pPath);
 						appendRecord(directory, ppathName, previouslevelfile);
@@ -206,8 +206,12 @@ public class NFSDirectoryParser extends DirectoryParser {
 			final File file) {
 		try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file, true)))) {
 			out.print(path);
+			if (!directory.isFile()) {
+				out.print("/");
+			}
 			out.print("@" + directory.getSize());
 			out.print("@" + directory.getModifiedTimeStamp());
+
 			out.println();
 			out.close();
 		} catch (final Exception e) {

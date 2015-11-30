@@ -18,16 +18,18 @@ public class Globals {
 	public static Directory						gfsMetadataRoot			= null;
 	public static Directory						gfsMetadataCopy			= null;
 	public static HashMap<String, Directory>	subTreePartitionList	= null;
-	public static HashMap<String, File>			dhtFileMap				= null;
+	public static HashMap<String, File>			nfsFileMap				= null;
+
+	public static final String					NFS_FOLDER				= AppConfig.getValue("server.nfs.folder");
 
 	public static final String					GFS_SERVER_PORT			= "gfs.server.port";
 	public static final String					MDS_SERVER_PORT			= "mds.server.port";
-	public static final String					DHT_SERVER_PORT			= "dht.server.port";
+	public static final String					NFS_SERVER_PORT			= "nfs.server.port";
 	public static final String					CLIENT_MDS_MASTER_PORT	= "client.masterPort";
 
 	public static final String					GFS_MODE				= "GFS";
 	public static final String					MDS_MODE				= "MDS";
-	public static final String					DHT_MODE				= "DHT";
+	public static final String					NFS_MODE				= "NFS";
 	public static final String					ALIVE_STATUS			= "Alive";
 	public static final String					DEAD_STATUS				= "Dead";
 	public static final String					PRIMARY_MDS				= "Primary";
@@ -38,13 +40,13 @@ public class Globals {
 	public static final String					PATH_NOT_FOUND			= "PNF";
 	public static final String					PARTIAL_PATH_FOUND		= "PPF";
 	public static final String					PATH_FOUND				= "PF";
-	
-	public static final String 					OVERALL_INITIATOR_MDS	= "MDS1";
-	public static final String 					MDS_SERVER_ID_START		= "MDS";
-	
-	//File Lock Commands
-	public static final String 					ACQUIRE_READ_LOCK 		= "ARLCK";
-	public static final String 					ACQUIRE_WRITE_LOCK		= "AWLCK";
-	public static final String 					RELEASE_READ_LOCK 		= "RRLCK";
-	public static final String 					RELEASE_WRITE_LOCK		= "RWLCK";
+
+	public static final String					OVERALL_INITIATOR_MDS	= "MDS1";
+	public static final String					MDS_SERVER_ID_START		= "MDS";
+
+	// File Lock Commands
+	public static final String					ACQUIRE_READ_LOCK		= "ARLCK";
+	public static final String					ACQUIRE_WRITE_LOCK		= "AWLCK";
+	public static final String					RELEASE_READ_LOCK		= "RRLCK";
+	public static final String					RELEASE_WRITE_LOCK		= "RWLCK";
 }

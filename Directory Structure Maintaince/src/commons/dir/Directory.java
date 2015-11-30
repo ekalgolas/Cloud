@@ -17,68 +17,67 @@ public class Directory implements Serializable, Cloneable {
 	/**
 	 * Default serial version UID
 	 */
-	private static final long serialVersionUID = 1L;
+	private static final long		serialVersionUID	= 1L;
 
 	/**
 	 * Name of the directory
 	 */
-	private String			name;
+	private String					name;
 
 	/**
 	 * Whether the element is a file or not
 	 */
-	private boolean			isFile;
+	private boolean					isFile;
 
 	/**
 	 * List of child directories or files in this directory
 	 */
-	private List<Directory>	children;
+	private List<Directory>			children;
 
 	/**
 	 * Last Modified Time
 	 */
-	private Long 			modifiedTimeStamp;
+	private Long					modifiedTimeStamp;
 
 	/**
-	 * Size of a directory which is cumulative size of all the files and directories inside
-	 * or individual size in case of a file
+	 * Size of a directory which is cumulative size of all the files and directories inside or individual size in case of a file
 	 */
-	private Long 			size;
+	private Long					size;
 
 	/**
 	 * Contains the inode informations like inode number, MDS details.
 	 */
-	private Inode			inode;
+	private Inode					inode;
 
 	/**
 	 * Counter to keep track of the # of access to this directory.
 	 */
-	private long 			operationCounter;
+	private long					operationCounter;
 
 	/**
 	 * Reentrant Lock for the directory;
 	 */
-	private ReentrantReadWriteLock lock;
-	
+	private ReentrantReadWriteLock	lock;
+
 	/**
 	 * Read lock on the directory
 	 */
-	private ReadLock readLock;
+	private ReadLock				readLock;
 
 	/**
-     * Write lock on the directory
-     */
-	private WriteLock writeLock;
-	
+	 * Write lock on the directory
+	 */
+	private WriteLock				writeLock;
+
 	/**
 	 * Set of client having read lock on this directory
 	 */
-	private final TreeSet<String> readLockClients;
-	
+	private final TreeSet<String>	readLockClients;
+
 	/**
 	 * Client having write lock on this directory
 	 */
-	private String writeLockClient;
+	private String					writeLockClient;
 
 	/**
 	 * Constructor
@@ -129,9 +128,9 @@ public class Directory implements Serializable, Cloneable {
 	 * Initialize read and write lock objects
 	 */
 	private void setupLocks() {
-	    lock = new ReentrantReadWriteLock();
-	    readLock = lock.readLock();
-	    writeLock = lock.writeLock();
+		lock = new ReentrantReadWriteLock();
+		readLock = lock.readLock();
+		writeLock = lock.writeLock();
 	}
 
 	/*
@@ -164,7 +163,7 @@ public class Directory implements Serializable, Cloneable {
 		}
 
 		// Write the details of file or directory as this node
-		stringBuilder.append((root.isFile ? "File: " : "Directory: ") + root.name);
+		stringBuilder.append((root.isFile ? "File: " : "Directory: ") + root.name + " - " + root.lock.getReadLockCount());
 
 		// Do for all sub-directories
 		if (root.children != null) {
@@ -249,7 +248,8 @@ public class Directory implements Serializable, Cloneable {
 	}
 
 	/**
-	 * @param size the size to set
+	 * @param size
+	 *            the size to set
 	 */
 	public void setSize(final Long size) {
 		this.size = size;
@@ -257,6 +257,7 @@ public class Directory implements Serializable, Cloneable {
 
 	/**
 	 * Get the associated inode
+	 *
 	 * @return inode
 	 */
 	public Inode getInode() {
@@ -265,6 +266,7 @@ public class Directory implements Serializable, Cloneable {
 
 	/**
 	 * Set the inode for this directory.
+	 *
 	 * @param inode
 	 */
 	public void setInode(final Inode inode) {
@@ -273,6 +275,7 @@ public class Directory implements Serializable, Cloneable {
 
 	/**
 	 * Get the total operation counter.
+	 *
 	 * @return counter
 	 */
 	public long getOperationCounter() {
@@ -281,6 +284,7 @@ public class Directory implements Serializable, Cloneable {
 
 	/**
 	 * Set the total operation counter.
+	 *
 	 * @param operationCounter
 	 */
 	public void setOperationCounter(final long operationCounter) {
@@ -294,45 +298,47 @@ public class Directory implements Serializable, Cloneable {
 
 	@Override
 	public boolean equals(final Object other) {
-		if(!(other instanceof Directory)) {
+		if (!(other instanceof Directory)) {
 			return false;
 		}
 
 		final Directory that = (Directory) other;
 		return name.equals(that.name)
-			&& isFile == that.isFile;
+				&& isFile == that.isFile;
 	}
-	
+
 	@Override
 	public Object clone() throws CloneNotSupportedException {
 		// TODO Auto-generated method stub
 		return super.clone();
 	}
 
-    /**
-     * @return the readLock
-     */
-    public ReadLock getReadLock() {
-        return readLock;
-    }
+	/**
+	 * @return the readLock
+	 */
+	public ReadLock getReadLock() {
+		return readLock;
+	}
 
-    /**
-     * @return the writeLock
-     */
-    public WriteLock getWriteLock() {
-        return writeLock;
-    }
+	/**
+	 * @return the writeLock
+	 */
+	public WriteLock getWriteLock() {
+		return writeLock;
+	}
 
-    /**
-     * Get the set of clients having lock on this directory
-     * @return set of client ids
-     */
+	/**
+	 * Get the set of clients having lock on this directory
+	 *
+	 * @return set of client ids
+	 */
 	public TreeSet<String> getReadLockClients() {
 		return readLockClients;
-	}	
+	}
 
 	/**
 	 * Get the id of the client having write lock on this directory
+	 *
 	 * @return
 	 */
 	public String getWriteLockClient() {
@@ -341,10 +347,19 @@ public class Directory implements Serializable, Cloneable {
 
 	/**
 	 * Set the client ids having write lock on this directory
+	 *
 	 * @param writeLockClient
 	 */
-	public void setWriteLockClient(String writeLockClient) {
+	public void setWriteLockClient(final String writeLockClient) {
 		this.writeLockClient = writeLockClient;
 	}
-    
+
+	/**
+	 * Check if this node is read locked
+	 *
+	 * @return true if read locked, false if not
+	 */
+	public boolean isReadLocked() {
+		return lock.getReadLockCount() != 0;
+	}
 }

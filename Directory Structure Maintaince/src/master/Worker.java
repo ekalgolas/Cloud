@@ -15,9 +15,9 @@ import master.nfs.NFSDirectoryOperations;
 import org.apache.log4j.Logger;
 
 import com.sun.media.sound.InvalidDataException;
-
 import commons.AppWatch;
 import commons.CommandsSupported;
+import commons.CompletionStatusCode;
 import commons.Globals;
 import commons.Message;
 import commons.dir.Directory;
@@ -32,13 +32,13 @@ import commons.dir.ICommandOperations;
  */
 public class Worker implements Runnable {
 	private static final AppWatch	APPWATCH	= new AppWatch();
-	private final static Logger		LOGGER		= Logger.getLogger(Worker.class);	
+	private final static Logger		LOGGER		= Logger.getLogger(Worker.class);
 	public volatile boolean			isRunning	= true;
 	private final String			listenerType;
 	private final Socket			workerSocket;
 	private ObjectInputStream		inputStream;
-	private ObjectOutputStream		outputStream;	
-	
+	private ObjectOutputStream		outputStream;
+
 
 	/**
 	 * Constructor
@@ -105,14 +105,17 @@ public class Worker implements Runnable {
 					APPWATCH.startWatch("Command execution started...");
 					reply = executeCommand(command, root, replica, partialFilePath, directoryOperations, replicationOperations, message);
 
-					final String performance = APPWATCH.stopAndLogTime("Command execution completed");
-					reply.appendContent(performance);
+					// Append completion code
+					reply.appendCompletionCode(CompletionStatusCode.SUCCESS.name());
 				} catch (final Exception e) {
 					// If any command threw errors, propagate the error to the client
 					reply = new Message(e.getMessage() + " error occurred");
+					reply.appendCompletionCode(CompletionStatusCode.ERROR.name());
 				}
 
-				System.out.println(reply.toString());
+				// Log performance
+				final String performance = APPWATCH.stopAndLogTime("Command execution completed");
+				reply.appendHeader(performance);
 
 				// Write reply to the socket output stream
 				outputStream.writeObject(reply);
@@ -196,10 +199,10 @@ public class Worker implements Runnable {
 				// in the received string
 				argument = command.substring(7);
 
-				reply = directoryOperations.rmdir(root, argument, 
+				reply = directoryOperations.rmdir(root, argument,
 						partialFilePath.toString(), message.getHeader(), "-f");
 				if (replicationOperations != null) {
-					replicationOperations.replicateRmdir(replica, argument);
+					replicationOperations.replicateRmdir(replica, argument, true);
 				}
 
 				logState(command, root);
@@ -208,10 +211,10 @@ public class Worker implements Runnable {
 				// in the received string
 				argument = command.substring(6);
 
-				reply = directoryOperations.rmdir(root, argument, 
+				reply = directoryOperations.rmdir(root, argument,
 						partialFilePath.toString(), message.getHeader());
 				if (replicationOperations != null) {
-					replicationOperations.replicateRmdir(replica, argument);
+					replicationOperations.replicateRmdir(replica, argument, false);
 				}
 
 				logState(command, root);
@@ -223,7 +226,7 @@ public class Worker implements Runnable {
 				reply = directoryOperations.cd(root, argument, partialFilePath.toString());
 
 				logState(command, root);
-			} 
+			}
 			else if(command.startsWith(Globals.ACQUIRE_READ_LOCK))
 			{
 				LOGGER.debug("Calling Acquire Read lock");
@@ -232,9 +235,9 @@ public class Worker implements Runnable {
 				argument = command.substring(6);
 				LOGGER.debug("argument:"+argument);
 
-				reply = directoryOperations.acquireReadLocks(root, 
-									argument, 
-									partialFilePath.toString());
+				reply = directoryOperations.acquireReadLocks(root,
+						argument,
+						partialFilePath.toString());
 			}
 			else if(command.startsWith(Globals.ACQUIRE_WRITE_LOCK))
 			{
@@ -243,9 +246,9 @@ public class Worker implements Runnable {
 				// in the received string
 				argument = command.substring(6);
 
-				reply = directoryOperations.acquireWriteLocks(root, 
-									argument, 
-									partialFilePath.toString());
+				reply = directoryOperations.acquireWriteLocks(root,
+						argument,
+						partialFilePath.toString());
 			}
 			else if(command.startsWith(Globals.RELEASE_READ_LOCK))
 			{
@@ -253,9 +256,9 @@ public class Worker implements Runnable {
 				// in the received string
 				argument = command.substring(6);
 
-				reply = directoryOperations.releaseReadLocks(root, 
-									argument, 
-									partialFilePath.toString());
+				reply = directoryOperations.releaseReadLocks(root,
+						argument,
+						partialFilePath.toString());
 			}
 			else if(command.startsWith(Globals.RELEASE_WRITE_LOCK))
 			{
@@ -263,9 +266,9 @@ public class Worker implements Runnable {
 				// in the received string
 				argument = command.substring(6);
 
-				reply = directoryOperations.releaseWriteLocks(root, 
-									argument, 
-									partialFilePath.toString());
+				reply = directoryOperations.releaseWriteLocks(root,
+						argument,
+						partialFilePath.toString());
 			}
 			else if (command.startsWith(CommandsSupported.EXIT.name())) {
 				// Close the connection
@@ -276,6 +279,9 @@ public class Worker implements Runnable {
 			}
 		} finally {
 			directoryOperations.releaseParentReadLocks(root, argument);
+			if (replicationOperations != null) {
+				replicationOperations.releaseParentReadLocks(replica, argument);
+			}
 		}
 
 		LOGGER.debug(reply);
