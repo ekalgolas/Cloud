@@ -145,7 +145,7 @@ public class Master {
 			Globals.gfsMetadataCopy = replica;
 
 			LOGGER.debug("Generating MDS Metadata");
-			generateMDSMetadata();
+			// generateMDSMetadata();
 		} catch (ClassNotFoundException | IOException e) {
 			LOGGER.error("", e);
 		}

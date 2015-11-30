@@ -39,7 +39,6 @@ public class Worker implements Runnable {
 	private ObjectInputStream		inputStream;
 	private ObjectOutputStream		outputStream;
 
-
 	/**
 	 * Constructor
 	 *
@@ -80,7 +79,7 @@ public class Worker implements Runnable {
 				try {
 					final ICommandOperations directoryOperations;
 					final GFSMetadataReplicationOperations replicationOperations;
-					LOGGER.debug("listenerType:"+listenerType);
+					LOGGER.debug("listenerType:" + listenerType);
 
 					// Figure out the command and call the operations
 					if (Globals.GFS_MODE.equalsIgnoreCase(listenerType)) {
@@ -122,6 +121,7 @@ public class Worker implements Runnable {
 				outputStream.flush();
 			} catch (final IOException | ClassNotFoundException e) {
 				LOGGER.error("", e);
+				Thread.yield();
 			}
 		}
 	}
@@ -159,7 +159,7 @@ public class Worker implements Runnable {
 		Message reply = null;
 		String argument = "";
 		try {
-			LOGGER.debug("partialFilePath:"+partialFilePath);
+			LOGGER.debug("partialFilePath:" + partialFilePath);
 			if (command.startsWith(CommandsSupported.LSL.name())) {
 				// Command line parameter (directory name) start from index '4'
 				// in the received string
@@ -182,7 +182,7 @@ public class Worker implements Runnable {
 					replicationOperations.replicateMkdir(root, replica, argument);
 				}
 
-				logState(command, root);
+				// logState(command, root);
 			} else if (command.startsWith(CommandsSupported.TOUCH.name())) {
 				// Command line parameter (directory name) start from index '6'
 				// in the received string
@@ -193,7 +193,7 @@ public class Worker implements Runnable {
 					replicationOperations.replicateTouch(root, replica, argument);
 				}
 
-				logState(command, root);
+				// logState(command, root);
 			} else if (command.startsWith(CommandsSupported.RMDIRF.name())) {
 				// Command line parameter (directory name) start from index '7'
 				// in the received string
@@ -205,7 +205,7 @@ public class Worker implements Runnable {
 					replicationOperations.replicateRmdir(replica, argument, true);
 				}
 
-				logState(command, root);
+				// logState(command, root);
 			} else if (command.startsWith(CommandsSupported.RMDIR.name())) {
 				// Command line parameter (directory name) start from index '6'
 				// in the received string
@@ -217,7 +217,7 @@ public class Worker implements Runnable {
 					replicationOperations.replicateRmdir(replica, argument, false);
 				}
 
-				logState(command, root);
+				// logState(command, root);
 			} else if (command.startsWith(CommandsSupported.CD.name())) {
 				// Command line parameter (directory name) start from index '3'
 				// in the received string
@@ -225,21 +225,21 @@ public class Worker implements Runnable {
 
 				reply = directoryOperations.cd(root, argument, partialFilePath.toString());
 
-				logState(command, root);
+				// logState(command, root);
 			}
-			else if(command.startsWith(Globals.ACQUIRE_READ_LOCK))
+			else if (command.startsWith(Globals.ACQUIRE_READ_LOCK))
 			{
 				LOGGER.debug("Calling Acquire Read lock");
 				// Command line parameter (directory name) start from index '6'
 				// in the received string
 				argument = command.substring(6);
-				LOGGER.debug("argument:"+argument);
+				LOGGER.debug("argument:" + argument);
 
 				reply = directoryOperations.acquireReadLocks(root,
 						argument,
 						partialFilePath.toString());
 			}
-			else if(command.startsWith(Globals.ACQUIRE_WRITE_LOCK))
+			else if (command.startsWith(Globals.ACQUIRE_WRITE_LOCK))
 			{
 				LOGGER.debug("Calling Acquire Write lock");
 				// Command line parameter (directory name) start from index '6'
@@ -250,7 +250,7 @@ public class Worker implements Runnable {
 						argument,
 						partialFilePath.toString());
 			}
-			else if(command.startsWith(Globals.RELEASE_READ_LOCK))
+			else if (command.startsWith(Globals.RELEASE_READ_LOCK))
 			{
 				// Command line parameter (directory name) start from index '6'
 				// in the received string
@@ -260,7 +260,7 @@ public class Worker implements Runnable {
 						argument,
 						partialFilePath.toString());
 			}
-			else if(command.startsWith(Globals.RELEASE_WRITE_LOCK))
+			else if (command.startsWith(Globals.RELEASE_WRITE_LOCK))
 			{
 				// Command line parameter (directory name) start from index '6'
 				// in the received string
