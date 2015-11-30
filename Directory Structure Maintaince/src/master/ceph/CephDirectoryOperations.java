@@ -66,9 +66,6 @@ public class CephDirectoryOperations implements ICommandOperations {
 			if (root.getName().equals(path)) {
 				found = true;
 				countLevel++;
-				Long operationCounter = root.getOperationCounter();
-				operationCounter++;
-				root.setOperationCounter(operationCounter);
 			}
 			
 			if(root.getChildren() != null)
@@ -80,9 +77,6 @@ public class CephDirectoryOperations implements ICommandOperations {
 						root = child;
 						found = true;	
 						countLevel++;
-						Long operationCounter = child.getOperationCounter();
-						operationCounter++;
-						child.setOperationCounter(operationCounter);
 						break;
 					}
 				}
