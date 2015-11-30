@@ -30,10 +30,10 @@ public class CSVFileWriter {
 	 */
 	public static void writeToFile(final Message message,
 			final String command)
-					throws IOException {
+			throws IOException {
 		// Find and match the time taken
 		final Pattern p = Pattern.compile("\\[([^\\]]*)\\]");
-		final Matcher matcher = p.matcher(message.getHeader());
+		final Matcher matcher = p.matcher(message.getPerformance());
 		String time = null;
 		if (matcher.find()) {
 			final String[] match = matcher.group(1).split(" ");

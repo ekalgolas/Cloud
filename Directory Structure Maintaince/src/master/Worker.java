@@ -113,7 +113,7 @@ public class Worker implements Runnable {
 
 				// Log performance
 				final String performance = APPWATCH.stopAndLogTime("Command execution completed");
-				reply.appendHeader(performance);
+				reply.appendPerformance(performance);
 
 				// Write reply to the socket output stream
 				outputStream.writeObject(reply);
@@ -152,9 +152,9 @@ public class Worker implements Runnable {
 			final ICommandOperations directoryOperations,
 			final GFSMetadataReplicationOperations replicationOperations,
 			final Message message)
-			throws InvalidPropertiesFormatException,
-			InvalidDataException,
-			CloneNotSupportedException {
+					throws InvalidPropertiesFormatException,
+					InvalidDataException,
+					CloneNotSupportedException {
 		Message reply = null;
 		String argument = "";
 		try {
