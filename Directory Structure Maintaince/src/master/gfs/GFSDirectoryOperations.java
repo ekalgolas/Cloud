@@ -244,8 +244,10 @@ public class GFSDirectoryOperations implements ICommandOperations {
 		for (final Directory child : contents) {
 			if (child.getName()
 				.equalsIgnoreCase(name)) {
+				child.getWriteLock().lock();
 				// Already present, set modified timestamp to current
 				child.setModifiedTimeStamp(new Date().getTime());
+				child.getWriteLock().unlock();
 				found = true;
 				break;
 			}

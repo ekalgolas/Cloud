@@ -37,16 +37,21 @@ public class GFSMetadataReplicationOperations extends GFSDirectoryOperations {
 
 		final Directory createdDir = search(primaryRoot, path);
 		if (createdDir == null) {
+			releaseParentReadLocks(primaryRoot, path);
 			throw new InvalidPathException(path, "Does not exist in primary metadata");
 		}
 
 		final Directory replicaParentDir = search(replicaRoot, dirPath);
 		if (replicaParentDir == null) {
+			releaseParentReadLocks(primaryRoot, path);
 			throw new InvalidPathException(dirPath, "Does not exist in replica metadata");
 		}
 
+		replicaParentDir.getWriteLock().lock();
 		final Directory dir = (Directory) createdDir.clone();
 		replicaParentDir.getChildren().add(dir);
+		replicaParentDir.getWriteLock().lock();
+		releaseParentReadLocks(primaryRoot, path);
 	}
 
 	/**
@@ -59,7 +64,7 @@ public class GFSMetadataReplicationOperations extends GFSDirectoryOperations {
 	 * @throws InvalidPropertiesFormatException
 	 */
 	public void replicateRmdir(final Directory replicaRoot,
-			final String path)
+			final String path, final boolean isForceRemove)
 					throws InvalidPropertiesFormatException {
 		// Check if path is valid
 		if (path.charAt(path.length() - 1) != '/') {
@@ -84,11 +89,19 @@ public class GFSMetadataReplicationOperations extends GFSDirectoryOperations {
 		for (final Directory childDirectory : subDirectories) {
 			if (childDirectory.getName().equals(name)) {
 				directoryToRemove = childDirectory;
+				directoryToRemove.getWriteLock().lock();
 				break;
 			}
 		}
 
-		subDirectories.remove(directoryToRemove);
+		// Remove only if directory is empty or force removal is asked
+		final boolean canRemove = isForceRemove || directoryToRemove.isEmptyDirectory();
+
+		if (canRemove) {
+			subDirectories.remove(directoryToRemove);
+		}
+		// Release the lock
+		directoryToRemove.getWriteLock().unlock();
 	}
 
 	/**
@@ -120,20 +133,25 @@ public class GFSMetadataReplicationOperations extends GFSDirectoryOperations {
 
 		final Directory touchedFile = search(primaryRoot, path);
 		if (touchedFile == null) {
+			releaseParentReadLocks(primaryRoot, path);
 			throw new InvalidPathException(path, "Does not exist in primary metadata");
 		}
 
 		final Directory replicaParentDirectory = search(replicaRoot, dirPath);
 		if (replicaParentDirectory == null) {
+			releaseParentReadLocks(primaryRoot, path);
 			throw new InvalidPathException(dirPath, "Does not exist in replica metadata");
 		}
 
+		replicaParentDirectory.getWriteLock().lock();
 		final List<Directory> contents = replicaParentDirectory.getChildren();
 		boolean found = false;
 		for (final Directory child : contents) {
 			if (child.getName().equals(touchedFile.getName())) {
+				child.getWriteLock().lock();
 				// Already present, set modified timestamp to current
 				child.setModifiedTimeStamp(touchedFile.getModifiedTimeStamp());
+				child.getWriteLock().unlock();
 				found = true;
 				break;
 			}
@@ -147,5 +165,7 @@ public class GFSMetadataReplicationOperations extends GFSDirectoryOperations {
 		}
 
 		replicaParentDirectory.setChildren(contents);
+		replicaParentDirectory.getWriteLock().unlock();
+		releaseParentReadLocks(primaryRoot, path);
 	}
 }

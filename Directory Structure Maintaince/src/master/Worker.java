@@ -202,7 +202,7 @@ public class Worker implements Runnable {
 				reply = directoryOperations.rmdir(root, argument,
 						partialFilePath.toString(), message.getHeader(), "-f");
 				if (replicationOperations != null) {
-					replicationOperations.replicateRmdir(replica, argument);
+					replicationOperations.replicateRmdir(replica, argument, true);
 				}
 
 				logState(command, root);
@@ -214,7 +214,7 @@ public class Worker implements Runnable {
 				reply = directoryOperations.rmdir(root, argument,
 						partialFilePath.toString(), message.getHeader());
 				if (replicationOperations != null) {
-					replicationOperations.replicateRmdir(replica, argument);
+					replicationOperations.replicateRmdir(replica, argument, false);
 				}
 
 				logState(command, root);
@@ -279,6 +279,9 @@ public class Worker implements Runnable {
 			}
 		} finally {
 			directoryOperations.releaseParentReadLocks(root, argument);
+			if (replicationOperations != null) {
+				replicationOperations.releaseParentReadLocks(replica, argument);
+			}
 		}
 
 		LOGGER.debug(reply);
