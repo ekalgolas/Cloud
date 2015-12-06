@@ -414,7 +414,7 @@ public class CephClient {
 		final CommandGenerator generator = new CommandGenerator();
 		try {
 			generator.generateCommands(Integer.parseInt(AppConfig.getValue("client.numberOfCommands")));
-		} catch (NumberFormatException | IOException e) {
+		} catch (NumberFormatException | IOException | ClassNotFoundException e) {
 			// Exit if commands cannot be generated
 			LOGGER.error("Error occured while generating the commands", e);
 			System.exit(0);
