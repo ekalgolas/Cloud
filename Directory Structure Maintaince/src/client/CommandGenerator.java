@@ -1,6 +1,7 @@
 package client;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -14,10 +15,13 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import master.metadata.MetadataManager;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.distribution.ZipfDistribution;
 
 import com.sun.media.sound.InvalidDataException;
+
 import commons.AppConfig;
 import commons.CommandsSupported;
 import commons.dir.Directory;
@@ -37,16 +41,20 @@ public class CommandGenerator {
 	 * @throws UnsupportedEncodingException
 	 * @throws FileNotFoundException
 	 * @throws IOException
+	 * @throws ClassNotFoundException 
 	 */
 	public void generateCommands(int size)
 			throws UnsupportedEncodingException,
 			FileNotFoundException,
-			IOException {
+			IOException, ClassNotFoundException {
 		// Get list of commands supported
 		final List<String> values = Arrays.asList(AppConfig.getValue("client.commandList").split(","));
 
+		//Get metadata structure
+		final Directory metadata = getMetadata();
+
 		// Get paths
-		ArrayList<String> paths = getAllPaths(DirectoryParser.parseText(AppConfig.getValue("client.inputFile")));
+		ArrayList<String> paths = getAllPaths(metadata);
 
 		// Distribute paths
 		paths = createZipfDistribution(paths);
@@ -77,6 +85,17 @@ public class CommandGenerator {
 			// Lastly write the exit command
 			writer.write(CommandsSupported.EXIT.name());
 		}
+	}
+
+	Directory getMetadata() throws ClassNotFoundException, IOException {
+		final String storedMetadata = AppConfig.getValue("server.gfs.metadataFile");
+		final File meatdataFile = new File(storedMetadata);
+		
+		final Directory directory = meatdataFile.exists()
+				? MetadataManager.generateGFSMetadata()
+				: DirectoryParser.parseText(AppConfig.getValue("client.inputFile"));
+
+		return directory;
 	}
 
 	/**
