@@ -345,8 +345,14 @@ public class NFSDirectoryOperations implements ICommandOperations {
 			linename = pathname.toString();
 		}
 		else {
+			if(names.size() == 1){
+				path = "root";
+				linename = "root/";			
+			}
+			else{
 			path = getPath(filepath, pathname, names, names.size() - 2);
 			linename = pathname + "/" + names.get(names.size() - 1) + "/";
+			}
 		}
 
 		final File file = new File(Paths.get(Globals.NFS_FOLDER, path + ".txt").toString());

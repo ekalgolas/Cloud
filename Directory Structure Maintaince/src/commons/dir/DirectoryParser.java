@@ -46,8 +46,6 @@ public class DirectoryParser {
 		levelDirectoryMap.put(0, directory);
 
 		try (final Scanner scanner = new Scanner(new File(filePath))) {
-			// Ignore first line
-			scanner.nextLine();
 
 			// Read till EOF
 			while (scanner.hasNext()) {
@@ -60,33 +58,42 @@ public class DirectoryParser {
 				// Calculate current level
 				int currentLevel = StringUtils.countMatches(line, "├")
 						+ StringUtils.countMatches(line, "└")
-						+ StringUtils.countMatches(line, "│");
+						+ StringUtils.countMatches(line, "│") + 1;
 				if (line.startsWith(" ")) {
 					currentLevel++;
 				}
 
-				// Get the directory or file name - ignore the symbols
-				final String[] split = line.split("]");
-				final String dirName = split[split.length - 1].trim();
+				Directory dir = null;
+				if (currentLevel == 1) {
+					// A new root is found in the input, make it child of the super root
+					dir = new Directory(line, false, new ArrayList<>(), 0L, 0L);
+				} 
+				else {
+					// Get the directory or file name - ignore the symbols
+					final String[] split = line.split("]");
+					final String dirName = split[split.length - 1].trim();
 
-				// Figure out if it is a file or a directory
-				String name = dirName;
-				boolean isFile = true;
-				if (dirName.endsWith("/") || dirName.endsWith("\\")) {
-					// Ends with '/' implies it is a directory and NOT a file
-					name = dirName.substring(0, dirName.length() - 1);
-					isFile = false;
+					// Figure out if it is a file or a directory
+					String name = dirName;
+					boolean isFile = true;
+					if (dirName.endsWith("/") || dirName.endsWith("\\")) {
+						// Ends with '/' implies it is a directory and NOT a file
+						name = dirName.substring(0, dirName.length() - 1);
+						isFile = false;
+					}
+
+					// Extract other info from first part of the split
+					final String details = split[0].substring(
+							StringUtils.lastIndexOf(split[0], "[") + 1).trim();
+					final String[] detail = details.split(" ");
+					final String size = detail[0].trim();
+					final String readableTimeStamp = detail[detail.length - 1].trim();
+
+					// Create a new directory object
+					dir = new Directory(name, isFile, new ArrayList<>(),
+							Long.parseLong(readableTimeStamp),
+							Long.parseLong(size));
 				}
-
-				// Extract other info from first part of the split
-				final String details = split[0].substring(StringUtils.lastIndexOf(split[0], "[") + 1).trim();
-				final String[] detail = details.split(" ");
-				final String size = detail[0].trim();
-				final String readableTimeStamp = detail[1].trim();
-
-				// Create a new directory object
-				final Directory dir = new Directory(name, isFile, new ArrayList<>(),
-						Long.parseLong(readableTimeStamp), Long.parseLong(size));
 
 				// Put current directory to current level
 				levelDirectoryMap.put(currentLevel, dir);
