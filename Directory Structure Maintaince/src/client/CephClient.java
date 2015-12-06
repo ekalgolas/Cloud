@@ -1,5 +1,6 @@
 package client;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -197,7 +198,7 @@ public class CephClient {
 		int number = 0;
 
 		// Read commands
-		try (Scanner scanner = new Scanner(System.in)) {
+		try (Scanner scanner = new Scanner(new File(inputFileName))) {
 			while (scanner.hasNext()) {
 				String command = scanner.nextLine();
 				LOGGER.debug("command:" + command);
