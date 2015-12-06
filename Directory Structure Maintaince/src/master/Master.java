@@ -127,47 +127,63 @@ public class Master {
 			throws InvalidPropertiesFormatException {
 		// Initialize master
 		new Master();
+		final String serverType = AppConfig.getValue("server.type");
 
 		try {
 			LOGGER.debug("Master Started");
-			// Generate metadata for existing directory structure
-			final Directory directory = MetadataManager.generateGFSMetadata();
-			final HashMap<String, File> fileMap = MetadataManager.generateNFSMetadata();
-
-			// Set the globals root
-			Globals.gfsMetadataRoot = directory;
-			Globals.nfsFileMap = fileMap;
-
-			// Create metadata replica
-			final Directory replica = MetadataManager.generateGFSMetadata();
-
-			// Set global replica
-			Globals.gfsMetadataCopy = replica;
-
-			LOGGER.debug("Generating MDS Metadata");
-			generateMDSMetadata();
+			
+			// Generate metadata for existing directory structure and et the globals root
+			if(serverType.equalsIgnoreCase(Globals.GFS_MODE)) {
+				final Directory directory = MetadataManager.generateGFSMetadata();
+				Globals.gfsMetadataRoot = directory;
+				// Create metadata replica and set global replica
+				final Directory replica = MetadataManager.generateGFSMetadata();
+				Globals.gfsMetadataCopy = replica;
+			}
+			else if(serverType.equalsIgnoreCase(Globals.NFS_MODE)) {
+				final HashMap<String, File> fileMap = MetadataManager.generateNFSMetadata();
+				Globals.nfsFileMap = fileMap;
+			}
+			else if(serverType.equalsIgnoreCase(Globals.MDS_MODE)) {
+				LOGGER.debug("Generating MDS Metadata");
+				generateMDSMetadata();
+			}
+			System.out.println("Done");
 		} catch (ClassNotFoundException | IOException e) {
 			LOGGER.error("", e);
 		}
 
+		Thread gfsListenerThread = null;
+		Thread mdsListenerThread = null;
+		Thread nfsListenerThread = null;
+
 		// Launch listener to process input requests
-		final Listener gfsListener = new Listener(gfsListenerSocket, Globals.GFS_MODE);
-		final Thread gfsListenerThread = new Thread(gfsListener);
-		gfsListenerThread.start();
-
-		final Listener mdsListener = new Listener(mdsListenerSocket, Globals.MDS_MODE);
-		final Thread mdsListenerThread = new Thread(mdsListener);
-		mdsListenerThread.start();
-
-		final Listener nfsListener = new Listener(nfsListenerSocket, Globals.NFS_MODE);
-		final Thread nfsListenerThread = new Thread(nfsListener);
-		nfsListenerThread.start();
+		if (serverType.equalsIgnoreCase(Globals.GFS_MODE)) {
+			final Listener gfsListener = new Listener(gfsListenerSocket,
+					Globals.GFS_MODE);
+			gfsListenerThread = new Thread(gfsListener);
+			gfsListenerThread.start();
+		} else if (serverType.equalsIgnoreCase(Globals.MDS_MODE)) {
+			final Listener mdsListener = new Listener(mdsListenerSocket,
+					Globals.MDS_MODE);
+			mdsListenerThread = new Thread(mdsListener);
+			mdsListenerThread.start();
+		} else if (serverType.equalsIgnoreCase(Globals.NFS_MODE)) {
+			final Listener nfsListener = new Listener(nfsListenerSocket,
+					Globals.NFS_MODE);
+			nfsListenerThread = new Thread(nfsListener);
+			nfsListenerThread.start();
+		}
 
 		// Wait for listener thread to finish
 		try {
-			gfsListenerThread.join();
-			mdsListenerThread.join();
-			nfsListenerThread.join();
+			if (serverType.equalsIgnoreCase(Globals.GFS_MODE)) {
+				gfsListenerThread.join();
+			} else if (serverType.equalsIgnoreCase(Globals.MDS_MODE)) {
+				mdsListenerThread.join();
+			} else if (serverType.equalsIgnoreCase(Globals.NFS_MODE)) {
+				nfsListenerThread.join();
+			}
 		} catch (final InterruptedException e) {
 			Thread.currentThread().interrupt();
 			LOGGER.error("", e);
@@ -188,7 +204,6 @@ public class Master {
 			LOGGER.debug("Initial MDS");
 			MetadataManager.generateOverallCephPartition();
 			sendToMDS("MDS2", "MDS2");
-			sendToMDS("MDS3", "MDS3");
 			Globals.subTreePartitionList = (HashMap<String, Directory>) MetadataManager.deserializeObject("MDS1.img");
 			MetadataManager.populateInodeDetails();
 			MetadataManager.serializeObject(Globals.subTreePartitionList, mdsServerId);

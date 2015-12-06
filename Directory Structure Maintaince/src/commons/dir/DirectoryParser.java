@@ -1,11 +1,12 @@
 package commons.dir;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Scanner;
+import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -45,12 +46,13 @@ public class DirectoryParser {
 		directory.setSize(0L);
 		levelDirectoryMap.put(0, directory);
 
-		try (final Scanner scanner = new Scanner(new File(filePath))) {
 
+		try {
 			// Read till EOF
-			while (scanner.hasNext()) {
-				// Read line. If empty, break
-				final String line = scanner.nextLine();
+			List<String> lines = FileUtils.readLines(new File(filePath));
+
+			for (String line : lines) {
+
 				if (StringUtils.isBlank(line)) {
 					break;
 				}
@@ -65,10 +67,10 @@ public class DirectoryParser {
 
 				Directory dir = null;
 				if (currentLevel == 1) {
-					// A new root is found in the input, make it child of the super root
+					// A new root is found in the input, make it child of the
+					// super root
 					dir = new Directory(line, false, new ArrayList<>(), 0L, 0L);
-				} 
-				else {
+				} else {
 					// Get the directory or file name - ignore the symbols
 					final String[] split = line.split("]");
 					final String dirName = split[split.length - 1].trim();
@@ -77,7 +79,8 @@ public class DirectoryParser {
 					String name = dirName;
 					boolean isFile = true;
 					if (dirName.endsWith("/") || dirName.endsWith("\\")) {
-						// Ends with '/' implies it is a directory and NOT a file
+						// Ends with '/' implies it is a directory and NOT a
+						// file
 						name = dirName.substring(0, dirName.length() - 1);
 						isFile = false;
 					}
@@ -87,7 +90,8 @@ public class DirectoryParser {
 							StringUtils.lastIndexOf(split[0], "[") + 1).trim();
 					final String[] detail = details.split(" ");
 					final String size = detail[0].trim();
-					final String readableTimeStamp = detail[detail.length - 1].trim();
+					final String readableTimeStamp = detail[detail.length - 1]
+							.trim();
 
 					// Create a new directory object
 					dir = new Directory(name, isFile, new ArrayList<>(),
@@ -98,11 +102,13 @@ public class DirectoryParser {
 				// Put current directory to current level
 				levelDirectoryMap.put(currentLevel, dir);
 
-				// Add the current node into children list of previous level node
-				final Directory parent = levelDirectoryMap.get(currentLevel - 1);
+				// Add the current node into children list of previous level
+				// node
+				final Directory parent = levelDirectoryMap
+						.get(currentLevel - 1);
 				parent.getChildren().add(dir);
 			}
-		} catch (final FileNotFoundException e) {
+		} catch (final IOException e) {
 			LOGGER.error("", e);
 		}
 
