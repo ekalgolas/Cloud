@@ -202,41 +202,78 @@ public class Master {
 			ClassNotFoundException {
 		if (Globals.OVERALL_INITIATOR_MDS.equals(mdsServerId)) {
 			LOGGER.debug("Initial MDS");
-			MetadataManager.generateOverallCephPartition();
-			sendToMDS("MDS2", "MDS2");
-			Globals.subTreePartitionList = (HashMap<String, Directory>) MetadataManager.deserializeObject("MDS1.img");
-			MetadataManager.populateInodeDetails();
-			MetadataManager.serializeObject(Globals.subTreePartitionList, mdsServerId);
 			final HashMap<String, String> clusterMap = new HashMap<>();
 			final HashMap<String, ArrayList<String>> primaryToReplicaMap = new HashMap<>();
 			MetadataManager.parseClusterMapDetails(clusterMap, primaryToReplicaMap);
-			if (primaryToReplicaMap.get(mdsServerId) != null) {
-				for (final String replicaName : primaryToReplicaMap.get(mdsServerId)) {
-					sendToMDS(replicaName, mdsServerId);
+			boolean allSerializedAvailable = false;
+			for(final String primaryMds:primaryToReplicaMap.keySet())
+			{
+				File serFile = new File("data/"+primaryMds+".img");
+				allSerializedAvailable &= serFile.exists();
+			}
+			if(!allSerializedAvailable)
+			{
+				MetadataManager.generateOverallCephPartition();
+				sendToMDS("MDS2", "MDS2");
+			}
+			Globals.subTreePartitionList = (HashMap<String, Directory>) MetadataManager.deserializeObject("MDS1.img");
+			if(!allSerializedAvailable)
+			{
+				MetadataManager.populateInodeDetails();
+				MetadataManager.serializeObject(Globals.subTreePartitionList, mdsServerId);			
+				if (primaryToReplicaMap.get(mdsServerId) != null) {
+					for (final String replicaName : primaryToReplicaMap.get(mdsServerId)) {
+						sendToMDS(replicaName, mdsServerId);
+					}
 				}
 			}
 		} else if (mdsServerId.startsWith(Globals.MDS_SERVER_ID_START)) {
-			final ServerSocket initialReplicaLoad = new ServerSocket(Integer.parseInt(AppConfig.getValue("mds.initial.port")));
-			final Socket primarySocket = initialReplicaLoad.accept();
-			final ObjectInputStream inputStream = new ObjectInputStream(primarySocket.getInputStream());
-			Globals.subTreePartitionList = (HashMap<String, Directory>) inputStream.readObject();
-			initialReplicaLoad.close();
-			MetadataManager.populateInodeDetails();
-			MetadataManager.serializeObject(Globals.subTreePartitionList, mdsServerId);
-			final HashMap<String, String> clusterMap = new HashMap<>();
-			final HashMap<String, ArrayList<String>> primaryToReplicaMap = new HashMap<>();
-			MetadataManager.parseClusterMapDetails(clusterMap, primaryToReplicaMap);
-			if (primaryToReplicaMap.get(mdsServerId) != null) {
-				for (final String replicaName : primaryToReplicaMap.get(mdsServerId)) {
-					sendToMDS(replicaName, mdsServerId);
+			File serFile = new File("data/"+mdsServerId.toUpperCase()+".img");
+			boolean serFileAvailable = serFile.exists();
+			if(!serFileAvailable)
+			{
+				final ServerSocket initialReplicaLoad = new ServerSocket(Integer.parseInt(AppConfig.getValue("mds.initial.port")));
+				final Socket primarySocket = initialReplicaLoad.accept();
+				final ObjectInputStream inputStream = new ObjectInputStream(primarySocket.getInputStream());
+				Globals.subTreePartitionList = (HashMap<String, Directory>) inputStream.readObject();
+				initialReplicaLoad.close();
+				MetadataManager.populateInodeDetails();
+				MetadataManager.serializeObject(Globals.subTreePartitionList, mdsServerId);
+				final HashMap<String, String> clusterMap = new HashMap<>();
+				final HashMap<String, ArrayList<String>> primaryToReplicaMap = new HashMap<>();
+				MetadataManager.parseClusterMapDetails(clusterMap, primaryToReplicaMap);
+				if (primaryToReplicaMap.get(mdsServerId) != null) {
+					for (final String replicaName : primaryToReplicaMap.get(mdsServerId)) {
+						sendToMDS(replicaName, mdsServerId);
+					}
 				}
 			}
-		} else {
-			final ServerSocket initialReplicaLoad = new ServerSocket(Integer.parseInt(AppConfig.getValue("mds.initial.port")));
-			final Socket primarySocket = initialReplicaLoad.accept();
-			final ObjectInputStream inputStream = new ObjectInputStream(primarySocket.getInputStream());
-			Globals.subTreePartitionList = (HashMap<String, Directory>) inputStream.readObject();
-			initialReplicaLoad.close();
+			else
+			{
+				Globals.subTreePartitionList = (HashMap<String, Directory>) 
+													MetadataManager.deserializeObject(
+															mdsServerId.toUpperCase()+".img"); 
+			}
+		} 
+		else 
+		{
+			File serFile = new File("data/MDS"+mdsServerId.charAt(mdsServerId.length()-1)+".img");
+			boolean serFileAvailable = serFile.exists();
+			if(!serFileAvailable)
+			{	
+				final ServerSocket initialReplicaLoad = new ServerSocket(Integer.parseInt(AppConfig.getValue("mds.initial.port")));
+				final Socket primarySocket = initialReplicaLoad.accept();
+				final ObjectInputStream inputStream = new ObjectInputStream(primarySocket.getInputStream());
+				Globals.subTreePartitionList = (HashMap<String, Directory>) inputStream.readObject();
+				initialReplicaLoad.close();
+			}
+			else
+			{
+				Globals.subTreePartitionList = (HashMap<String, Directory>) 
+													MetadataManager.deserializeObject(
+															"MDS"+mdsServerId.charAt(
+															mdsServerId.length()-1)+".img");
+			}
 		}
 	}
 }
