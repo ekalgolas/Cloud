@@ -30,7 +30,7 @@ public class CSVFileWriter {
 	 */
 	public static void writeToFile(final Message message,
 			final String command)
-			throws IOException {
+					throws IOException {
 		// Find and match the time taken
 		final Pattern p = Pattern.compile("\\[([^\\]]*)\\]");
 		final Matcher matcher = p.matcher(message.getPerformance());
@@ -42,7 +42,7 @@ public class CSVFileWriter {
 
 		// Get level, completion code and command type
 		final String[] splits = command.split(" ");
-		final String level = splits[1].split("/").length + "";
+		final String level = command.substring(splits[0].length()).split("/").length + "";
 		final String result = message.getCompletionCode().toString();
 
 		// Get type of file system

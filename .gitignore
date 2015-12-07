@@ -3,3 +3,7 @@ bin
 .classpath
 *~
 target/
+*.RData
+*.Rhistory
+*.jpg
+*.csv

@@ -131,7 +131,7 @@ public class CephClient {
 		boolean status = false;
 		try {
 			final String[] commandParse = command.split(" ");
-			final String executableCommand = commandParse[1].trim();
+			final String executableCommand = command.substring(commandParse[0].length() + 1).trim();
 			final String name;
 			final String dirPath;
 			if (!"".equals(executableCommand) && !"/".equals(executableCommand) && !"root".equals(executableCommand)) {
@@ -150,7 +150,8 @@ public class CephClient {
 			}
 
 			// Send command to master
-			outputStream.writeObject(new Message((isReadLock ? Globals.ACQUIRE_READ_LOCK : Globals.ACQUIRE_WRITE_LOCK) + " " + lockedPath.toString(), clientId));
+			outputStream
+			.writeObject(new Message((isReadLock ? Globals.ACQUIRE_READ_LOCK : Globals.ACQUIRE_WRITE_LOCK) + " " + lockedPath.toString(), clientId));
 			outputStream.flush();
 
 			// Wait and read the reply
@@ -386,12 +387,6 @@ public class CephClient {
 		} catch (final IOException | ClassNotFoundException e) {
 			LOGGER.error("Error occured while executing commands", e);
 			System.exit(0);
-		} finally {
-			try {
-				socket.close();
-			} catch (final IOException ioexp) {
-				LOGGER.error(new Message(ioexp.getLocalizedMessage(), "", CompletionStatusCode.ERROR.name()));
-			}
 		}
 	}
 
