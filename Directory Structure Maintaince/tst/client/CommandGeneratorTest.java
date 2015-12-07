@@ -128,10 +128,11 @@ public class CommandGeneratorTest {
 	 * Tests if commands can be generated successfully from an input file
 	 *
 	 * @throws IOException
+	 * @throws ClassNotFoundException
 	 */
 	@Test
 	public void testCommandGeneration()
-			throws IOException {
+			throws IOException, ClassNotFoundException {
 		// Create files for configuration, input and output
 		final File conf = folder.newFile();
 		final File inputFile = folder.newFile();

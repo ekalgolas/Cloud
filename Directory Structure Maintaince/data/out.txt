@@ -1,4 +1,4 @@
-Fall 2015/
+Fall 2015
 ├── [     198852 1443563302]  AcademicCalendarFall2015.pdf
 ├── [   26192991 1444457229]  AOS/
 │   ├── [       3016 1443670856]  grade.sh
