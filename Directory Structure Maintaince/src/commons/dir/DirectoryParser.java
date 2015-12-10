@@ -46,6 +46,7 @@ public class DirectoryParser {
 		directory.setSize(0L);
 		levelDirectoryMap.put(0, directory);
 
+		System.out.println("Parsing input file : " + filePath);
 
 		try {
 			// Read till EOF
@@ -112,6 +113,7 @@ public class DirectoryParser {
 			LOGGER.error("", e);
 		}
 
+		System.out.println("Parsing finished");
 		// Return the directory structure
 		return directory;
 	}
