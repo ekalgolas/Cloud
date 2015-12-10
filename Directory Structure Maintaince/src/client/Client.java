@@ -1,5 +1,6 @@
 package client;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -53,7 +54,7 @@ public class Client {
 		int number = 0;
 
 		// Read commands
-		try (Scanner scanner = new Scanner(System.in)) {
+		try (Scanner scanner = new Scanner(new File(inputFileName))) {
 			while (scanner.hasNext()) {
 				String command = scanner.nextLine();
 
@@ -123,7 +124,10 @@ public class Client {
 		// Else, generate commands
 		final CommandGenerator generator = new CommandGenerator();
 		try {
-			generator.generateCommands(Integer.parseInt(AppConfig.getValue("client.numberOfCommands")));
+			final File commandsFile = new File(AppConfig.getValue("client.commandsFile"));
+			if (!commandsFile.exists()) {
+				generator.generateCommands(Integer.parseInt(AppConfig.getValue("client.numberOfCommands")));
+			}
 		} catch (NumberFormatException | IOException | ClassNotFoundException e) {
 			// Exit if commands cannot be generated
 			LOGGER.error("Error occured while generating the commands", e);

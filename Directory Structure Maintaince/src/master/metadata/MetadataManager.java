@@ -51,7 +51,7 @@ public class MetadataManager {
 			directory = DirectoryParser.parseText(AppConfig.getValue("server.inputFile"));
 
 			// Serialize and store the master.metadata
-			storeGFSMetadata(directory);
+//			storeGFSMetadata(directory);
 		}
 
 		return directory;
