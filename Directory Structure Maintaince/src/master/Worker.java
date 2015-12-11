@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 import com.sun.media.sound.InvalidDataException;
 import commons.AppWatch;
 import commons.CommandsSupported;
+import commons.CompletionStatusCode;
 import commons.Globals;
 import commons.Message;
 import commons.dir.Directory;
@@ -104,11 +105,16 @@ public class Worker implements Runnable {
 					reply = executeCommand(command, root, replica, partialFilePath, directoryOperations, replicationOperations, message);
 
 					// Append completion code
-					// reply.appendCompletionCode(CompletionStatusCode.SUCCESS.name());
+					if (reply.getCompletionCode().toString().isEmpty()) {
+						reply.appendCompletionCode(CompletionStatusCode.SUCCESS.name());
+					}
 				} catch (final Exception e) {
 					// If any command threw errors, propagate the error to the client
 					reply = new Message(e.getMessage() + " error occurred");
-					// reply.appendCompletionCode(CompletionStatusCode.ERROR.name());
+
+					if (reply.getCompletionCode().toString().isEmpty()) {
+						reply.appendCompletionCode(CompletionStatusCode.ERROR.name());
+					}
 				}
 
 				// Log performance

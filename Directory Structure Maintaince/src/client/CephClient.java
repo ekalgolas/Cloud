@@ -88,7 +88,7 @@ public class CephClient {
 		if (serverInfo != null) {
 			try {
 				if (serverInfo.getIpAddress()
-						.equals(AppConfig.getValue("client.masterIp"))) {
+					.equals(AppConfig.getValue("client.masterIp"))) {
 					LOGGER.debug("Assigning the root Socket");
 					mdsServerSocket = socket;
 				} else {
@@ -151,29 +151,29 @@ public class CephClient {
 
 			// Send command to master
 			outputStream
-			.writeObject(new Message((isReadLock ? Globals.ACQUIRE_READ_LOCK : Globals.ACQUIRE_WRITE_LOCK) + " " + lockedPath.toString(), clientId));
+				.writeObject(new Message((isReadLock ? Globals.ACQUIRE_READ_LOCK : Globals.ACQUIRE_WRITE_LOCK) + " " + lockedPath.toString(), clientId));
 			outputStream.flush();
 
 			// Wait and read the reply
 			final Message lockMessage = (Message) inputStream.readObject();
 			LOGGER.debug(lockMessage);
 			if (CompletionStatusCode.SUCCESS.name()
-					.equals(lockMessage.getCompletionCode()
-							.toString()
-							.trim())) {
+				.equals(lockMessage.getCompletionCode()
+					.toString()
+					.trim())) {
 				LOGGER.debug("Setting the status to true");
 				if (lockMessage.getHeader() != null && !"".equals(lockMessage.getHeader())) {
 					final List<MetaDataServerInfo> newMdsServers = MetaDataServerInfo.fromStringToMetadata(lockMessage.getHeader()
-							.trim());
+						.trim());
 					if (!newMdsServers.isEmpty()) {
 						cachedServers.put(lockedPath.toString(), newMdsServers);
 					}
 				}
 				status = true;
 			} else if (CompletionStatusCode.NOT_FOUND.name()
-					.equals(lockMessage.getCompletionCode()
-							.toString()
-							.trim())) {
+				.equals(lockMessage.getCompletionCode()
+					.toString()
+					.trim())) {
 				LOGGER.error("lockMessage:" + lockMessage);
 				cachedServers.remove(lockedPath.toString());
 				status = false;
@@ -214,7 +214,7 @@ public class CephClient {
 						final String argument = command.substring(3);
 						if (!argument.startsWith(ROOT)) {
 							command = CommandsSupported.CD.name() + " " + Paths.get(pwd, argument)
-									.toString();
+								.toString();
 						}
 					} else {
 						command = CommandsSupported.CD.name() + " " + ROOT;
@@ -230,7 +230,7 @@ public class CephClient {
 					if (argument != null && argument.length > 1) {
 						if (!argument[1].startsWith(ROOT)) {
 							command = argument[0] + " " + Paths.get(pwd, command.substring(argument[0].length() + 1))
-									.toString();
+								.toString();
 							LOGGER.debug("appended command:" + command);
 						}
 					} else if ((command.startsWith(CommandsSupported.LS.name()) || command.startsWith(CommandsSupported.LSL.name())) && argument != null &&
@@ -330,11 +330,11 @@ public class CephClient {
 				final String reply = message.getContent();
 				final String header = message.getHeader();
 				if (message.getCompletionCode() != null && !"".equals(message.getCompletionCode()
+					.toString()
+					.trim()) && CompletionStatusCode.SUCCESS.name()
+					.equals(message.getCompletionCode()
 						.toString()
-						.trim()) && CompletionStatusCode.SUCCESS.name()
-						.equals(message.getCompletionCode()
-								.toString()
-								.trim()) && header != null && !"".equals(header.trim())) {
+						.trim()) && header != null && !"".equals(header.trim())) {
 					LOGGER.debug("Updating Cache");
 					// Update the client cache of MDS cluster map.
 					final List<MetaDataServerInfo> newMdsServers = MetaDataServerInfo.fromStringToMetadata(header.trim());
@@ -345,7 +345,7 @@ public class CephClient {
 					if (command.startsWith(CommandsSupported.CD.name())) {
 						final String argument = command.substring(3);
 						pwd = argument.startsWith(ROOT) ? argument : Paths.get(pwd, argument)
-								.toString();
+							.toString();
 					}
 				}
 				LOGGER.info("Command " + number + " : " + command);
@@ -359,11 +359,11 @@ public class CephClient {
 
 				if (command.startsWith(CommandsSupported.RMDIR.name()) || command.startsWith(CommandsSupported.RMDIRF.name())) {
 					if (message.getCompletionCode() != null && !"".equals(message.getCompletionCode()
+						.toString()
+						.trim()) && CompletionStatusCode.SUCCESS.name()
+						.equals(message.getCompletionCode()
 							.toString()
-							.trim()) && CompletionStatusCode.SUCCESS.name()
-							.equals(message.getCompletionCode()
-									.toString()
-									.trim())) {
+							.trim())) {
 						writeLockAcquired = false;
 						readLockAcquired = true;
 						lockedPath = getparent(lockedPath);
@@ -408,7 +408,10 @@ public class CephClient {
 		// Else, generate commands
 		final CommandGenerator generator = new CommandGenerator();
 		try {
-			generator.generateCommands(Integer.parseInt(AppConfig.getValue("client.numberOfCommands")));
+			final File commandsFile = new File(AppConfig.getValue("client.commandsFile"));
+			if (!commandsFile.exists()) {
+				generator.generateCommands(Integer.parseInt(AppConfig.getValue("client.numberOfCommands")));
+			}
 		} catch (NumberFormatException | IOException | ClassNotFoundException e) {
 			// Exit if commands cannot be generated
 			LOGGER.error("Error occured while generating the commands", e);

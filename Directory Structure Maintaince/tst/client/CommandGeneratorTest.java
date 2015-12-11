@@ -107,7 +107,7 @@ public class CommandGeneratorTest {
 		}
 
 		// Create zipf distribution
-		final ArrayList<String> dist = generator.createZipfDistribution((ArrayList<String>) Arrays.asList(array));
+		final ArrayList<String> dist = generator.createZipfDistribution((ArrayList<String>) Arrays.asList(array), 10);
 
 		// Test for weighted randomness
 		final Set<String> set = new HashSet<>();
