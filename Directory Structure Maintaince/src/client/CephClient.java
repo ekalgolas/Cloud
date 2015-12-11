@@ -255,11 +255,15 @@ public class CephClient {
 					} else {
 						continue;
 					}
-				} else if (command.startsWith(CommandsSupported.MKDIR.name()) || command.startsWith(CommandsSupported.RMDIR.name()) ||
+				} else if (command.startsWith(CommandsSupported.MKDIR.name()) || 
+						command.startsWith(CommandsSupported.RMDIR.name()) ||
 						command.startsWith(CommandsSupported.RMDIRF.name())) {
 					LOGGER.debug("Getting write lock for " + command);
 					final StringBuffer lockedPathBuf = new StringBuffer();
-					final boolean lockStatus = acquireLocks(command, lockedPathBuf, command.startsWith(CommandsSupported.MKDIR.name()), false);
+					final boolean lockStatus = acquireLocks(command, 
+										lockedPathBuf, 
+										true, 
+										false);
 					if (lockStatus) {
 						writeLockAcquired = true;
 						lockedPath = lockedPathBuf.toString();
