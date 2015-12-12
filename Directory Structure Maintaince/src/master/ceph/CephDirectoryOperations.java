@@ -1176,7 +1176,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 					if(found && removeDirectory != null)
 					{
 						if(removeDirectory.isEmptyDirectory())
-						{
+						{							
 							MetaDataServerInfo metaData 
 								= getRequiredMdsInfo(removeDirectory.getInode(), true);
 							if(removeDirectory.getInode().getInodeNumber() == null)
@@ -1186,7 +1186,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 											CommandsSupported.RMDIR.name(), 
 										fullPath, metaData, "");
 								if((remoteMessage != null) &&
-										CompletionStatusCode.SUCCESS
+										CompletionStatusCode.SUCCESS.name()
 											.equals(remoteMessage
 														.getCompletionCode().toString().trim()))
 								{
@@ -1325,7 +1325,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 		final String[] paths = searchablePath.split("/");
 		final String name = paths[paths.length - 1];
 		final String dirPath = searchablePath.substring(0, searchablePath.length() - name.length() - 1);		
-		
+
 		// True for RMDIRF i.e. rmdir -f option
 		final boolean isForceRemove = arguments != null 
 		        && arguments[arguments.length - 1].equals("-f");
