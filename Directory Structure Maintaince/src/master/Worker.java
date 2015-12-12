@@ -88,14 +88,12 @@ public class Worker implements Runnable {
 						root = Globals.gfsMetadataRoot;
 						replica = Globals.gfsMetadataCopy;
 					} else if (Globals.MDS_MODE.equalsIgnoreCase(listenerType)) {
-						LOGGER.debug("Ceph Directory Operation");
 						directoryOperations = new CephDirectoryOperations();
 						replicationOperations = null;
 						final String[] commandParse = command.split(" ");
 						root = MetaDataServerInfo.findClosestNode(command.substring(commandParse[0].length() + 1),
 								partialFilePath,
 								Globals.subTreePartitionList);
-						LOGGER.debug(partialFilePath.toString());
 					} else {
 						directoryOperations = new NFSDirectoryOperations();
 						replicationOperations = null;
@@ -234,11 +232,9 @@ public class Worker implements Runnable {
 			}
 			else if (command.startsWith(Globals.ACQUIRE_READ_LOCK))
 			{
-				LOGGER.debug("Calling Acquire Read lock");
 				// Command line parameter (directory name) start from index '6'
 				// in the received string
 				argument = command.substring(6);
-				LOGGER.debug("argument:" + argument);
 
 				reply = directoryOperations.acquireReadLocks(root,
 						argument,
@@ -246,7 +242,6 @@ public class Worker implements Runnable {
 			}
 			else if (command.startsWith(Globals.ACQUIRE_WRITE_LOCK))
 			{
-				LOGGER.debug("Calling Acquire Write lock");
 				// Command line parameter (directory name) start from index '6'
 				// in the received string
 				argument = command.substring(6);

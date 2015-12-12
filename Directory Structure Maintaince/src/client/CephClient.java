@@ -88,7 +88,7 @@ public class CephClient {
 		if (serverInfo != null) {
 			try {
 				if (serverInfo.getIpAddress()
-					.equals(AppConfig.getValue("client.masterIp"))) {
+						.equals(AppConfig.getValue("client.masterIp"))) {
 					LOGGER.debug("Assigning the root Socket");
 					mdsServerSocket = socket;
 				} else {
@@ -127,7 +127,8 @@ public class CephClient {
 	private boolean acquireLocks(final String command,
 			final StringBuffer lockedPath,
 			final boolean acquireParentLock,
-			final boolean isReadLock) {
+			final boolean isReadLock,
+			final Message resultMessage) {
 		boolean status = false;
 		try {
 			final String[] commandParse = command.split(" ");
@@ -156,7 +157,7 @@ public class CephClient {
 
 			// Wait and read the reply
 			final Message lockMessage = (Message) inputStream.readObject();
-			LOGGER.debug(lockMessage);
+			LOGGER.debug(lockMessage.toString());
 			if (CompletionStatusCode.SUCCESS.name()
 				.equals(lockMessage.getCompletionCode()
 					.toString()
@@ -174,13 +175,17 @@ public class CephClient {
 				.equals(lockMessage.getCompletionCode()
 					.toString()
 					.trim())) {
-				LOGGER.error("lockMessage:" + lockMessage);
+				LOGGER.error("lockMessage:" + lockMessage.toString());
 				cachedServers.remove(lockedPath.toString());
 				status = false;
 			} else {
-				LOGGER.error("lockMessage:" + lockMessage);
+				LOGGER.error("lockMessage:" + lockMessage.toString());
 				status = false;
 			}
+			resultMessage.appendCompletionCode(lockMessage.getCompletionCode().toString());
+			resultMessage.appendContent(lockMessage.getContent());
+			resultMessage.appendHeader(lockMessage.getHeader());
+			resultMessage.appendPerformance(lockMessage.getPerformance());
 		} catch (final ClassNotFoundException cnfexp) {
 			LOGGER.error(new Message(cnfexp.getLocalizedMessage(), "", CompletionStatusCode.ERROR.name()));
 		} catch (final IOException ioexp) {
@@ -202,7 +207,7 @@ public class CephClient {
 		try (Scanner scanner = new Scanner(new File(inputFileName))) {
 			while (scanner.hasNext()) {
 				String command = scanner.nextLine();
-				LOGGER.debug("command:" + command);
+				LOGGER.debug("command:" + command + " number:"+number);
 				boolean readLockAcquired = false;
 				boolean writeLockAcquired = false;
 				String lockedPath;
@@ -219,6 +224,7 @@ public class CephClient {
 					} else {
 						command = CommandsSupported.CD.name() + " " + ROOT;
 					}
+					number++;
 				} else if (command.startsWith(CommandsSupported.PWD.name())) {
 					LOGGER.info("Command " + number + " : " + command);
 					LOGGER.info(pwd + "\n");
@@ -239,6 +245,7 @@ public class CephClient {
 					} else {
 						LOGGER.error(new Message("Argument Expected for the command " + command, "", CompletionStatusCode.ERROR.name()));
 					}
+					number++;
 				}
 
 				final String[] commandParse = command.split(" ");
@@ -247,41 +254,56 @@ public class CephClient {
 						command.startsWith(CommandsSupported.CD.name())) {
 					LOGGER.debug("Getting Read lock for " + command);
 					final StringBuffer lockedPathBuf = new StringBuffer();
-					final boolean lockStatus = acquireLocks(command, lockedPathBuf, false, true);
+					final Message resultMessage = new Message("");
+					final boolean lockStatus = acquireLocks(command, lockedPathBuf, 
+																false, true, resultMessage);
 					LOGGER.debug("lockstatus:" + lockStatus);
 					if (lockStatus) {
 						readLockAcquired = true;
 						lockedPath = lockedPathBuf.toString();
 					} else {
+						// Write results to file
+						CSVFileWriter.writeToFile(resultMessage, command);
 						continue;
 					}
-				} else if (command.startsWith(CommandsSupported.MKDIR.name()) || command.startsWith(CommandsSupported.RMDIR.name()) ||
+				} else if (command.startsWith(CommandsSupported.MKDIR.name()) || 
+						command.startsWith(CommandsSupported.RMDIR.name()) ||
 						command.startsWith(CommandsSupported.RMDIRF.name())) {
 					LOGGER.debug("Getting write lock for " + command);
 					final StringBuffer lockedPathBuf = new StringBuffer();
-					final boolean lockStatus = acquireLocks(command, lockedPathBuf, command.startsWith(CommandsSupported.MKDIR.name()), false);
+					final Message resultMessage = new Message("");
+					final boolean lockStatus = acquireLocks(command, 
+							lockedPathBuf, 
+							true, 
+							false, 
+							resultMessage);
 					if (lockStatus) {
 						writeLockAcquired = true;
 						lockedPath = lockedPathBuf.toString();
 					} else {
+						// Write results to file
+						CSVFileWriter.writeToFile(resultMessage, command);
 						continue;
 					}
 				} else {
 					final StringBuffer lockedPathBuf = new StringBuffer();
-					final boolean lockFullPathStatus = acquireLocks(command, lockedPathBuf, false, false);
+					final Message resultMessage = new Message("");
+					final boolean lockFullPathStatus = acquireLocks(command, lockedPathBuf, false, false, resultMessage);
 					LOGGER.debug("lockFullPathStatus:" + lockFullPathStatus);
 					if (lockFullPathStatus) {
 						writeLockAcquired = true;
 						lockedPath = lockedPathBuf.toString();
 					} else {
 						lockedPathBuf.delete(0, lockedPathBuf.length());
-						final boolean lockParent = acquireLocks(command, lockedPathBuf, true, false);
+						final boolean lockParent = acquireLocks(command, lockedPathBuf, true, false, resultMessage);
 						LOGGER.debug("lockParent:" + lockParent);
 						LOGGER.debug("lockedPathBuf:" + lockedPathBuf.toString());
 						if (lockParent) {
 							writeLockAcquired = true;
 							lockedPath = lockedPathBuf.toString();
 						} else {
+							// Write results to file
+							CSVFileWriter.writeToFile(resultMessage, command);
 							continue;
 						}
 					}
@@ -293,12 +315,8 @@ public class CephClient {
 						partialFilePath,
 						cachedServers);
 
-				LOGGER.debug("mdsservers test:" + mdsServers);
-
 				final Socket mdsServerSocket = getRequiredMdsSocket(mdsServers, true);
 				// Send command to master
-
-				LOGGER.debug("mdsServerSocket:" + mdsServerSocket);
 
 				final ObjectInputStream inputMdsStream;
 				final ObjectOutputStream outputMdsStream;
@@ -311,8 +329,7 @@ public class CephClient {
 
 					outputMdsStream = new ObjectOutputStream(mdsServerSocket.getOutputStream());
 				}
-				LOGGER.debug("inputMdsStream:" + inputMdsStream);
-				LOGGER.debug("outputMdsStream:" + outputMdsStream);
+
 				outputMdsStream.writeObject(new Message(command));
 				outputMdsStream.flush();
 
@@ -326,7 +343,7 @@ public class CephClient {
 
 				// Wait and read the reply
 				final Message message = (Message) inputMdsStream.readObject();
-				LOGGER.debug("message obtained:" + message);
+				LOGGER.debug("message obtained:" + message.toString());
 				final String reply = message.getContent();
 				final String header = message.getHeader();
 				if (message.getCompletionCode() != null && !"".equals(message.getCompletionCode()
@@ -351,24 +368,26 @@ public class CephClient {
 				LOGGER.info("Command " + number + " : " + command);
 				LOGGER.info(reply + "\n");
 
-				number++;
+//				number++;
 				if (mdsServerSocket != socket) {
 					LOGGER.debug("Closing temp socket");
 					mdsServerSocket.close();
 				}
 
-				if (command.startsWith(CommandsSupported.RMDIR.name()) || command.startsWith(CommandsSupported.RMDIRF.name())) {
-					if (message.getCompletionCode() != null && !"".equals(message.getCompletionCode()
-						.toString()
-						.trim()) && CompletionStatusCode.SUCCESS.name()
-						.equals(message.getCompletionCode()
-							.toString()
-							.trim())) {
-						writeLockAcquired = false;
-						readLockAcquired = true;
-						lockedPath = getparent(lockedPath);
-					}
-				}
+//				if (command.startsWith(CommandsSupported.RMDIR.name()) || 
+//						command.startsWith(CommandsSupported.RMDIRF.name())) {
+//					if (message.getCompletionCode() != null && 
+//							!"".equals(message.getCompletionCode()
+//							.toString()
+//							.trim()) && CompletionStatusCode.SUCCESS.name()
+//							.equals(message.getCompletionCode()
+//									.toString()
+//									.trim())) {
+//						writeLockAcquired = false;
+//						readLockAcquired = true;
+//						lockedPath = getparent(lockedPath);
+//					}
+//				}
 
 				if (readLockAcquired && lockedPath != null) {
 					outputStream.writeObject(new Message(Globals.RELEASE_READ_LOCK + " " + lockedPath, clientId));
@@ -379,7 +398,7 @@ public class CephClient {
 				}
 
 				final Message unLockMessage = (Message) inputStream.readObject();
-				LOGGER.debug("unLockMessage:" + unLockMessage);
+				LOGGER.debug("unLockMessage:" + unLockMessage.toString());
 
 				// Write results to file
 				CSVFileWriter.writeToFile(message, command);

@@ -163,7 +163,8 @@ public class Directory implements Serializable, Cloneable {
 		}
 
 		// Write the details of file or directory as this node
-		stringBuilder.append((root.isFile ? "File: " : "Directory: ") + root.name + " - " + root.lock.getReadLockCount());
+		stringBuilder.append((root.isFile ? "File: " : "Directory: ") 
+								+ root.name + " - " + root.lock.getReadLockCount());
 
 		// Do for all sub-directories
 		if (root.children != null) {

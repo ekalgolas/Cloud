@@ -7,7 +7,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.InvalidPropertiesFormatException;
 import java.util.List;
@@ -178,7 +177,6 @@ public class CephDirectoryOperations implements ICommandOperations {
 			throws InvalidPropertiesFormatException {
 		try
 		{
-			LOGGER.debug("Calling LS");
 			final StringBuffer resultCode = new StringBuffer();
 			//Extract the relative path for the current partition.
 			String searchablePath;
@@ -209,9 +207,6 @@ public class CephDirectoryOperations implements ICommandOperations {
 				resultCode.append(Globals.PATH_FOUND);
 			}
 			
-			LOGGER.debug("searchablePath:"+searchablePath);
-			LOGGER.debug("resultCode:"+resultCode.toString());
-	
 			//If search returns a non null node.
 			if (node != null) 
 			{
@@ -558,7 +553,6 @@ public class CephDirectoryOperations implements ICommandOperations {
 			final String... arguments)
 			throws InvalidPropertiesFormatException 
 	{
-		LOGGER.debug("Calling MKDIR");
 		//Extract the relative path for the current partition.
 		String searchablePath;
 		if (arguments != null && 
@@ -576,9 +570,6 @@ public class CephDirectoryOperations implements ICommandOperations {
 		final String name = paths[paths.length - 1];
 		final String dirPath = searchablePath.substring(0, 
 				searchablePath.length() - name.length() - 1);
-		
-		LOGGER.debug("name:"+name);
-		LOGGER.debug("dirPath:"+dirPath);
 		
 		//Check if this is primary to replica update command.
 		boolean primaryMessage = false;
@@ -603,7 +594,6 @@ public class CephDirectoryOperations implements ICommandOperations {
 			String... arguments) 
 			throws InvalidPropertiesFormatException 
 	{
-		LOGGER.debug("Processing TOUCH");
 		// Extract the relative path for the current partition.
 		String searchablePath;
 		if (arguments != null && 
@@ -620,9 +610,6 @@ public class CephDirectoryOperations implements ICommandOperations {
 		final String[] paths = searchablePath.split("/");
 		final String name = paths[paths.length - 1];
 		final String dirPath = searchablePath.substring(0, searchablePath.length() - name.length() - 1);
-		
-		LOGGER.debug("name:"+name);
-		LOGGER.debug("dirPath:"+dirPath);
 		
 		//Check this is a primary to replica update command.
 		boolean primaryMessage = false;
@@ -1307,7 +1294,6 @@ public class CephDirectoryOperations implements ICommandOperations {
 			final String path, 
 			final String... arguments)
 			throws InvalidPropertiesFormatException {
-		LOGGER.debug("Calling RMDIR");
 		// Get the parent directory and the name of directory
 		String searchablePath;
 		if (arguments != null && 
@@ -1327,11 +1313,6 @@ public class CephDirectoryOperations implements ICommandOperations {
 		// True for RMDIRF i.e. rmdir -f option
 		final boolean isForceRemove = arguments != null 
 		        && arguments[arguments.length - 1].equals("-f");
-		
-		LOGGER.debug("name:"+name);
-		LOGGER.debug("dirPath:"+dirPath);
-		LOGGER.debug("isForceRemove:"+isForceRemove);
-		LOGGER.debug("arguments:"+Arrays.toString(arguments));
 					
 		return removeNode(root, dirPath, name, 
 				false, path, 
@@ -1540,8 +1521,6 @@ public class CephDirectoryOperations implements ICommandOperations {
 	{
 		try
 		{
-			LOGGER.debug("filePath:"+filePath);
-			LOGGER.debug("arguments:"+Arrays.toString(arguments));
 			String searchablePath;
 			if (arguments != null && 
 					arguments.length > 0 && 
@@ -1550,7 +1529,6 @@ public class CephDirectoryOperations implements ICommandOperations {
 			} else {
 				searchablePath = filePath;
 			}
-			LOGGER.debug("searchablePath:"+searchablePath);
 			final List<Directory> toLockDirs = new ArrayList<>();
 			final StringBuffer resultCode = new StringBuffer();
 			
@@ -1558,7 +1536,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 			
 			if(searchablePath != null && 
 					!"".equals(searchablePath) &&
-					!"root".equals(searchablePath))
+					!"root".equals(searchablePath) &&
+					!"/".equals(searchablePath))
 			{
 				toLockDirs.addAll(fetchDirsInPath(
 									root, 
@@ -1675,7 +1654,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 			String searchablePath;
 			if (arguments != null && 
 					arguments.length > 0 && 
-					(!"/".equals(arguments[0]) && !"root".equals(arguments[0]))) {
+					(!"/".equals(arguments[0]) && 
+							!"root".equals(arguments[0]))) {
 				searchablePath = filePath.substring(arguments[0].length());
 			} else {
 				searchablePath = filePath;
@@ -1687,7 +1667,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 			final StringBuffer resultCode = new StringBuffer();
 			if(searchablePath != null && 
 					!"".equals(searchablePath) &&
-					!"root".equals(searchablePath))
+					!"root".equals(searchablePath) &&
+					!"/".equals(searchablePath))
 			{
 				toLockDirs.addAll(fetchDirsInPath(
 									root, 
@@ -1818,7 +1799,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 			final StringBuffer resultCode = new StringBuffer();
 			if(searchablePath != null && 
 					!"".equals(searchablePath) &&
-					!"root".equals(searchablePath))
+					!"root".equals(searchablePath) &&
+					!"/".equals(searchablePath))
 			{
 				toUnLockDirs.addAll(fetchDirsInPath(
 									root, 
@@ -1922,7 +1904,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 			final StringBuffer resultCode = new StringBuffer();
 			if(searchablePath != null && 
 					!"".equals(searchablePath) &&
-					!"root".equals(searchablePath))
+					!"root".equals(searchablePath) &&
+					!"/".equals(searchablePath))
 			{
 				toUnLockDirs.addAll(fetchDirsInPath(
 									root, 
@@ -2013,7 +1996,8 @@ public class CephDirectoryOperations implements ICommandOperations {
 		{
 			for(final Directory dir:readLockDirs)
 			{				
-				if(dir.getWriteLockClient() == null)
+				if(dir.getWriteLockClient() == null || 
+						"".equals(dir.getWriteLockClient()))
 				{
 					dir.getReadLockClients().add(clientId);
 					finalStatus &= true;
