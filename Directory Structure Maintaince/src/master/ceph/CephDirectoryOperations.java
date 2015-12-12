@@ -1181,8 +1181,18 @@ public class CephDirectoryOperations implements ICommandOperations {
 								= getRequiredMdsInfo(removeDirectory.getInode(), true);
 							if(removeDirectory.getInode().getInodeNumber() == null)
 							{
-								return remoteExecCommand(CommandsSupported.RMDIR.name(), 
+								final Message remoteMessage 
+									= remoteExecCommand((forceRemove)?CommandsSupported.RMDIRF.name():
+											CommandsSupported.RMDIR.name(), 
 										fullPath, metaData, "");
+								if((remoteMessage != null) &&
+										CompletionStatusCode.SUCCESS
+											.equals(remoteMessage
+														.getCompletionCode().toString().trim()))
+								{
+									directory.getChildren().remove(removeDirectory);
+								}
+								return remoteMessage;
 							}
 							try
 							{
