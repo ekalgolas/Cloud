@@ -169,7 +169,8 @@ public class CommandGenerator {
 		final ArrayList<String> distribution = new ArrayList<>();
 
 		// Initialize a zipf distribution
-		final ZipfDistribution zipfDistribution = new ZipfDistribution(size, 1);
+		final ZipfDistribution zipfDistribution 
+				= new ZipfDistribution((paths.size() > size)?size:paths.size(), 1);
 		for (int i = 0; i < size; i++) {
 			// Take a sample from the distribution
 			final int random = zipfDistribution.sample();
