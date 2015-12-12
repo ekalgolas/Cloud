@@ -899,7 +899,7 @@ public class CephDirectoryOperations implements ICommandOperations {
 				}
 				removeDir.getChildren().removeAll(localEmptyChildDirs);
 				for(final Directory child:localNonEmptyChildDirs)
-				{
+				{					
 					final String fullPathchild 
 						= (fullPath.lastIndexOf('/') == fullPath.length()-1)?
 							fullPath.substring(0, fullPath.lastIndexOf('/')):fullPath; 
@@ -914,7 +914,9 @@ public class CephDirectoryOperations implements ICommandOperations {
 				}
 				for(final String path:Globals.subTreePartitionList.keySet())
 				{				
-					if(path.startsWith(fullPath))
+					if(path.startsWith(fullPath) &&
+							!path.substring(0, path.length()-1).equals(fullPath) &&
+							!path.equals(fullPath))
 					{
 						final Message localStatus = removeNodeRecursively(null, 
 								Globals.subTreePartitionList.get(path), 
@@ -1306,6 +1308,10 @@ public class CephDirectoryOperations implements ICommandOperations {
 		{
 			searchablePath = path;
 		}		
+		if("".equals(searchablePath))
+		{
+			searchablePath = path;
+		}
 		final String[] paths = searchablePath.split("/");
 		final String name = paths[paths.length - 1];
 		final String dirPath = searchablePath.substring(0, searchablePath.length() - name.length() - 1);		
