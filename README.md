@@ -20,6 +20,8 @@ Steps to be taken before running the CEPH environment:
 7. Check whether "server.type" in masternode.conf is set to "MDS".
 8. Check whether "client.ceph.root" is set to the ip of the MDS containing root directory.
 
+Note: Remove/Delete all MDS*.img files in all the node's /data folder to pickup your own copy of generated commands.
+
 Steps to be taken before running the All Client environments:
 ------------------------------------------------------------
 

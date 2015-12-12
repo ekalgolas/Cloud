@@ -178,7 +178,7 @@ public class Directory implements Serializable, Cloneable {
 	}
 
 	public boolean isEmptyDirectory() {
-		return !isFile && children.isEmpty();
+		return !isFile && (children == null || children.isEmpty());
 	}
 
 	/**
