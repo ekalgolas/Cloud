@@ -126,33 +126,34 @@ public class MetaDataServerInfo implements Serializable {
 	 * @return closest directory.
 	 */
 	public static Directory findClosestNode(final String filePath,
-			final StringBuffer matchedPath, final HashMap<String, Directory> parititionMap) {
-		int maxLevel = -1;
-		String maxMatchPath = "";
-		for (final String node : parititionMap.keySet()) {
-			// Get level for this node
-			int currentLevel = 0, i = 0;
-			while (i < node.length() && i < filePath.length()) {
-				if (node.charAt(i) == filePath.charAt(i)) {
-					if (node.charAt(i) == '/') {
-						currentLevel++;
-					}
-				} else {
-					break;
+			final StringBuffer matchedPath, final HashMap<String, Directory> parititionMap)
+	{
+		int maxLevelsMatched = 0;
+		String maxMatchedPath = "";
+		final String[] filePathElems = filePath.split("/");
+		for(final String path:parititionMap.keySet())
+		{
+			final String[] pathElems = path.split("/");
+			int curMatchedLevel = 0;
+			int count =0; 
+			for(final String pathElem:pathElems)
+			{
+				if(count < filePathElems.length && 
+						filePathElems[count].equals(pathElem))
+				{
+					curMatchedLevel++;
 				}
-
-				i++;
+				count++;
 			}
-
-			// Set max level if current level is greater
-			if (currentLevel > maxLevel && i == node.length()) {
-				maxLevel = currentLevel;
-				maxMatchPath = node;
+			if(curMatchedLevel == pathElems.length &&
+					curMatchedLevel > maxLevelsMatched)
+			{
+				curMatchedLevel = maxLevelsMatched;
+				maxMatchedPath = path; 
 			}
-		}
-
-		matchedPath.append(maxMatchPath);
-		return parititionMap.get(maxMatchPath);
+		}		
+		matchedPath.append(maxMatchedPath);
+		return parititionMap.get(maxMatchedPath);
 	}
 	
 	/**
@@ -164,32 +165,33 @@ public class MetaDataServerInfo implements Serializable {
 	public static List<MetaDataServerInfo> findClosestServer(final String filePath,
 			final StringBuffer matchedPath, 
 			final HashMap<String,List<MetaDataServerInfo>> mdsServers) {
-		int maxLevel = -1;
-		String maxMatchPath = "";
-		for (final String node : mdsServers.keySet()) {
-			// Get level for this node
-			int currentLevel = 0, i = 0;
-			while (i < node.length() && i < filePath.length()) {
-				if (node.charAt(i) == filePath.charAt(i)) {
-					if (node.charAt(i) == '/') {
-						currentLevel++;
-					}
-				} else {
-					break;
+		int maxLevelsMatched = 0;
+		String maxMatchedPath = "";
+		final String[] filePathElems = filePath.split("/");
+		for(final String path:mdsServers.keySet())
+		{
+			final String[] pathElems = path.split("/");
+			int curMatchedLevel = 0;
+			int count =0; 
+			for(final String pathElem:pathElems)
+			{
+				if(count < filePathElems.length && 
+						filePathElems[count].equals(pathElem))
+				{
+					curMatchedLevel++;
 				}
-
-				i++;
+				count++;
 			}
-
-			// Set max level if current level is greater
-			if (currentLevel > maxLevel && i == node.length()) {
-				maxLevel = currentLevel;
-				maxMatchPath = node;
+			if(curMatchedLevel == pathElems.length &&
+					curMatchedLevel > maxLevelsMatched)
+			{
+				curMatchedLevel = maxLevelsMatched;
+				maxMatchedPath = path; 
 			}
 		}
 
-		matchedPath.append(maxMatchPath);
-		return mdsServers.get(maxMatchPath);
+		matchedPath.append(maxMatchedPath);
+		return mdsServers.get(maxMatchedPath);
 	}
 	
 	/**
