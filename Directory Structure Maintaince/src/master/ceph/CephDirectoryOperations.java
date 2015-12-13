@@ -1614,8 +1614,10 @@ public class CephDirectoryOperations implements ICommandOperations {
 									clientId);
 						
 						if(remoteStatus != null &&
-								CompletionStatusCode.SUCCESS.name()
-									.equals(remoteStatus.getCompletionCode().toString().trim()))
+								(CompletionStatusCode.SUCCESS.name()
+										.equals(remoteStatus.getCompletionCode().toString().trim()) ||
+										CompletionStatusCode.NOT_FOUND.name()
+											.equals(remoteStatus.getCompletionCode().toString().trim())))
 						{
 							return remoteStatus;
 						}
@@ -1747,8 +1749,10 @@ public class CephDirectoryOperations implements ICommandOperations {
 									mdsServer, 
 									clientId);
 						if(remoteStatus != null &&
-								CompletionStatusCode.SUCCESS.name()
-									.equals(remoteStatus.getCompletionCode().toString().trim()))
+								(CompletionStatusCode.SUCCESS.name()
+									.equals(remoteStatus.getCompletionCode().toString().trim()) ||
+									CompletionStatusCode.NOT_FOUND.name()
+										.equals(remoteStatus.getCompletionCode().toString().trim())))
 						{
 							return remoteStatus;
 						}
