@@ -238,7 +238,8 @@ public class Worker implements Runnable {
 
 				reply = directoryOperations.acquireReadLocks(root,
 						argument,
-						partialFilePath.toString());
+						partialFilePath.toString(),
+						message.getHeader());
 			}
 			else if (command.startsWith(Globals.ACQUIRE_WRITE_LOCK))
 			{
@@ -248,7 +249,8 @@ public class Worker implements Runnable {
 
 				reply = directoryOperations.acquireWriteLocks(root,
 						argument,
-						partialFilePath.toString());
+						partialFilePath.toString(),
+						message.getHeader());
 			}
 			else if (command.startsWith(Globals.RELEASE_READ_LOCK))
 			{
@@ -258,7 +260,8 @@ public class Worker implements Runnable {
 
 				reply = directoryOperations.releaseReadLocks(root,
 						argument,
-						partialFilePath.toString());
+						partialFilePath.toString(),
+						message.getHeader());
 			}
 			else if (command.startsWith(Globals.RELEASE_WRITE_LOCK))
 			{
@@ -268,7 +271,8 @@ public class Worker implements Runnable {
 
 				reply = directoryOperations.releaseWriteLocks(root,
 						argument,
-						partialFilePath.toString());
+						partialFilePath.toString(),
+						message.getHeader());
 			}
 			else if (command.startsWith(CommandsSupported.EXIT.name())) {
 				// Close the connection
