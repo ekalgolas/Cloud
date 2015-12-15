@@ -8,6 +8,7 @@ import java.net.UnknownHostException;
 import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 
@@ -29,6 +30,9 @@ import master.metadata.MetaDataServerInfo;
 public class CephDirectoryOperations implements ICommandOperations {
 	
 	private final static Logger		LOGGER		= Logger.getLogger(CephDirectoryOperations.class);
+	private final static HashMap<String,Socket> 					cachedSockets   = new HashMap<>();
+	private final static HashMap<Socket,ObjectInputStream> 		cachedIpStreams = new HashMap<>();
+	private final static HashMap<Socket,ObjectOutputStream> 		cachedOpStreams = new HashMap<>();
 	
 	public CephDirectoryOperations()
 	{
@@ -133,21 +137,35 @@ public class CephDirectoryOperations implements ICommandOperations {
 			final MetaDataServerInfo mdsServer,
 			final String messageHeader) 
 	{
-		if (mdsServer != null) {
+		if (mdsServer != null) 
+		{
 			try 
 			{
-				final Socket socket = new Socket(mdsServer.getIpAddress(),
+				final Socket socket;
+				final ObjectInputStream inputStream;
+				final ObjectOutputStream outputStream;
+				if(cachedSockets.containsKey(mdsServer.getServerName()))
+				{
+					socket = cachedSockets.get(mdsServer.getServerName());
+					inputStream = cachedIpStreams.get(socket);
+					outputStream = cachedOpStreams.get(socket);
+				}
+				else
+				{
+					socket = new Socket(mdsServer.getIpAddress(),
 						Integer.parseInt(AppConfig.getValue(Globals.MDS_SERVER_PORT)));
-				final ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
-				final ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
+					cachedSockets.put(mdsServer.getServerName(), socket);
+					inputStream = new ObjectInputStream(socket.getInputStream());
+					outputStream = new ObjectOutputStream(socket.getOutputStream());
+					cachedIpStreams.put(socket, inputStream);
+					cachedOpStreams.put(socket, outputStream);
+				}
 				outputStream.writeObject(new Message(command + " " + filePath,
 									messageHeader));
 				outputStream.flush();				
 
 				// Wait and read the reply
-				final Message message = (Message) inputStream.readObject();
-				outputStream.close();
-				socket.close();
+				final Message message = (Message) inputStream.readObject();				
 				return message;
 			} 
 			catch (final UnknownHostException unkhostexp) 
