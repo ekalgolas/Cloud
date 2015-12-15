@@ -11,3 +11,4 @@ id*
 /stored_dht_metadata.dat
 /MDS*.img
 /performance.csv
+/fullMin.txt

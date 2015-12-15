@@ -1,7 +1,8 @@
 # Read tables
 data.gfs = read.table("performance_gfs.csv", sep = ",");
 data.nfs = read.table("performance_nfs.csv", sep = ",");
-data.ceph = read.table("performance_ceph.csv", sep = ",");
+data.ceph = read.table("performance_ceph_2replica.csv", sep = ",");
+data.ceph.replica = read.table("performance_ceph.csv", sep = ",");
 
 # Get valid and invalid data
 data.gfs.valid = data.gfs[which(data.gfs$V5 == 'SUCCESS') , ]
@@ -10,6 +11,7 @@ data.nfs.valid = data.nfs[which(data.nfs$V5 == 'SUCCESS') , ]
 data.nfs.invalid = data.nfs[which(data.nfs$V5 != "SUCCESS") , ]
 data.ceph.valid = data.ceph[which(data.ceph$V5 == 'SUCCESS' | data.ceph$V5 == '') , ]
 data.ceph.invalid = data.ceph[which(data.ceph$V5 != "SUCCESS" & data.ceph$V5 != '') , ]
+data.ceph.replica.valid = data.ceph.replica[which(data.ceph.replica$V5 == 'SUCCESS' | data.ceph.replica$V5 == '') , ]
 
 # Get data for each command
 data.gfs.ls = data.gfs.valid[which(data.gfs.valid$V1 == 'LS') , ]
@@ -97,6 +99,13 @@ boxplot(data.ceph.rmdir$V4, main = "RMDIR Command Performance for Ceph", ylab = 
 boxplot(data.ceph.rmdirf$V4, main = "RMDIR FORCE Command Performance for Ceph", ylab = "Time in milliseconds")
 dev.off()
 
+# Create boxplot for ceph comparison with partitions
+jpeg("Ceph - With and without partitions.jpg", width = 1080, height = 480)
+par(mfrow = c(1, 2))
+boxplot(data.ceph.valid$V4, main = "Ceph with no replica and 1 MDS", ylab = "Time in milliseconds")
+boxplot(data.ceph.replica.valid$V4, main = "Ceph with 2 MDS and 2 replica", ylab = "Time in milliseconds")
+dev.off()
+
 # Group by depths
 data.gfs.ls.grouped = aggregate(V4 ~ V3, data.gfs.ls, mean)
 data.gfs.lsl.grouped = aggregate(V4 ~ V3, data.gfs.lsl, mean)
@@ -125,63 +134,63 @@ data.ceph.rmdirf.grouped = aggregate(V4 ~ V3, data.ceph.rmdirf, mean)
 # Create graph with level
 jpeg("Performance with depth - LS.jpg", width = 1080, height = 480)
 par(mfrow = c(1, 1))
-plot(data.gfs.ls.grouped$V3, data.gfs.ls.grouped$V4, type = "n", xlim = c(2, 8), ylim = c(0, 95), main = "Performance for LS with different depth level", ylab = "Time in milliseconds", xlab = "Depth level")
+plot(data.gfs.ls.grouped$V3, data.gfs.ls.grouped$V4, type = "n", xlim = c(3, 18), ylim = c(0, 150), main = "Performance for LS with different depth level", ylab = "Time in milliseconds", xlab = "Depth level")
 lines(data.gfs.ls.grouped$V3, data.gfs.ls.grouped$V4, type = "l", col = "red")
 lines(data.nfs.ls.grouped$V3, data.nfs.ls.grouped$V4, type = "l", col = "blue")
 lines(data.ceph.ls.grouped$V3, data.ceph.ls.grouped$V4, type = "l", col = "green")
-legend(2, 95, c("GFS", "NFS", "Ceph"), col = c("red", "blue", "green"), lty = c(1, 1, 1), lwd = c(2.5, 2.5, 2.5))
+legend(3, 150, c("GFS", "NFS", "Ceph"), col = c("red", "blue", "green"), lty = c(1, 1, 1), lwd = c(2.5, 2.5, 2.5))
 dev.off()
 
 jpeg("Performance with depth - LSL.jpg", width = 1080, height = 480)
 par(mfrow = c(1, 1))
-plot(data.gfs.lsl.grouped$V3, data.gfs.lsl.grouped$V4, type = "n", xlim = c(2, 8), ylim = c(0, 100), main = "Performance for LSL with different depth level", ylab = "Time in milliseconds", xlab = "Depth level")
+plot(data.gfs.lsl.grouped$V3, data.gfs.lsl.grouped$V4, type = "n", xlim = c(3, 18), ylim = c(0, 120), main = "Performance for LSL with different depth level", ylab = "Time in milliseconds", xlab = "Depth level")
 lines(data.gfs.lsl.grouped$V3, data.gfs.lsl.grouped$V4, type = "l", col = "red")
 lines(data.nfs.lsl.grouped$V3, data.nfs.lsl.grouped$V4, type = "l", col = "blue")
 lines(data.ceph.lsl.grouped$V3, data.ceph.lsl.grouped$V4, type = "l", col = "green")
-legend(2, 100, c("GFS", "NFS", "Ceph"), col = c("red", "blue", "green"), lty = c(1, 1, 1), lwd = c(2.5, 2.5, 2.5))
+legend(3, 120, c("GFS", "NFS", "Ceph"), col = c("red", "blue", "green"), lty = c(1, 1, 1), lwd = c(2.5, 2.5, 2.5))
 dev.off()
 
 jpeg("Performance with depth - CD.jpg", width = 1080, height = 480)
 par(mfrow = c(1, 1))
-plot(data.gfs.cd.grouped$V3, data.gfs.cd.grouped$V4, type = "n", xlim = c(2, 8), ylim = c(0, 95), main = "Performance for CD with different depth level", ylab = "Time in milliseconds", xlab = "Depth level")
+plot(data.gfs.cd.grouped$V3, data.gfs.cd.grouped$V4, type = "n", xlim = c(3, 18), ylim = c(0, 150), main = "Performance for CD with different depth level", ylab = "Time in milliseconds", xlab = "Depth level")
 lines(data.gfs.cd.grouped$V3, data.gfs.cd.grouped$V4, type = "l", col = "red")
 lines(data.nfs.cd.grouped$V3, data.nfs.cd.grouped$V4, type = "l", col = "blue")
 lines(data.ceph.cd.grouped$V3, data.ceph.cd.grouped$V4, type = "l", col = "green")
-legend(7, 60, c("GFS", "NFS", "Ceph"), col = c("red", "blue", "green"), lty = c(1, 1, 1), lwd = c(2.5, 2.5, 2.5))
+legend(3, 150, c("GFS", "NFS", "Ceph"), col = c("red", "blue", "green"), lty = c(1, 1, 1), lwd = c(2.5, 2.5, 2.5))
 dev.off()
 
 jpeg("Performance with depth - MKDIR.jpg", width = 1080, height = 480)
 par(mfrow = c(1, 1))
-plot(data.gfs.mkdir.grouped$V3, data.gfs.mkdir.grouped$V4, type = "n", xlim = c(2, 14), ylim = c(0,480), main = "Performance for MKDIR with different depth level", ylab = "Time in milliseconds", xlab = "Depth level")
+plot(data.gfs.mkdir.grouped$V3, data.gfs.mkdir.grouped$V4, type = "n", xlim = c(4, 20), ylim = c(0, 100), main = "Performance for MKDIR with different depth level", ylab = "Time in milliseconds", xlab = "Depth level")
 lines(data.gfs.mkdir.grouped$V3, data.gfs.mkdir.grouped$V4, type = "l", col = "red")
 lines(data.nfs.mkdir.grouped$V3, data.nfs.mkdir.grouped$V4, type = "l", col = "blue")
 lines(data.ceph.mkdir.grouped$V3, data.ceph.mkdir.grouped$V4, type = "l", col = "green")
-legend(2, 480, c("GFS", "NFS", "Ceph"), col = c("red", "blue", "green"), lty = c(1, 1, 1), lwd = c(2.5, 2.5, 2.5))
+legend(4, 100, c("GFS", "NFS", "Ceph"), col = c("red", "blue", "green"), lty = c(1, 1, 1), lwd = c(2.5, 2.5, 2.5))
 dev.off()
 
 jpeg("Performance with depth - TOUCH.jpg", width = 1080, height = 480)
 par(mfrow = c(1, 1))
-plot(data.gfs.touch.grouped$V3, data.gfs.touch.grouped$V4, type = "n", xlim = c(2, 9), ylim = c(20, 1060), main = "Performance for TOUCH with different depth level", ylab = "Time in milliseconds", xlab = "Depth level")
+plot(data.gfs.touch.grouped$V3, data.gfs.touch.grouped$V4, type = "n", xlim = c(4, 18), ylim = c(0, 80), main = "Performance for TOUCH with different depth level", ylab = "Time in milliseconds", xlab = "Depth level")
 lines(data.gfs.touch.grouped$V3, data.gfs.touch.grouped$V4, type = "l", col = "red")
 lines(data.nfs.touch.grouped$V3, data.nfs.touch.grouped$V4, type = "l", col = "blue")
 lines(data.ceph.touch.grouped$V3, data.ceph.touch.grouped$V4, type = "l", col = "green")
-legend(2, 1060, c("GFS", "NFS", "Ceph"), col = c("red", "blue", "green"), lty = c(1, 1, 1), lwd = c(2.5, 2.5, 2.5))
+legend(4, 80, c("GFS", "NFS", "Ceph"), col = c("red", "blue", "green"), lty = c(1, 1, 1), lwd = c(2.5, 2.5, 2.5))
 dev.off()
 
 jpeg("Performance with depth - RMDIR.jpg", width = 1080, height = 480)
 par(mfrow = c(1, 1))
-plot(data.gfs.rmdir.grouped$V3, data.gfs.rmdir.grouped$V4, type = "n", xlim = c(2, 8), ylim = c(0, 140), main = "Performance for RMDIR with different depth level", ylab = "Time in milliseconds", xlab = "Depth level")
+plot(data.gfs.rmdir.grouped$V3, data.gfs.rmdir.grouped$V4, type = "n", xlim = c(3, 18), ylim = c(0, 100), main = "Performance for RMDIR with different depth level", ylab = "Time in milliseconds", xlab = "Depth level")
 lines(data.gfs.rmdir.grouped$V3, data.gfs.rmdir.grouped$V4, type = "l", col = "red")
 lines(data.nfs.rmdir.grouped$V3, data.nfs.rmdir.grouped$V4, type = "l", col = "blue")
 lines(data.ceph.rmdir.grouped$V3, data.ceph.rmdir.grouped$V4, type = "l", col = "green")
-legend(2, 140, c("GFS", "NFS", "Ceph"), col = c("red", "blue", "green"), lty = c(1, 1, 1), lwd = c(2.5, 2.5, 2.5))
+legend(3, 100, c("GFS", "NFS", "Ceph"), col = c("red", "blue", "green"), lty = c(1, 1, 1), lwd = c(2.5, 2.5, 2.5))
 dev.off()
 
 jpeg("Performance with depth - RMDIRF.jpg", width = 1080, height = 480)
 par(mfrow = c(1, 1))
-plot(data.nfs.rmdirf.grouped$V3, data.nfs.rmdirf.grouped$V4, type = "n", xlim = c(2, 8), ylim = c(0, 100), main = "Performance for RMDIRF with different depth level", ylab = "Time in milliseconds", xlab = "Depth level")
+plot(data.nfs.rmdirf.grouped$V3, data.nfs.rmdirf.grouped$V4, type = "n", xlim = c(3, 16), ylim = c(0, 90), main = "Performance for RMDIRF with different depth level", ylab = "Time in milliseconds", xlab = "Depth level")
 lines(data.gfs.rmdirf.grouped$V3, data.gfs.rmdirf.grouped$V4, type = "l", col = "red")
 lines(data.nfs.rmdirf.grouped$V3, data.nfs.rmdirf.grouped$V4, type = "l", col = "blue")
 lines(data.ceph.rmdirf.grouped$V3, data.ceph.rmdirf.grouped$V4, type = "l", col = "green")
-legend(2, 100, c("GFS", "NFS", "Ceph"), col = c("red", "blue", "green"), lty = c(1, 1, 1), lwd = c(2.5, 2.5, 2.5))
+legend(17, 90, c("GFS", "NFS", "Ceph"), col = c("red", "blue", "green"), lty = c(1, 1, 1), lwd = c(2.5, 2.5, 2.5))
 dev.off()
