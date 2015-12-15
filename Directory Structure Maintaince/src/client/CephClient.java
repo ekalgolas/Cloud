@@ -40,6 +40,9 @@ public class CephClient {
 	private static final String								ROOT			= "root";
 	private static String									pwd				= ROOT;
 	private final String									clientId;
+	private final HashMap<String,Socket> 					cachedSockets   = new HashMap<>();
+	private final HashMap<Socket,ObjectInputStream> 		cachedIpStreams = new HashMap<>();
+	private final HashMap<Socket,ObjectOutputStream> 		cachedOpStreams = new HashMap<>();
 
 	/**
 	 * Constructor
@@ -78,7 +81,6 @@ public class CephClient {
 	private Socket getRequiredMdsSocket(final List<MetaDataServerInfo> mdsServers,
 			final boolean isWrite) {
 		MetaDataServerInfo serverInfo = null;
-		Socket mdsServerSocket = null;
 		for (final MetaDataServerInfo info : mdsServers) {
 			if (Globals.ALIVE_STATUS.equalsIgnoreCase(info.getStatus()) && (isWrite && Globals.PRIMARY_MDS.equals(info.getServerType()) || !isWrite)) {
 				serverInfo = info;
@@ -90,10 +92,27 @@ public class CephClient {
 				if (serverInfo.getIpAddress()
 						.equals(AppConfig.getValue("client.masterIp"))) {
 					LOGGER.debug("Assigning the root Socket");
-					mdsServerSocket = socket;
-				} else {
-					LOGGER.debug("Assigning a new Socket");
-					mdsServerSocket = new Socket(serverInfo.getIpAddress(), Integer.parseInt(AppConfig.getValue("client.masterPort")));
+					return socket;
+				} 
+				else 
+				{
+					if(cachedSockets.containsKey(serverInfo.getServerName()))
+					{
+						return cachedSockets.get(serverInfo.getServerName());
+					}
+					else
+					{
+						LOGGER.debug("Assigning a new Socket");
+						final Socket mdsServerSocket = new Socket(serverInfo.getIpAddress(), Integer.parseInt(AppConfig.getValue("client.masterPort")));
+						cachedSockets.put(serverInfo.getServerName(), mdsServerSocket);
+						final ObjectInputStream inputStream 
+							= new ObjectInputStream(mdsServerSocket.getInputStream());
+						final ObjectOutputStream outputStream 
+							= new ObjectOutputStream(mdsServerSocket.getOutputStream());
+						cachedIpStreams.put(mdsServerSocket, inputStream);
+						cachedOpStreams.put(mdsServerSocket, outputStream);
+						return mdsServerSocket;
+					}
 				}
 			} catch (final NumberFormatException e) {
 				LOGGER.error("Error occured while executing commands", e);
@@ -103,7 +122,7 @@ public class CephClient {
 				System.exit(0);
 			}
 		}
-		return mdsServerSocket;
+		return null;
 	}
 
 	private String getparent(final String path) {
@@ -320,14 +339,14 @@ public class CephClient {
 
 				final ObjectInputStream inputMdsStream;
 				final ObjectOutputStream outputMdsStream;
-				if (mdsServerSocket.equals(socket)) {
+				if (socket.equals(mdsServerSocket)) {
 					LOGGER.debug("Reassigning sockets input output");
 					inputMdsStream = inputStream;
 					outputMdsStream = outputStream;
 				} else {
-					inputMdsStream = new ObjectInputStream(mdsServerSocket.getInputStream());
-
-					outputMdsStream = new ObjectOutputStream(mdsServerSocket.getOutputStream());
+					inputMdsStream = cachedIpStreams.get(mdsServerSocket);
+	
+					outputMdsStream = cachedOpStreams.get(mdsServerSocket);
 				}
 
 				outputMdsStream.writeObject(new Message(command));
@@ -369,10 +388,12 @@ public class CephClient {
 				LOGGER.info(reply + "\n");
 
 //				number++;
-				if (mdsServerSocket != socket) {
-					LOGGER.debug("Closing temp socket");
-					mdsServerSocket.close();
-				}
+//				if (mdsServerSocket != socket) {
+//					LOGGER.debug("Closing temp socket");
+//					inputMdsStream.close();
+//					outputMdsStream.close();
+//					mdsServerSocket.close();
+//				}
 
 //				if (command.startsWith(CommandsSupported.RMDIR.name()) || 
 //						command.startsWith(CommandsSupported.RMDIRF.name())) {
