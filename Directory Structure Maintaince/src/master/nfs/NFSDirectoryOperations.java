@@ -70,7 +70,7 @@ public class NFSDirectoryOperations implements ICommandOperations {
 				final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
 				while ((line = bufferedReader.readLine()) != null) {
 					// For each line that contains the pathname
-					if (line.contains(pathname)) {
+					if (line.contains(filePath)) {
 						final String[] split = line.split("@");
 						String filename;
 
@@ -290,9 +290,10 @@ public class NFSDirectoryOperations implements ICommandOperations {
 					final String[] split = line.split("@");
 					if (split[0].substring(split[0].length() - 1)
 						.equals("/")) {
-						split[0] = split[0].concat("/" + names.get(names.size() - 1));
+						split[0] = split[0].concat(names.get(names.size() - 1));
 						split[1] = "0";
 						split[2] = Long.toString(System.currentTimeMillis());
+						line = "";
 						for (int c = 0; c <= 2; c++) {
 							if (c == 2) {
 								line = line.concat(split[c]);
@@ -314,12 +315,17 @@ public class NFSDirectoryOperations implements ICommandOperations {
 					}
 				}
 
+				writer.close();
 				reader.close();
+				file.delete();
+				final boolean successful = temp.renameTo(file);
+				if (successful == false) {
+					System.out.println("not succesfully renamed");
+				}
 			}
 
 			fileChannel.close();
 			fileChanneltemp.close();
-			file.delete();
 		} catch (final IOException e) {
 			throw new InvalidPropertiesFormatException("Failed to modify metadata in local");
 		}
@@ -345,13 +351,13 @@ public class NFSDirectoryOperations implements ICommandOperations {
 			linename = pathname.toString();
 		}
 		else {
-			if(names.size() == 1){
+			if (names.size() == 1) {
 				path = "root";
-				linename = "root/";			
+				linename = "root/";
 			}
-			else{
-			path = getPath(filepath, pathname, names, names.size() - 2);
-			linename = pathname + "/" + names.get(names.size() - 1) + "/";
+			else {
+				path = getPath(filepath, pathname, names, names.size() - 2);
+				linename = pathname + "/" + names.get(names.size() - 1) + "/";
 			}
 		}
 
